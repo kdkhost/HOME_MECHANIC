@@ -1,0 +1,111 @@
+# LiteSpeed Cache Configuration for HomeMechanic System
+# Configuração otimizada para CloudLinux + LiteSpeed + Imunify360
+
+# Cache Settings
+cache_enabled = 1
+cache_ttl = 3600
+cache_mobile = 1
+cache_mobile_rules = 1
+
+# Purge Settings
+purge_on_upgrade = 1
+purge_post_all = 0
+purge_post_frontpage = 1
+purge_post_pages = 1
+purge_post_posttype = 1
+
+# ESI Settings
+esi_enabled = 0
+
+# Object Cache
+object_enabled = 0
+object_kind = 0
+object_host = localhost
+object_port = 11211
+
+# Browser Cache
+browser_cache_enabled = 1
+browser_cache_ttl = 31557600
+
+# Exclude Rules
+cache_exc_useragents = 
+cache_exc_cookies = 
+cache_exc_qs = 
+cache_exc_cat = 
+cache_exc_tag = 
+cache_exc_roles = administrator
+
+# Include Rules
+cache_force_uri = 
+cache_force_pub_uri = 
+
+# Advanced Settings
+cache_priv = 1
+cache_commenter = 1
+cache_rest = 1
+cache_page_login = 1
+cache_favicon = 1
+cache_resources = 1
+cache_mobile_rules_separate = 0
+
+# Optimization Settings
+optm_css_minify = 1
+optm_css_inline_minify = 1
+optm_css_combine = 1
+optm_css_http2 = 0
+optm_css_font_display = swap
+optm_css_async = 0
+optm_css_async_inline = 1
+
+optm_js_minify = 1
+optm_js_inline_minify = 1
+optm_js_combine = 1
+optm_js_http2 = 0
+optm_js_defer = 0
+optm_js_defer_inline = 0
+
+optm_html_minify = 1
+optm_html_lazy = 1
+optm_html_lazy_placeholder = 
+optm_html_lazy_js_inline = 1
+
+# Image Optimization
+img_optm_auto = 1
+img_optm_cron = 1
+img_optm_ori = 1
+img_optm_webp = 1
+img_optm_lossless = 0
+img_optm_quality = 80
+
+# CDN Settings
+cdn_enabled = 0
+cdn_ori = 
+cdn_ori_dir = wp-content,wp-includes
+cdn_exc = .php
+
+# Crawler Settings
+crawler_enabled = 0
+crawler_cron_active = 0
+crawler_order_links = date_desc
+crawler_usleep = 500
+crawler_run_duration = 400
+crawler_run_delay = 900
+crawler_crawl_interval = 302400
+crawler_threads = 3
+crawler_timeout = 30
+crawler_load_limit = 1
+crawler_domain_ip = 
+crawler_custom_sitemap = 
+crawler_drop_domain = 1
+
+# Heartbeat Control
+heartbeat_enabled = 1
+heartbeat_frontend = 0
+heartbeat_backend = 1
+heartbeat_editor = 30
+
+# Misc Settings
+misc_heartbeat_enabled = 1
+misc_heartbeat_frontend = 0
+misc_heartbeat_backend = 1
+misc_heartbeat_editor = 30

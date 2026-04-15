@@ -221,17 +221,69 @@
                     Servidor Web
                 </h5>
 
-                <div class="requirement-item {{ $requirements['mod_rewrite']['status'] ? 'success' : 'error' }}">
-                    <div class="requirement-icon">
-                        <i class="bi bi-{{ $requirements['mod_rewrite']['status'] ? 'check-circle text-success' : 'x-circle text-danger' }}"></i>
-                    </div>
-                    <div class="requirement-details">
-                        <div class="requirement-name">{{ $requirements['mod_rewrite']['name'] }}</div>
-                        <div class="requirement-status">
-                            {{ $requirements['mod_rewrite']['status'] ? 'Ativo' : 'Inativo ou não detectado' }}
+                @if(isset($requirements['web_server']))
+                    <div class="requirement-item {{ $requirements['web_server']['status'] ? 'success' : 'error' }}">
+                        <div class="requirement-icon">
+                            <i class="bi bi-{{ $requirements['web_server']['status'] ? 'check-circle text-success' : 'x-circle text-danger' }}"></i>
+                        </div>
+                        <div class="requirement-details">
+                            <div class="requirement-name">{{ $requirements['web_server']['name'] }}</div>
+                            <div class="requirement-status">
+                                {{ $requirements['web_server']['status'] ? $requirements['web_server']['current'] : 'Não detectado' }}
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endif
+
+                @if(isset($requirements['url_rewrite']))
+                    <div class="requirement-item {{ $requirements['url_rewrite']['status'] ? 'success' : 'error' }}">
+                        <div class="requirement-icon">
+                            <i class="bi bi-{{ $requirements['url_rewrite']['status'] ? 'check-circle text-success' : 'x-circle text-danger' }}"></i>
+                        </div>
+                        <div class="requirement-details">
+                            <div class="requirement-name">{{ $requirements['url_rewrite']['name'] }}</div>
+                            <div class="requirement-status">
+                                {{ $requirements['url_rewrite']['status'] ? 'Ativo' : 'Inativo ou não detectado' }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Ambiente de Hospedagem -->
+                @if(isset($requirements['cloudlinux']) || isset($requirements['imunify360']))
+                    <h5 class="mb-3 mt-4">
+                        <i class="bi bi-cloud text-primary me-2"></i>
+                        Ambiente de Hospedagem
+                    </h5>
+
+                    @if(isset($requirements['cloudlinux']))
+                        <div class="requirement-item {{ $requirements['cloudlinux']['status'] ? 'success' : '' }}">
+                            <div class="requirement-icon">
+                                <i class="bi bi-{{ $requirements['cloudlinux']['status'] ? 'check-circle text-success' : 'info-circle text-info' }}"></i>
+                            </div>
+                            <div class="requirement-details">
+                                <div class="requirement-name">{{ $requirements['cloudlinux']['name'] }}</div>
+                                <div class="requirement-status">
+                                    {{ $requirements['cloudlinux']['current'] }}
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if(isset($requirements['imunify360']))
+                        <div class="requirement-item {{ $requirements['imunify360']['status'] ? 'success' : '' }}">
+                            <div class="requirement-icon">
+                                <i class="bi bi-{{ $requirements['imunify360']['status'] ? 'shield-check text-success' : 'shield text-info' }}"></i>
+                            </div>
+                            <div class="requirement-details">
+                                <div class="requirement-name">{{ $requirements['imunify360']['name'] }}</div>
+                                <div class="requirement-status">
+                                    {{ $requirements['imunify360']['status'] ? 'Ativo' : 'Não detectado' }}
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endif
 
                 <!-- Permissões -->
                 @if(isset($requirements['permissions']))

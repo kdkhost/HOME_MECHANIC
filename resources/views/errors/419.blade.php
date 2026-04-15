@@ -1,6 +1,6 @@
 @extends('layouts.frontend')
 
-@section('title', 'Muitas Tentativas')
+@section('title', 'Sessão Expirada')
 
 @section('content')
 <div class="error-page">
@@ -9,26 +9,19 @@
             <div class="col-lg-6 col-md-8">
                 <div class="error-content text-center">
                     <div class="error-icon mb-4">
-                        <i class="bi bi-stopwatch" style="font-size: 5rem; color: #dc3545;"></i>
+                        <i class="bi bi-clock-history" style="font-size: 5rem; color: #ffc107;"></i>
                     </div>
                     
-                    <h1 class="error-title mb-3">Muitas Tentativas</h1>
+                    <h1 class="error-title mb-3">Sessão Expirada</h1>
                     
                     <p class="error-message mb-4">
-                        Você fez muitas tentativas em pouco tempo. Por favor, aguarde alguns minutos antes de tentar novamente.
+                        Sua sessão expirou por motivos de segurança. Por favor, recarregue a página e tente novamente.
                     </p>
-                    
-                    <div class="countdown-container mb-4">
-                        <div class="countdown-timer">
-                            <span id="countdown">--:--</span>
-                        </div>
-                        <p class="text-muted">Tempo restante para nova tentativa</p>
-                    </div>
                     
                     <div class="error-actions">
                         <button onclick="window.location.reload()" class="btn btn-primary btn-lg me-3">
                             <i class="bi bi-arrow-clockwise me-2"></i>
-                            Verificar Novamente
+                            Recarregar Página
                         </button>
                         
                         <a href="{{ url('/') }}" class="btn btn-outline-secondary btn-lg">
@@ -69,20 +62,6 @@
     font-size: 1.1rem;
     color: #6c757d;
     line-height: 1.6;
-}
-
-.countdown-container {
-    background: #f8f9fa;
-    padding: 2rem;
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
-}
-
-.countdown-timer {
-    font-size: 3rem;
-    font-weight: 700;
-    color: #dc3545;
-    font-family: 'Courier New', monospace;
 }
 
 .btn-primary {
@@ -136,10 +115,6 @@
         font-size: 2rem;
     }
     
-    .countdown-timer {
-        font-size: 2rem;
-    }
-    
     .btn-lg {
         display: block;
         width: 100%;
@@ -151,30 +126,4 @@
     }
 }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Simular countdown de 10 minutos (600 segundos)
-    let timeLeft = 600;
-    const countdownElement = document.getElementById('countdown');
-    
-    function updateCountdown() {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        
-        countdownElement.textContent = 
-            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
-        if (timeLeft > 0) {
-            timeLeft--;
-        } else {
-            countdownElement.textContent = '00:00';
-            countdownElement.style.color = '#28a745';
-        }
-    }
-    
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-});
-</script>
 @endsection

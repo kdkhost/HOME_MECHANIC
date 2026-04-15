@@ -7,13 +7,16 @@
 - **Usuário DB:** homemechanic_2026
 - **Senha DB:** homemechanic_2026
 - **Diretório:** /home/homemechanic/public_html
+- **Ambiente:** CloudLinux + LiteSpeed + Imunify360
 
 ## 🔧 Pré-requisitos no Servidor
-- PHP 8.4+
+- PHP 8.4+ (CloudLinux PHP Selector)
 - MySQL/MariaDB
 - Extensões PHP: pdo_mysql, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, fileinfo, gd
-- mod_rewrite habilitado
+- LiteSpeed Web Server com rewrite habilitado
 - Permissões de escrita em storage/ e bootstrap/cache/
+- CloudLinux CageFS configurado
+- Imunify360 ativo (opcional mas recomendado)
 
 ## 📦 Opções de Deploy
 
@@ -40,11 +43,17 @@ mv * ../backups/$(date +%Y%m%d_%H%M%S)/ 2>/dev/null || true
 git clone https://github.com/SEU_USUARIO/homemechanic-system.git .
 ```
 
-5. **Configurar permissões:**
+5. **Configurar permissões (CloudLinux compatível):**
 ```bash
-chmod -R 755 .
+find . -type f -exec chmod 644 {} \;
+find . -type d -exec chmod 755 {} \;
 chmod -R 777 storage
 chmod -R 777 bootstrap/cache
+```
+
+6. **Criar symlink para storage:**
+```bash
+ln -sf ../storage/app/public public/storage
 ```
 
 ### Opção 2: Upload via FTP/SFTP
@@ -111,29 +120,48 @@ Execute o script `deploy.sh` (em sistemas Unix/Linux):
 
 ## 🔧 Troubleshooting
 
-### Erro de Permissões
+### Erro de Permissões (CloudLinux)
 ```bash
-sudo chown -R homemechanic:homemechanic /home/homemechanic/public_html
-chmod -R 755 /home/homemechanic/public_html
+# Corrigir permissões respeitando CageFS
+find /home/homemechanic/public_html -type f -exec chmod 644 {} \;
+find /home/homemechanic/public_html -type d -exec chmod 755 {} \;
 chmod -R 777 /home/homemechanic/public_html/storage
 chmod -R 777 /home/homemechanic/public_html/bootstrap/cache
 ```
 
-### Erro de Extensões PHP
-Verificar se todas as extensões estão instaladas:
+### Erro de Extensões PHP (CloudLinux)
 ```bash
+# Verificar extensões via CloudLinux Selector
+# Ou verificar manualmente:
 php -m | grep -E "(pdo_mysql|mbstring|openssl|tokenizer|xml|ctype|json|bcmath|fileinfo|gd)"
 ```
 
+### Problemas com LiteSpeed
+```bash
+# Verificar se LiteSpeed está rodando
+systemctl status lshttpd
+
+# Verificar logs do LiteSpeed
+tail -f /usr/local/lsws/logs/error.log
+```
+
 ### Erro de Banco de Dados
-- Verificar se o banco `homemechanic_2026` existe
+- Verificar se o banco `homemechanic_2026` existe no cPanel/phpMyAdmin
 - Testar conexão com as credenciais fornecidas
 - Verificar se o usuário tem permissões adequadas
+- Verificar limites de conexão CloudLinux
 
-### Erro 500
+### Erro 500 (LiteSpeed específico)
 - Verificar logs em `storage/logs/laravel.log`
-- Verificar permissões de escrita
-- Verificar configuração do servidor web
+- Verificar logs do LiteSpeed em `/usr/local/lsws/logs/`
+- Verificar permissões de arquivo (CageFS)
+- Verificar configuração do .htaccess
+
+### Problemas com Imunify360
+Se o Imunify360 estiver bloqueando:
+- Verificar logs do Imunify360
+- Adicionar exceções se necessário
+- Verificar regras de firewall
 
 ## 📞 Suporte
 

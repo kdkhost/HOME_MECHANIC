@@ -1,0 +1,77 @@
+# Configuração para CloudLinux + LiteSpeed + Imunify360
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Compatibilidade com CloudLinux CageFS
+    RewriteBase /
+    
+    # Redirecionar todas as requisições para a pasta public
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Bloquear acesso direto a arquivos sensíveis (Imunify360 compatível)
+<Files ".env">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</Files>
+
+<Files ".env.*">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</Files>
+
+<Files "composer.json">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</Files>
+
+<Files "composer.lock">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</Files>
+
+<Files "package.json">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</Files>
+
+<Files "package-lock.json">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</Files>
+
+<Files "artisan">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</Files>
+
+# Bloquear acesso a diretórios sensíveis (CloudLinux compatível)
+<IfModule mod_alias.c>
+    RedirectMatch 403 /\.git
+    RedirectMatch 403 /storage/logs
+    RedirectMatch 403 /storage/framework
+    RedirectMatch 403 /bootstrap/cache
+    RedirectMatch 403 /vendor
+    RedirectMatch 403 /node_modules
+</IfModule>
+
+# Proteção adicional CloudLinux
+<DirectoryMatch "^/.*/\.(git|svn|hg|bzr)/">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</DirectoryMatch>
+
+# Limitar métodos HTTP (Imunify360 compatível)
+<LimitExcept GET POST HEAD>
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</LimitExcept>

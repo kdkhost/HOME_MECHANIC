@@ -50,11 +50,34 @@ class InstallerService
             ];
         }
 
-        // Verificar mod_rewrite (Apache)
-        $requirements['mod_rewrite'] = [
-            'name' => 'Apache mod_rewrite',
+        // Verificar servidor web (LiteSpeed/Apache)
+        $requirements['web_server'] = [
+            'name' => 'Servidor Web (LiteSpeed/Apache)',
             'required' => true,
-            'status' => $this->checkModRewrite()
+            'status' => $this->checkWebServer(),
+            'current' => $this->getWebServerInfo()
+        ];
+
+        // Verificar mod_rewrite ou LiteSpeed rewrite
+        $requirements['url_rewrite'] = [
+            'name' => 'URL Rewrite (mod_rewrite/LiteSpeed)',
+            'required' => true,
+            'status' => $this->checkUrlRewrite()
+        ];
+
+        // Verificar CloudLinux (opcional mas informativo)
+        $requirements['cloudlinux'] = [
+            'name' => 'CloudLinux (Detectado)',
+            'required' => false,
+            'status' => $this->checkCloudLinux(),
+            'current' => $this->getCloudLinuxInfo()
+        ];
+
+        // Verificar Imunify360 (opcional mas informativo)
+        $requirements['imunify360'] = [
+            'name' => 'Imunify360 (Detectado)',
+            'required' => false,
+            'status' => $this->checkImunify360()
         ];
 
         // Verificar permissões de escrita
@@ -167,6 +190,134 @@ class InstallerService
                 'message' => 'Erro durante a instalação: ' . $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Verificar servidor web
+     */
+    private function checkWebServer(): bool
+    {
+        $serverSoftware = $_SERVER['SERVER_SOFTWARE'] ?? '';
+        
+        // Detectar LiteSpeed ou Apache
+        return (
+            stripos($serverSoftware, 'litespeed') !== false ||
+            stripos($serverSoftware, 'apache') !== false ||
+            stripos($serverSoftware, 'nginx') !== false
+        );
+    }
+
+    /**
+     * Obter informações do servidor web
+     */
+    private function getWebServerInfo(): string
+    {
+        $serverSoftware = $_SERVER['SERVER_SOFTWARE'] ?? 'Desconhecido';
+        
+        if (stripos($serverSoftware, 'litespeed') !== false) {
+            return 'LiteSpeed ' . $this->extractVersion($serverSoftware);
+        }
+        
+        if (stripos($serverSoftware, 'apache') !== false) {
+            return 'Apache ' . $this->extractVersion($serverSoftware);
+        }
+        
+        return $serverSoftware;
+    }
+
+    /**
+     * Verificar URL rewrite (mod_rewrite ou LiteSpeed)
+     */
+    private function checkUrlRewrite(): bool
+    {
+        $serverSoftware = $_SERVER['SERVER_SOFTWARE'] ?? '';
+        
+        // Para LiteSpeed, assumir que rewrite está disponível
+        if (stripos($serverSoftware, 'litespeed') !== false) {
+            return true;
+        }
+        
+        // Para Apache, verificar mod_rewrite
+        return $this->checkModRewrite();
+    }
+
+    /**
+     * Verificar CloudLinux
+     */
+    private function checkCloudLinux(): bool
+    {
+        // Verificar se está rodando em CloudLinux
+        if (file_exists('/proc/lve/list')) {
+            return true;
+        }
+        
+        if (file_exists('/usr/bin/cloudlinux-selector')) {
+            return true;
+        }
+        
+        // Verificar variáveis de ambiente CloudLinux
+        if (getenv('CLOUDLINUX_LVE_VERSION')) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Obter informações do CloudLinux
+     */
+    private function getCloudLinuxInfo(): string
+    {
+        if (!$this->checkCloudLinux()) {
+            return 'Não detectado';
+        }
+        
+        // Tentar obter versão do CloudLinux
+        if (file_exists('/etc/cloudlinux-release')) {
+            $release = file_get_contents('/etc/cloudlinux-release');
+            if (preg_match('/CloudLinux.*?(\d+\.\d+)/', $release, $matches)) {
+                return 'CloudLinux ' . $matches[1];
+            }
+        }
+        
+        return 'CloudLinux (versão não detectada)';
+    }
+
+    /**
+     * Verificar Imunify360
+     */
+    private function checkImunify360(): bool
+    {
+        // Verificar se Imunify360 está instalado
+        if (file_exists('/opt/imunify360/imunify360-agent')) {
+            return true;
+        }
+        
+        if (file_exists('/usr/bin/imunify360-agent')) {
+            return true;
+        }
+        
+        // Verificar processo do Imunify360
+        if (function_exists('shell_exec')) {
+            $processes = shell_exec('ps aux | grep imunify360 | grep -v grep');
+            if (!empty($processes)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Extrair versão do software do servidor
+     */
+    private function extractVersion(string $serverSoftware): string
+    {
+        if (preg_match('/(\d+\.\d+(?:\.\d+)?)/', $serverSoftware, $matches)) {
+            return $matches[1];
+        }
+        
+        return '';
     }
 
     /**

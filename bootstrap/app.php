@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // Usar nosso Handler personalizado
+        $exceptions->handler(\App\Exceptions\Handler::class);
+        
         // Configurar resposta personalizada para rate limiting (HTTP 429)
         $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, $request) {
             if ($request->expectsJson()) {

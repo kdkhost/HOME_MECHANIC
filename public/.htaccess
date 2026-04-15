@@ -1,3 +1,4 @@
+# Configuração otimizada para LiteSpeed + CloudLinux + Imunify360
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
@@ -5,17 +6,114 @@
 
     RewriteEngine On
 
-    # Handle Authorization Header
+    # Compatibilidade com CloudLinux CageFS
+    RewriteBase /
+
+    # Bloquear acesso a arquivos sensíveis (compatível com Imunify360)
+    RewriteRule ^\.env - [F,L]
+    RewriteRule ^storage/installed - [F,L]
+    RewriteRule ^storage/logs - [F,L]
+    RewriteRule ^storage/framework - [F,L]
+    RewriteRule ^\.git - [F,L]
+    RewriteRule ^composer\.(json|lock) - [F,L]
+    RewriteRule ^package\.(json|lock) - [F,L]
+    RewriteRule ^artisan - [F,L]
+    RewriteRule ^\.htaccess - [F,L]
+
+    # Forçar HTTPS (LiteSpeed otimizado)
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Handle Authorization Header (LiteSpeed)
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Redirect Trailing Slashes If Not A Folder...
+    # Compatibilidade com CloudLinux mod_lsapi
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+    RewriteRule .* - [F]
+
+    # Redirect Trailing Slashes If Not A Folder
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # Send Requests To Front Controller (LiteSpeed otimizado)
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# Cabeçalhos de segurança (compatível com LiteSpeed)
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    
+    # Remover informações do servidor
+    Header unset Server
+    Header unset X-Powered-By
+    Header unset X-LiteSpeed-Vary
+    
+    # Compatibilidade com Imunify360
+    Header always set X-Content-Security-Policy "default-src 'self'"
+</IfModule>
+
+# Compressão otimizada para LiteSpeed
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json text/xml application/xml text/plain application/rss+xml
+</IfModule>
+
+# Cache de assets estáticos (LiteSpeed Cache compatível)
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png  "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/gif  "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType text/css   "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+</IfModule>
+
+# Proteção contra hotlinking (Imunify360 compatível)
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_REFERER} !^$
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?homemechanic\.com\.br [NC]
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?google\. [NC]
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?bing\. [NC]
+    RewriteRule \.(jpg|jpeg|png|gif|webp|svg)$ - [F]
+</IfModule>
+
+# Limites de recursos (CloudLinux compatível)
+<IfModule mod_evasive24.c>
+    DOSHashTableSize    2048
+    DOSPageCount        10
+    DOSSiteCount        50
+    DOSPageInterval     1
+    DOSSiteInterval     1
+    DOSBlockingPeriod   600
+</IfModule>
+
+# Proteção adicional para CloudLinux
+<Files "*.log">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "*.sql">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# LiteSpeed Cache Headers
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|webp|svg|woff|woff2)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
 </IfModule>
