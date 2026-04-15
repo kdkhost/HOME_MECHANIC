@@ -1,0 +1,215 @@
+// Variáveis de cores customizadas para AdminLTE
+$primary: #FF6B00;
+$dark: #0D0D0D;
+$sidebar-bg: #1A1A1A;
+$sidebar-color: #CCCCCC;
+$sidebar-hover-bg: #FF6B00;
+$sidebar-active-bg: #FF6B00;
+
+// Customizações do AdminLTE
+.main-sidebar {
+    background-color: $sidebar-bg !important;
+    
+    .brand-link {
+        background-color: darken($sidebar-bg, 5%) !important;
+        border-bottom: 1px solid lighten($sidebar-bg, 10%);
+        
+        .brand-text {
+            color: $primary !important;
+            font-weight: 600;
+        }
+    }
+    
+    .sidebar {
+        .nav-sidebar {
+            .nav-item {
+                .nav-link {
+                    color: $sidebar-color;
+                    
+                    &:hover {
+                        background-color: $sidebar-hover-bg !important;
+                        color: white !important;
+                    }
+                    
+                    &.active {
+                        background-color: $sidebar-active-bg !important;
+                        color: white !important;
+                    }
+                    
+                    .nav-icon {
+                        color: inherit;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Navbar customizada
+.main-header.navbar {
+    background-color: $dark !important;
+    border-bottom: 2px solid $primary;
+    
+    .nav-link {
+        color: white !important;
+        
+        &:hover {
+            color: $primary !important;
+        }
+    }
+}
+
+// Botões primários
+.btn-primary {
+    background-color: $primary;
+    border-color: $primary;
+    
+    &:hover, &:focus, &:active {
+        background-color: darken($primary, 10%);
+        border-color: darken($primary, 10%);
+    }
+}
+
+// Cards
+.card {
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+    
+    .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        
+        &.bg-primary {
+            background-color: $primary !important;
+        }
+    }
+}
+
+// Preloader customizado
+.preloader {
+    background-color: $dark !important;
+    
+    .animation__shake {
+        filter: brightness(0) saturate(100%) invert(45%) sepia(96%) saturate(1976%) hue-rotate(8deg) brightness(101%) contrast(101%);
+    }
+}
+
+// Links
+a {
+    color: $primary;
+    
+    &:hover {
+        color: darken($primary, 15%);
+    }
+}
+
+// Toastify customização
+.toastify.success {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+}
+
+.toastify.error {
+    background: linear-gradient(135deg, #dc3545, #e74c3c) !important;
+}
+
+.toastify.warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+}
+
+// Tabelas
+.table {
+    th {
+        border-top: none;
+        font-weight: 600;
+        color: $dark;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+// Formulários
+.form-control {
+    &:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.25);
+    }
+}
+
+.form-check-input {
+    &:checked {
+        background-color: $primary;
+        border-color: $primary;
+    }
+    
+    &:focus {
+        box-shadow: 0 0 0 0.25rem rgba(255, 107, 0, 0.25);
+    }
+}
+
+// Badges
+.badge-primary {
+    background-color: $primary !important;
+}
+
+.badge-success {
+    background-color: #28a745 !important;
+}
+
+.badge-danger {
+    background-color: #dc3545 !important;
+}
+
+.badge-warning {
+    background-color: #ffc107 !important;
+    color: $dark !important;
+}
+
+// Paginação
+.page-link {
+    color: $primary;
+    
+    &:hover {
+        color: darken($primary, 15%);
+        background-color: lighten($primary, 45%);
+        border-color: lighten($primary, 35%);
+    }
+}
+
+.page-item.active .page-link {
+    background-color: $primary;
+    border-color: $primary;
+}
+
+// Dropzone customização
+.dropzone {
+    border: 2px dashed lighten($primary, 20%);
+    border-radius: 8px;
+    background: lighten($primary, 48%);
+    
+    &:hover {
+        border-color: $primary;
+        background: lighten($primary, 45%);
+    }
+    
+    .dz-message {
+        color: darken($primary, 10%);
+        font-weight: 500;
+    }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+    .main-sidebar {
+        margin-left: -250px;
+    }
+    
+    .sidebar-open .main-sidebar {
+        margin-left: 0;
+    }
+    
+    .content-wrapper {
+        margin-left: 0 !important;
+    }
+}

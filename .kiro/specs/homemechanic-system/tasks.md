@@ -1,0 +1,494 @@
+# Plano de Implementação: homemechanic-system
+
+## Visão Geral
+
+Implementação completa do sistema homemechanic em Laravel 13 / PHP 8.4 com arquitetura modular, painel AdminLTE 4, site institucional responsivo e todas as funcionalidades descritas no design técnico. As tarefas seguem ordem incremental — cada etapa constrói sobre a anterior e termina com os componentes integrados.
+
+## Tarefas
+
+- [-] 1. Setup inicial do projeto Laravel 13 e estrutura modular
+  - [x] 1.1 Criar projeto Laravel 13 via Composer e configurar `composer.json` com dependências principais: `laravel/framework ^13.0`, `intervention/image`, `eris/eris` (dev)
+    - Instalar dependências JS: `dropzone`, `toastify-js`, `sweetalert2`, `swiper`
+    - Configurar `vite.config.js` para compilar assets dos módulos em `resources/modules/`
+    - _Requisitos: 13.1, 13.4_
+  - [x] 1.2 Criar a estrutura de diretórios modular em `app/Modules/` com subpastas padrão para cada módulo
+    - Criar pastas: `Installer`, `Auth`, `Dashboard`, `Services`, `Gallery`, `Blog`, `Testimonials`, `Contact`, `Settings`, `Maintenance`, `Upload`, `Frontend`
+    - Cada módulo deve ter subpastas: `Controllers`, `Models`, `Requests`, `Resources`, `Routes`
+    - Criar `resources/views/modules/` e `resources/modules/` com subpastas por módulo
+    - _Requisitos: 13.1, 13.4_
+  - [x] 1.3 Implementar `app/Providers/ModuleServiceProvider.php` com descoberta automática de rotas
+    - Iterar sobre `glob(app_path('Modules/*/Routes/web.php'))` e registrar com middleware `web`
+    - Iterar sobre `glob(app_path('Modules/*/Routes/api.php'))` e registrar com middleware `api` e prefixo `api`
+    - Registrar o provider em `bootstrap/providers.php`
+    - _Requisitos: 13.2, 13.3_
+  - [x] 1.4 Criar layouts Blade base: `resources/views/layouts/admin.blade.php` e `resources/views/layouts/frontend.blade.php`
+    - Layout admin: estrutura AdminLTE 4 com slots para `@yield('content')`, `@yield('scripts')`, `@yield('styles')`
+    - Layout frontend: estrutura HTML5 com preloader, menu sticky, footer e slots equivalentes
+    - Incluir meta tag CSRF: `<meta name="csrf-token" content="{{ csrf_token() }}">`
+    - _Requisitos: 3.1, 8.2_
+
+- [ ] 2. Configuração do banco de dados e migrations (13 tabelas)
+  - [x] 2.1 Criar migration para tabelas de usuários e configurações
+    - `users`: `id`, `name`, `email` (unique), `password`, `role`, `email_verified_at`, `timestamps`
+    - `settings`: `id`, `key` (unique), `value` (text), `group`, `updated_at`
+    - Configurar `config/hashing.php` com `'bcrypt' => ['rounds' => 12]`
+    - _Requisitos: 2.7, 9.1_
+  - [x] 2.2 Criar migrations para módulos de conteúdo
+    - `services`: `id`, `title`, `slug` (unique), `description`, `content`, `icon`, `cover_image`, `featured`, `sort_order`, `active`, `timestamps`
+    - `gallery_categories`: `id`, `name`, `slug` (unique), `sort_order`, `timestamps`
+    - `gallery_photos`: `id`, `category_id` (FK), `title`, `filename`, `thumbnail`, `description`, `sort_order`, `active`, `timestamps`
+    - _Requisitos: 6.1, 6.6_
+  - [x] 2.3 Criar migrations para módulo Blog
+    - `blog_categories`: `id`, `name`, `slug` (unique), `description`, `timestamps`
+    - `tags`: `id`, `name`, `slug` (unique), `timestamps`
+    - `posts`: `id`, `category_id` (FK), `user_id` (FK), `title`, `slug` (unique), `excerpt`, `content` (longtext), `cover_image`, `meta_title`, `meta_description`, `og_image`, `status` (enum: draft/published), `published_at`, `timestamps`
+    - `post_tag`: tabela pivot `post_id`, `tag_id`
+    - _Requisitos: 7.1_
+  - [x] 2.4 Criar migrations para módulos de interação e sistema
+    - `testimonials`: `id`, `client_name`, `client_role`, `client_photo`, `content`, `rating`, `active`, `sort_order`, `timestamps`
+    - `contact_messages`: `id`, `name`, `email`, `phone`, `subject`, `message`, `read`, `email_sent`, `ip_address`, `timestamps`
+    - `maintenance_ips`: `id`, `ip_address` (unique), `label`, `active`, `timestamps`
+    - `audit_logs`: `id`, `user_id` (FK nullable), `action`, `model_type`, `model_id`, `old_values` (json), `new_values` (json), `ip_address`, `user_agent`, `created_at`
+    - `uploads`: `id`, `user_id` (FK), `uuid` (unique), `original_name`, `filename`, `mime_type`, `size`, `disk`, `path`, `model_type`, `model_id`, `timestamps`
+    - _Requisitos: 5.8, 14.3_
+
+- [ ] 3. Middleware stack de segurança
+  - [x] 3.1 Implementar `app/Http/Middleware/SecurityHeaders.php`
+    - Injetar em toda resposta: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`
+    - Registrar como middleware global em `bootstrap/app.php`
+    - _Requisitos: 2.9_
+  - [x] 3.2 Implementar `app/Http/Middleware/CheckInstalled.php`
+    - Se `storage/installed` não existe E rota não é `/install*` → redirecionar para `/install`
+    - Se `storage/installed` existe E rota é `/install*` → redirecionar para `/`
+    - Registrar no grupo `web` antes dos demais middlewares
+    - _Requisitos: 1.1, 1.7_
+  - [x] 3.3 Implementar `app/Http/Middleware/MaintenanceMode.php`
+    - Ler `maintenance_mode` da tabela `settings`
+    - Se ativo: verificar IP da requisição contra tabela `maintenance_ips`
+    - IPs permitidos: deixar passar; demais: retornar view `errors/503` com HTTP 503 e header `Retry-After`
+    - Rotas do painel admin (`/admin/*`) só acessíveis por IPs permitidos durante manutenção
+    - _Requisitos: 10.2, 10.3, 10.4_
+  - [x] 3.4 Escrever teste de propriedade para `CheckInstalled` middleware
+    - **Propriedade 3: Middleware de Instalação Bloqueia Acesso Após Conclusão**
+    - **Valida: Requisito 1.7**
+  - [x] 3.5 Escrever teste de propriedade para `MaintenanceMode` middleware
+    - **Propriedade 10: Modo de Manutenção Respeita Lista de IPs Permitidos**
+    - **Valida: Requisito 10.3**
+  - [x] 3.6 Escrever teste de propriedade para `SecurityHeaders` middleware
+    - **Propriedade 7: Cabeçalhos de Segurança Presentes em Toda Resposta HTTP**
+    - **Valida: Requisito 2.9**
+
+- [ ] 4. Módulo Instalador automático
+  - [ ] 4.1 Implementar `app/Modules/Installer/Services/InstallerService.php`
+    - Método `checkRequirements()`: verificar PHP 8.4+, extensões obrigatórias, `mod_rewrite`, permissões de escrita em `storage/` e `bootstrap/cache/`
+    - Método `testDatabaseConnection(array $config)`: testar conexão PDO sem expor credenciais na mensagem de erro
+    - Método `install(array $data)`: criar `.env`, executar `key:generate`, `migrate --seed`, criar `storage/installed`
+    - _Requisitos: 1.2, 1.3, 1.4, 1.5, 1.6_
+  - [ ] 4.2 Implementar `app/Modules/Installer/Controllers/InstallerController.php`
+    - `index()`: exibir página de verificação de requisitos
+    - `create()`: exibir formulário de configuração (DB + admin + empresa)
+    - `store(InstallRequest $request)`: processar instalação e redirecionar para `/admin/dashboard`
+    - _Requisitos: 1.3, 1.4, 1.6_
+  - [ ] 4.3 Criar `app/Modules/Installer/Requests/InstallRequest.php` com validação dos campos do formulário
+    - Validar: `db_host`, `db_port`, `db_name`, `db_user`, `admin_name`, `admin_email`, `admin_password`
+    - _Requisitos: 1.3_
+  - [ ] 4.4 Criar views do instalador em `resources/views/modules/installer/`
+    - `requirements.blade.php`: lista de requisitos com ícones de status (verde/vermelho)
+    - `form.blade.php`: formulário em 3 seções (banco, admin, empresa) com validação inline
+    - _Requisitos: 1.2, 1.3_
+  - [ ] 4.5 Criar `app/Modules/Installer/Routes/web.php` com rotas `/install` (GET) e `/install` (POST)
+    - _Requisitos: 1.1_
+  - [ ] 4.6 Escrever teste de propriedade para `InstallerService::checkRequirements()`
+    - **Propriedade 1: Verificação de Requisitos Reflete Estado Real**
+    - **Valida: Requisito 1.2**
+  - [ ] 4.7 Escrever teste de propriedade para mensagem de erro de instalação
+    - **Propriedade 2: Mensagem de Erro de Instalação Não Expõe Credenciais**
+    - **Valida: Requisito 1.5**
+
+- [ ] 5. Módulo Auth (autenticação e segurança)
+  - [ ] 5.1 Implementar `app/Modules/Auth/Controllers/AuthController.php`
+    - `showLogin()`: exibir página de login em duas colunas com animações CSS
+    - `login(LoginRequest $request)`: sanitizar campos, autenticar via `Auth::attempt()`, regenerar sessão, redirecionar para dashboard
+    - `logout()`: `Auth::logout()`, `Session::invalidate()`, `Session::regenerateToken()`, redirecionar para login
+    - _Requisitos: 2.1, 2.2, 2.4, 2.5, 2.10_
+  - [ ] 5.2 Criar `app/Modules/Auth/Requests/LoginRequest.php`
+    - Validar `email` (required, email) e `password` (required, string)
+    - Aplicar `strip_tags()` e `trim()` nos campos antes da validação
+    - _Requisitos: 2.5_
+  - [ ] 5.3 Criar view `resources/views/modules/auth/login.blade.php`
+    - Layout em duas colunas: coluna esquerda com imagem/branding, coluna direita com formulário
+    - Animações CSS de entrada, paleta laranja/preto/grafite
+    - Exibir mensagem de bloqueio com tempo restante quando HTTP 429
+    - _Requisitos: 2.1, 2.3_
+  - [ ] 5.4 Configurar rate limiting no `app/Modules/Auth/Routes/web.php`
+    - Aplicar `throttle:5,10` na rota POST `/admin/login`
+    - Configurar resposta 429 com mensagem de tempo restante em português
+    - Configurar timeout de sessão de 120 minutos em `config/session.php`
+    - _Requisitos: 2.3, 2.6_
+  - [ ] 5.5 Escrever teste de propriedade para o Rate Limiter
+    - **Propriedade 4: Rate Limiter Bloqueia Após N Tentativas Inválidas**
+    - **Valida: Requisito 2.3**
+  - [ ] 5.6 Escrever teste de propriedade para hash de senha
+    - **Propriedade 6: Hash de Senha é Round-Trip Verificável com Custo 12**
+    - **Valida: Requisito 2.7**
+  - [ ] 5.7 Escrever teste de propriedade para sanitização de entrada
+    - **Propriedade 5: Sanitização Remove Todas as Tags HTML da Entrada**
+    - **Valida: Requisitos 2.5, 14.1**
+
+- [ ] 6. Checkpoint — Verificar instalação, autenticação e middlewares
+  - Garantir que todos os testes passam, verificar fluxo completo de instalação → login → dashboard. Perguntar ao usuário se há dúvidas antes de continuar.
+
+- [ ] 7. Módulo Dashboard (AdminLTE 4)
+  - [ ] 7.1 Instalar e configurar AdminLTE 4 via npm/CDN e personalizar com paleta laranja/preto/grafite
+    - Criar `resources/sass/admin-custom.scss` com variáveis `$primary: #FF6B00`, `$dark: #0D0D0D`, `$sidebar-bg: #1A1A1A`
+    - Compilar via Vite e incluir no layout `admin.blade.php`
+    - _Requisitos: 3.1_
+  - [ ] 7.2 Implementar `app/Modules/Dashboard/Controllers/DashboardController.php`
+    - Método `index()`: buscar contagens — `Service::count()`, `Post::published()->count()`, `GalleryPhoto::count()`, `ContactMessage::unread()->count()`
+    - Passar dados para view com cards de resumo
+    - _Requisitos: 3.2_
+  - [ ] 7.3 Criar view `resources/views/modules/dashboard/index.blade.php`
+    - 4 cards de resumo com ícones Bootstrap Icons: `bi-tools`, `bi-newspaper`, `bi-images`, `bi-envelope`
+    - Preloader animado com `id="preloader"` e lógica JS de ocultação no evento `load`
+    - Menu lateral com seções: Dashboard, Serviços, Galeria, Blog, Depoimentos, Mensagens, Configurações, Usuários
+    - _Requisitos: 3.2, 3.3, 3.6_
+  - [ ] 7.4 Aplicar proteção de autenticação em todas as rotas do painel
+    - Criar grupo de rotas `/admin` com middleware `auth` em cada módulo admin
+    - Configurar redirecionamento para `/admin/login` quando não autenticado
+    - _Requisitos: 3.5_
+
+- [ ] 8. Módulo Upload (drag and drop com progresso)
+  - [ ] 8.1 Implementar `app/Modules/Upload/Services/MimeValidatorService.php`
+    - Método `validate(UploadedFile $file): bool` usando `finfo_file()` para leitura real do MIME
+    - Tipos permitidos: `image/jpeg`, `image/png`, `image/webp`, `image/gif`, `video/mp4`, `video/webm`
+    - Limites: 10MB para imagens, 100MB para vídeos
+    - _Requisitos: 5.3, 5.4, 14.4_
+  - [ ] 8.2 Implementar `app/Modules/Upload/Services/UploadService.php`
+    - Método `store(UploadedFile $file, ?User $user): Upload`
+    - Gerar UUID como nome de arquivo, salvar em `storage/app/public/uploads/{uuid}.ext`
+    - Para imagens: gerar thumbnail 400x300 via `intervention/image` mantendo proporção
+    - Registrar na tabela `uploads` e retornar model
+    - _Requisitos: 5.7, 5.8, 6.6_
+  - [ ] 8.3 Implementar `app/Modules/Upload/Controllers/UploadController.php`
+    - `store(Request $request)`: validar MIME via `MimeValidatorService`, processar via `UploadService`
+    - Retornar JSON `{uuid, url, thumbnail_url}` em sucesso ou JSON 422 em falha
+    - _Requisitos: 5.1, 5.5, 5.6_
+  - [ ] 8.4 Criar `resources/modules/upload/js/uploader.js` com configuração Dropzone.js
+    - Configurar `url`, `maxFilesize: 100`, `acceptedFiles`, `parallelUploads: 3`, header CSRF
+    - Implementar cálculo de tempo restante: `bytesRestantes / velocidade`
+    - Callbacks: `uploadprogress` (barra + tempo), `success` (Toastify verde + miniatura), `error` (Toastify vermelho)
+    - _Requisitos: 5.1, 5.2, 5.6, 5.7_
+  - [ ] 8.5 Escrever teste de propriedade para `MimeValidatorService`
+    - **Propriedade 8: Validação de Upload Rejeita Arquivos Inválidos por MIME e Tamanho**
+    - **Valida: Requisitos 5.3, 5.4, 5.5, 14.4**
+
+- [ ] 9. Módulo Services (CRUD AJAX)
+  - [ ] 9.1 Criar `app/Modules/Services/Models/Service.php` com Eloquent
+    - Campos fillable, cast `featured` e `active` para boolean, scope `active()`
+    - _Requisitos: 4.1_
+  - [ ] 9.2 Implementar `app/Modules/Services/Controllers/ServiceController.php` com CRUD AJAX
+    - `index()`: listar com paginação, busca e ordenação (retornar JSON para AJAX ou view para acesso direto)
+    - `store(ServiceRequest $request)`: criar serviço, registrar em `audit_logs`, retornar JSON
+    - `update(ServiceRequest $request, Service $service)`: atualizar, registrar log, retornar JSON
+    - `destroy(Service $service)`: excluir, registrar log, retornar JSON
+    - _Requisitos: 4.1, 4.2, 4.5, 14.3_
+  - [ ] 9.3 Criar `app/Modules/Services/Requests/ServiceRequest.php` com validação e sanitização
+    - Validar: `title` (required, max:255), `description` (required), `content`, `icon`, `sort_order` (integer)
+    - Aplicar `strip_tags()` nos campos de texto antes de persistir
+    - _Requisitos: 4.4, 4.7, 14.1_
+  - [ ] 9.4 Criar views do módulo Services em `resources/views/modules/services/`
+    - `index.blade.php`: tabela com busca, paginação AJAX, botões de ação
+    - `_form.blade.php`: formulário parcial com campos, integração com Uploader para `cover_image`
+    - Notificações Toastify e confirmação SweetAlert2 para exclusão
+    - _Requisitos: 4.2, 4.3, 4.6_
+  - [ ] 9.5 Criar `app/Modules/Services/Resources/ServiceResource.php` para serialização JSON
+    - _Requisitos: 4.1_
+
+- [ ] 10. Módulo Gallery (CRUD AJAX + lightbox + lazy loading)
+  - [ ] 10.1 Criar models `app/Modules/Gallery/Models/GalleryCategory.php` e `GalleryPhoto.php`
+    - `GalleryCategory`: `hasMany(GalleryPhoto)`, scope `ordered()`
+    - `GalleryPhoto`: `belongsTo(GalleryCategory)`, scope `active()`, scope `ordered()`
+    - _Requisitos: 6.1_
+  - [ ] 10.2 Implementar `app/Modules/Gallery/Controllers/GalleryController.php` com CRUD AJAX
+    - CRUD completo para categorias e fotos com registro em `audit_logs`
+    - Suporte a reordenação via drag and drop (endpoint `reorder`)
+    - _Requisitos: 6.2, 14.3_
+  - [ ] 10.3 Implementar `app/Modules/Gallery/Services/ImageService.php`
+    - Delegar geração de thumbnail ao `UploadService` (400x300, proporção mantida)
+    - _Requisitos: 6.6_
+  - [ ] 10.4 Criar views admin da galeria em `resources/views/modules/gallery/`
+    - `index.blade.php`: grid de fotos com filtro por categoria, botões CRUD
+    - `_form.blade.php`: formulário com Dropzone integrado
+    - _Requisitos: 6.2_
+  - [ ] 10.5 Criar `resources/modules/gallery/js/gallery.js` para o frontend público
+    - Filtro por categoria via JavaScript sem recarregar página (Isotope ou CSS classes)
+    - Lightbox com navegação entre fotos da mesma categoria (GLightbox ou implementação própria)
+    - Lazy loading via `IntersectionObserver` ou atributo `loading="lazy"`
+    - _Requisitos: 6.3, 6.4, 6.5_
+
+- [ ] 11. Módulo Blog (CRUD AJAX + WYSIWYG + SEO)
+  - [ ] 11.1 Criar models `app/Modules/Blog/Models/Post.php`, `BlogCategory.php` e `Tag.php`
+    - `Post`: `belongsTo(BlogCategory)`, `belongsTo(User)`, `belongsToMany(Tag)` via `post_tag`, scope `published()`, cast `status` para enum
+    - `BlogCategory`: `hasMany(Post)`
+    - `Tag`: `belongsToMany(Post)`
+    - _Requisitos: 7.1_
+  - [ ] 11.2 Implementar `app/Modules/Blog/Services/SlugService.php`
+    - Método `generate(string $title, ?int $excludeId = null): string`
+    - Converter título para slug URL-safe (apenas letras minúsculas, dígitos e hífens)
+    - Verificar unicidade na tabela `posts`; se duplicado, acrescentar sufixo numérico incremental (`-2`, `-3`, ...)
+    - _Requisitos: 7.3, 7.4_
+  - [ ] 11.3 Implementar `app/Modules/Blog/Controllers/PostController.php` com CRUD AJAX
+    - `store` e `update`: gerar slug via `SlugService` se não informado, registrar em `audit_logs`
+    - Suporte a status `draft`/`published` e `published_at` agendado
+    - Retornar `PostResource` como JSON
+    - _Requisitos: 7.1, 7.2, 7.3, 14.3_
+  - [ ] 11.4 Criar `app/Modules/Blog/Requests/PostRequest.php` com validação completa
+    - Validar: `title` (required), `content` (required), `category_id` (exists), `status` (in:draft,published), `meta_title`, `meta_description`, `og_image`
+    - _Requisitos: 7.1_
+  - [ ] 11.5 Criar views admin do blog em `resources/views/modules/blog/`
+    - `index.blade.php`: tabela de posts com filtro por status, busca e paginação AJAX
+    - `_form.blade.php`: formulário com editor WYSIWYG (TinyMCE ou Quill), campos de SEO, seletor de tags, upload de capa
+    - _Requisitos: 7.1, 7.2_
+  - [ ] 11.6 Escrever teste de propriedade para `SlugService`
+    - **Propriedade 9: Slugs de Posts São Únicos Para Qualquer Sequência de Títulos**
+    - **Valida: Requisitos 7.3, 7.4**
+
+- [ ] 12. Módulo Testimonials (CRUD AJAX)
+  - [ ] 12.1 Criar `app/Modules/Testimonials/Models/Testimonial.php`
+    - Campos fillable, cast `active` para boolean, scope `active()`, scope `ordered()`
+    - _Requisitos: 4.1_
+  - [ ] 12.2 Implementar `app/Modules/Testimonials/Controllers/TestimonialController.php` com CRUD AJAX
+    - CRUD completo com registro em `audit_logs`, suporte a reordenação
+    - _Requisitos: 4.1, 4.2, 14.3_
+  - [ ] 12.3 Criar views admin de depoimentos em `resources/views/modules/testimonials/`
+    - `index.blade.php`: tabela com foto do cliente, nome, avaliação (estrelas), status
+    - `_form.blade.php`: formulário com upload de foto, campo de rating (1-5 estrelas)
+    - _Requisitos: 4.2, 4.3_
+
+- [ ] 13. Módulo Contact (formulário + SMTP)
+  - [ ] 13.1 Criar `app/Modules/Contact/Models/ContactMessage.php`
+    - Campos fillable, cast `read` e `email_sent` para boolean, scope `unread()`
+    - _Requisitos: 8.6_
+  - [ ] 13.2 Implementar `app/Modules/Contact/Services/ContactService.php`
+    - Método `handle(array $data): ContactMessage`: salvar mensagem no banco, tentar envio via SMTP
+    - Se envio falhar: registrar erro em log, marcar `email_sent = false`, retornar model sem lançar exceção
+    - _Requisitos: 8.6, 8.7_
+  - [ ] 13.3 Implementar `app/Modules/Contact/Controllers/ContactController.php`
+    - `store(ContactRequest $request)`: processar via `ContactService`, retornar JSON com mensagem de sucesso
+    - `index()` (admin): listar mensagens com filtro por lidas/não lidas, marcar como lida
+    - _Requisitos: 8.6, 8.7_
+  - [ ] 13.4 Criar `app/Modules/Contact/Requests/ContactRequest.php`
+    - Validar: `name` (required, max:255), `email` (required, email), `phone`, `subject` (required), `message` (required, min:10)
+    - _Requisitos: 8.6_
+  - [ ] 13.5 Criar views admin de mensagens em `resources/views/modules/contact/`
+    - `index.blade.php`: tabela com indicador de não lidas, visualização inline via modal AJAX
+    - _Requisitos: 3.2_
+
+- [ ] 14. Checkpoint — Verificar módulos de conteúdo (Services, Gallery, Blog, Testimonials, Contact)
+  - Garantir que todos os CRUDs AJAX funcionam, uploads processam corretamente e audit_logs registram ações. Perguntar ao usuário se há dúvidas antes de continuar.
+
+- [ ] 15. Módulo Settings + SMTP (configurações + teste AJAX)
+  - [ ] 15.1 Criar `app/Modules/Settings/Models/Setting.php`
+    - Método estático `get(string $key, $default = null)` e `set(string $key, $value)`
+    - Campos fillable: `key`, `value`, `group`
+    - _Requisitos: 9.1_
+  - [ ] 15.2 Implementar `app/Modules/Settings/Services/SmtpService.php`
+    - Método `saveSettings(array $data)`: criptografar senha com `Crypt::encryptString()`, persistir na tabela `settings`
+    - Método `applyRuntime()`: `Config::set()` para todos os campos SMTP + `Mail::purge('smtp')`
+    - Método `test(string $toEmail): bool`: aplicar configurações em runtime e enviar e-mail de teste
+    - _Requisitos: 9.2, 9.3, 9.4, 9.5_
+  - [ ] 15.3 Implementar `app/Modules/Settings/Controllers/SmtpController.php`
+    - `update(SmtpRequest $request)`: salvar via `SmtpService::saveSettings()`, retornar JSON
+    - `test(Request $request)`: testar via `SmtpService::test()`, retornar JSON com resultado via Toastify
+    - _Requisitos: 9.2, 9.3, 9.4_
+  - [ ] 15.4 Implementar `app/Modules/Settings/Controllers/SettingsController.php`
+    - Gerenciar configurações gerais: `site_name`, `site_logo`, `site_favicon`, `site_description`
+    - Gerenciar configurações de SEO globais
+    - _Requisitos: 8.10_
+  - [ ] 15.5 Criar views de configurações em `resources/views/modules/settings/`
+    - `smtp.blade.php`: formulário SMTP com botão "Testar Configuração" (AJAX), feedback Toastify
+    - `general.blade.php`: configurações gerais do site com upload de logo/favicon
+    - _Requisitos: 9.1, 9.2_
+  - [ ] 15.6 Escrever teste de propriedade para `SmtpService::saveSettings()`
+    - **Propriedade 13: Senha SMTP Armazenada é Sempre Diferente do Valor Original**
+    - **Valida: Requisito 9.5**
+
+- [ ] 16. Módulo Maintenance (página avançada + controle por IP)
+  - [ ] 16.1 Criar `app/Modules/Maintenance/Models/MaintenanceIp.php`
+    - Campos fillable: `ip_address`, `label`, `active`; scope `active()`
+    - _Requisitos: 10.5_
+  - [ ] 16.2 Implementar `app/Modules/Maintenance/Controllers/MaintenanceController.php`
+    - `toggle(Request $request)`: ativar/desativar modo de manutenção via `Setting::set('maintenance_mode', ...)`
+    - `storeIp(Request $request)`: adicionar IP à lista de permitidos
+    - `destroyIp(MaintenanceIp $ip)`: remover IP da lista
+    - _Requisitos: 10.1, 10.5_
+  - [ ] 16.3 Criar view `resources/views/modules/maintenance/index.blade.php`
+    - Toggle de ativação/desativação com status visual
+    - Formulário para mensagem customizada e estimativa de retorno
+    - Tabela CRUD de IPs permitidos
+    - _Requisitos: 10.1, 10.5_
+  - [ ] 16.4 Criar view `resources/views/errors/503.blade.php`
+    - Página de manutenção com mensagem configurável, estimativa de retorno e animação CSS
+    - Herdar identidade visual do frontend (paleta laranja/preto/grafite)
+    - _Requisitos: 10.2_
+
+- [ ] 17. Módulo Audit Log
+  - [ ] 17.1 Criar `app/Models/AuditLog.php` (model global, não modular)
+    - Campos fillable, `belongsTo(User)`, método estático `record(string $action, Model $model, array $old, array $new)`
+    - Capturar automaticamente `user_id` via `Auth::id()`, `ip_address` via `request()->ip()`, `user_agent`
+    - _Requisitos: 14.3_
+  - [ ] 17.2 Integrar `AuditLog::record()` em todos os controllers admin que realizam operações CRUD
+    - Services, Gallery, Blog, Testimonials, Contact (marcar como lida), Settings, Maintenance
+    - _Requisitos: 14.3_
+  - [ ] 17.3 Criar view admin `resources/views/modules/audit/index.blade.php`
+    - Tabela com filtro por usuário, ação, modelo e período; paginação AJAX
+    - _Requisitos: 14.3_
+  - [ ] 17.4 Escrever teste de propriedade para `AuditLog`
+    - **Propriedade 11: Audit Log Registra Todas as Ações Administrativas Críticas**
+    - **Valida: Requisito 14.3**
+
+- [ ] 18. Frontend público (todas as páginas + preloader + animações)
+  - [ ] 18.1 Criar layout `resources/views/layouts/frontend.blade.php` completo
+    - Incluir preloader HTML/CSS/JS com logo e barra de progresso
+    - Menu de navegação com efeito sticky (JavaScript `scroll` event ou CSS `position: sticky`)
+    - Footer com links, redes sociais e copyright
+    - Meta tags SEO dinâmicas: `@yield('meta_title')`, `@yield('meta_description')`, `@yield('og_image')`
+    - _Requisitos: 8.3, 8.4, 8.5, 8.10_
+  - [ ] 18.2 Implementar `app/Modules/Frontend/Controllers/HomeController.php`
+    - `index()`: buscar serviços em destaque, fotos da galeria (preview), depoimentos ativos, últimos posts
+    - Passar dados para view `frontend/home.blade.php`
+    - _Requisitos: 8.1_
+  - [ ] 18.3 Criar view `resources/views/modules/frontend/home.blade.php`
+    - Seção `#hero`: banner com CTA animado (CSS keyframes)
+    - Seção `#services`: cards com `IntersectionObserver` para scroll animation ao entrar na viewport
+    - Seção `#gallery`: preview da galeria com link para `/galeria`
+    - Seção `#testimonials`: carrossel de depoimentos com Swiper.js ou CSS puro
+    - Seção `#contact`: formulário de contato AJAX com validação inline
+    - _Requisitos: 8.8, 8.9_
+  - [ ] 18.4 Criar views das páginas internas do frontend
+    - `sobre.blade.php`: página institucional com história, equipe e diferenciais
+    - `servicos.blade.php`: listagem completa de serviços com cards animados
+    - `galeria.blade.php`: galeria com filtro por categoria, lightbox e lazy loading
+    - `blog/index.blade.php`: listagem de posts (9/página) com paginação
+    - `blog/show.blade.php`: post individual com meta SEO, posts relacionados
+    - `contato.blade.php`: formulário de contato completo
+    - `politica-privacidade.blade.php`: página de política de privacidade
+    - _Requisitos: 8.1, 7.5, 7.6, 7.7_
+  - [ ] 18.5 Implementar `app/Modules/Frontend/Controllers/FrontBlogController.php`
+    - `index()`: posts publicados, ordenados por `published_at` desc, paginação de 9
+    - `show(string $slug)`: post individual, posts relacionados da mesma categoria
+    - _Requisitos: 7.5, 7.6_
+  - [ ] 18.6 Implementar `app/Modules/Frontend/Controllers/FrontGalleryController.php`
+    - `index()`: categorias com fotos ativas, ordenadas
+    - _Requisitos: 6.3_
+  - [ ] 18.7 Criar `resources/modules/gallery/css/gallery.css` e `resources/modules/blog/js/blog.js`
+    - CSS da galeria: grid responsivo, efeitos hover, lightbox overlay
+    - JS do blog: paginação AJAX, filtros
+    - _Requisitos: 6.3, 6.4, 6.5_
+
+- [ ] 19. Páginas de erro personalizadas (403, 404, 419, 429, 500, 503)
+  - [ ] 19.1 Criar `resources/views/errors/404.blade.php`
+    - Herdar layout frontend, exibir mensagem amigável, link para Home e sugestões de páginas
+    - _Requisitos: 11.1, 11.2, 11.3_
+  - [ ] 19.2 Criar `resources/views/errors/403.blade.php`, `419.blade.php`, `429.blade.php`
+    - 403: "Acesso negado" com link para Home
+    - 419: "Sessão expirada" com botão para recarregar página
+    - 429: "Muitas tentativas" com tempo restante de bloqueio
+    - _Requisitos: 11.1, 11.2_
+  - [ ] 19.3 Criar `resources/views/errors/500.blade.php`
+    - Exibir apenas mensagem genérica: "Ocorreu um erro interno. Nossa equipe foi notificada."
+    - Configurar `app/Exceptions/Handler.php` para logar stack trace completo e retornar mensagem genérica
+    - _Requisitos: 11.1, 11.4_
+  - [ ] 19.4 Configurar `app/Exceptions/Handler.php` para respostas JSON em requisições AJAX
+    - Método `register()` com `renderable()` para retornar JSON `{"message": "..."}` sem stack trace
+    - Tratar CSRF mismatch (419) retornando JSON sem dados de sessão
+    - _Requisitos: 14.6_
+  - [ ] 19.5 Escrever teste de propriedade para resposta CSRF inválida
+    - **Propriedade 12: Requisição AJAX com CSRF Inválido Retorna 419 JSON Sem Dados de Sessão**
+    - **Valida: Requisito 14.6**
+
+- [ ] 20. Configuração .htaccess (URL sem /public)
+  - [ ] 20.1 Criar `.htaccess` na raiz do projeto
+    - Regra `RewriteRule ^(.*)$ public/$1 [L]` para redirecionar para pasta `public/`
+    - _Requisitos: 12.1, 12.2_
+  - [ ] 20.2 Criar/atualizar `public/.htaccess` com regras completas do Laravel
+    - Redirecionamento HTTPS, bloqueio de `.env` e `storage/installed`, Authorization header, trailing slashes, front controller
+    - Cabeçalhos de segurança via `mod_headers`, compressão Gzip via `mod_deflate`, cache de assets via `mod_expires`
+    - _Requisitos: 12.3_
+  - [ ] 20.3 Adicionar verificação de `mod_rewrite` no `InstallerService::checkRequirements()`
+    - Usar `apache_get_modules()` ou detecção via `$_SERVER['HTTP_MOD_REWRITE']`
+    - _Requisitos: 12.4_
+
+- [ ] 21. Políticas de autorização (Laravel Policies)
+  - [ ] 21.1 Criar `app/Policies/PostPolicy.php`, `GalleryPolicy.php` e `ServicePolicy.php`
+    - Implementar métodos: `viewAny`, `view`, `create`, `update`, `delete`
+    - Verificar `$user->role` para controle de acesso granular
+    - _Requisitos: 14.2_
+  - [ ] 21.2 Registrar policies em `app/Providers/AuthServiceProvider.php` e aplicar nos controllers
+    - Usar `$this->authorize()` ou `Gate::authorize()` em cada action dos controllers admin
+    - _Requisitos: 14.2_
+
+- [ ] 22. Checkpoint — Verificar frontend, erros, .htaccess e políticas
+  - Garantir que todas as páginas públicas carregam, erros exibem páginas personalizadas, URL funciona sem /public e políticas bloqueiam acesso não autorizado. Perguntar ao usuário se há dúvidas antes de continuar.
+
+- [ ] 23. Seeders e dados iniciais
+  - [ ] 23.1 Criar `database/seeders/UserSeeder.php`
+    - Criar usuário admin padrão com senha bcrypt (custo 12), role `admin`
+    - _Requisitos: 2.7_
+  - [ ] 23.2 Criar `database/seeders/SettingsSeeder.php`
+    - Popular tabela `settings` com todas as chaves padrão definidas no design: `site_name`, `site_logo`, `site_favicon`, `site_description`, `smtp_*`, `maintenance_mode`, `maintenance_message`, `maintenance_eta`
+    - _Requisitos: 9.1, 10.1_
+  - [ ] 23.3 Criar seeders de conteúdo de demonstração
+    - `ServiceSeeder.php`: 4-6 serviços de exemplo (alinhamento, tuning, suspensão, etc.)
+    - `GalleryCategorySeeder.php` + `GalleryPhotoSeeder.php`: categorias e fotos placeholder
+    - `BlogCategorySeeder.php` + `PostSeeder.php`: categorias e posts de exemplo
+    - `TestimonialSeeder.php`: 3-5 depoimentos de exemplo
+    - _Requisitos: 3.2_
+  - [ ] 23.4 Criar `database/seeders/DatabaseSeeder.php` orquestrando todos os seeders na ordem correta
+    - _Requisitos: 1.4_
+
+- [ ] 24. Testes property-based (todas as 13 propriedades)
+  - [ ] 24.1 Configurar framework PBT (eris ou PhpQuickCheck) no projeto
+    - Instalar via Composer como dependência de desenvolvimento
+    - Criar classe base `Tests/PropertyTestCase.php` com configuração de 100 iterações mínimas
+    - Definir formato de tag: `Feature: homemechanic-system, Property {N}: {texto}`
+    - _Requisitos: estratégia de testes do design_
+  - [ ] 24.2 Implementar testes de propriedade para Propriedades 1 e 2 (InstallerService)
+    - **Propriedade 1**: gerar subconjuntos aleatórios de extensões, verificar que `checkRequirements()` retorna exatamente as ausentes
+    - **Propriedade 2**: gerar credenciais aleatórias com senhas variadas, verificar que mensagem de erro não contém a senha
+    - **Valida: Requisitos 1.2, 1.5**
+  - [ ] 24.3 Implementar testes de propriedade para Propriedades 3 e 10 (Middlewares)
+    - **Propriedade 3**: gerar rotas `/install/*` aleatórias com `storage/installed` presente, verificar redirecionamento para `/`
+    - **Propriedade 10**: gerar IPs e listas de permitidos aleatórios, verificar lógica de bloqueio/liberação
+    - **Valida: Requisitos 1.7, 10.3**
+  - [ ] 24.4 Implementar testes de propriedade para Propriedades 4, 5 e 6 (Auth/Segurança)
+    - **Propriedade 4**: simular N ≥ 5 tentativas inválidas por IP, verificar HTTP 429 com tempo restante
+    - **Propriedade 5**: gerar strings com tags HTML/scripts aleatórios, verificar que `strip_tags(output) === output`
+    - **Propriedade 6**: gerar senhas aleatórias não vazias, verificar bcrypt custo 12 e round-trip
+    - **Valida: Requisitos 2.3, 2.5, 2.7, 14.1**
+  - [ ] 24.5 Implementar testes de propriedade para Propriedades 7 e 12 (HTTP/CSRF)
+    - **Propriedade 7**: iterar sobre rotas registradas, verificar presença dos 4 cabeçalhos de segurança
+    - **Propriedade 12**: enviar requisições AJAX com CSRF inválido, verificar HTTP 419 JSON sem dados de sessão
+    - **Valida: Requisitos 2.9, 14.6**
+  - [ ] 24.6 Implementar testes de propriedade para Propriedade 8 (Upload/MIME)
+    - **Propriedade 8**: gerar arquivos com MIMEs inválidos e tamanhos acima do limite, verificar rejeição HTTP 422
+    - **Valida: Requisitos 5.3, 5.4, 5.5, 14.4**
+  - [ ] 24.7 Implementar testes de propriedade para Propriedade 9 (SlugService)
+    - **Propriedade 9**: gerar sequências de N títulos (incluindo duplicatas), verificar N slugs distintos e URL-safe
+    - **Valida: Requisitos 7.3, 7.4**
+  - [ ] 24.8 Implementar testes de propriedade para Propriedades 11 e 13 (AuditLog/SMTP)
+    - **Propriedade 11**: executar ações CRUD aleatórias, verificar que cada uma gera registro em `audit_logs` com campos obrigatórios
+    - **Propriedade 13**: gerar senhas SMTP aleatórias, verificar que valor armazenado difere do original e `Crypt::decryptString()` retorna o original
+    - **Valida: Requisitos 14.3, 9.5**
+
+- [ ] 25. Checkpoint final — Garantir que todos os testes passam
+  - Executar suite completa de testes (unitários + propriedades). Verificar que nenhuma propriedade falha. Perguntar ao usuário se há ajustes finais antes de considerar o sistema completo.
+
+## Notas
+
+- Tarefas marcadas com `*` são opcionais e podem ser puladas para um MVP mais rápido
+- Cada tarefa referencia requisitos específicos para rastreabilidade
+- Os checkpoints garantem validação incremental a cada conjunto de módulos
+- Os testes de propriedade validam garantias universais de corretude definidas no design
+- Os testes unitários validam casos específicos e condições de borda
+- A ordem das tarefas garante que não há código órfão: cada módulo é integrado antes de avançar
