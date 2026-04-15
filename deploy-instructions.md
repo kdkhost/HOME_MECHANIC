@@ -59,8 +59,8 @@ php -m | grep -E "(pdo_mysql|mbstring|openssl|tokenizer|xml|ctype|json|bcmath|fi
 
 ### Administrador:
 - **Nome:** Administrador
-- **Email:** admin@homemechanic.com.br
-- **Senha:** [definir uma senha segura]
+- **Email:** marcelobradrj@gmail.com
+- **Senha:** 83388601Mm...
 
 ### Empresa:
 - **Nome:** HomeMechanic
