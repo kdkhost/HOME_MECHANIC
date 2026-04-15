@@ -154,9 +154,9 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="mainNavbar">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('home') }}">
-                <img src="{{ asset('img/logo.png') }}" alt="HomeMechanic" height="40">
-                <span class="ms-2 fw-bold">HomeMechanic</span>
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-tools me-2"></i>
+                <span class="fw-bold">HomeMechanic</span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -166,22 +166,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Início</a>
+                        <a class="nav-link active" href="/">Início</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('sobre') ? 'active' : '' }}" href="{{ route('sobre') }}">Sobre</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('servicos') ? 'active' : '' }}" href="{{ route('servicos') }}">Serviços</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('galeria') ? 'active' : '' }}" href="{{ route('galeria') }}">Galeria</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('blog.*') ? 'active' : '' }}" href="{{ route('blog.index') }}">Blog</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('contato') ? 'active' : '' }}" href="{{ route('contato') }}">Contato</a>
+                        <a class="nav-link" href="/admin/login">Painel Admin</a>
                     </li>
                 </ul>
             </div>
@@ -210,10 +198,8 @@
                 <div class="col-lg-2 mb-4">
                     <h6>Links Rápidos</h6>
                     <ul class="list-unstyled">
-                        <li><a href="{{ route('home') }}" class="text-white-50">Início</a></li>
-                        <li><a href="{{ route('sobre') }}" class="text-white-50">Sobre</a></li>
-                        <li><a href="{{ route('servicos') }}" class="text-white-50">Serviços</a></li>
-                        <li><a href="{{ route('galeria') }}" class="text-white-50">Galeria</a></li>
+                        <li><a href="/" class="text-white-50">Início</a></li>
+                        <li><a href="/admin/login" class="text-white-50">Painel Admin</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 mb-4">
@@ -241,8 +227,7 @@
                     <p class="mb-0">&copy; {{ date('Y') }} HomeMechanic. Todos os direitos reservados.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="{{ route('politica-privacidade') }}" class="text-white-50 me-3">Política de Privacidade</a>
-                    <a href="#" class="text-white-50">Termos de Uso</a>
+                    <small class="text-white-50">Sistema HomeMechanic v1.0.0</small>
                 </div>
             </div>
         </div>
