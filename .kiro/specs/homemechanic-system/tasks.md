@@ -79,63 +79,63 @@ Implementação completa do sistema homemechanic em Laravel 13 / PHP 8.4 com arq
     - **Valida: Requisito 2.9**
 
 - [ ] 4. Módulo Instalador automático
-  - [ ] 4.1 Implementar `app/Modules/Installer/Services/InstallerService.php`
+  - [x] 4.1 Implementar `app/Modules/Installer/Services/InstallerService.php`
     - Método `checkRequirements()`: verificar PHP 8.4+, extensões obrigatórias, `mod_rewrite`, permissões de escrita em `storage/` e `bootstrap/cache/`
     - Método `testDatabaseConnection(array $config)`: testar conexão PDO sem expor credenciais na mensagem de erro
     - Método `install(array $data)`: criar `.env`, executar `key:generate`, `migrate --seed`, criar `storage/installed`
     - _Requisitos: 1.2, 1.3, 1.4, 1.5, 1.6_
-  - [ ] 4.2 Implementar `app/Modules/Installer/Controllers/InstallerController.php`
+  - [x] 4.2 Implementar `app/Modules/Installer/Controllers/InstallerController.php`
     - `index()`: exibir página de verificação de requisitos
     - `create()`: exibir formulário de configuração (DB + admin + empresa)
     - `store(InstallRequest $request)`: processar instalação e redirecionar para `/admin/dashboard`
     - _Requisitos: 1.3, 1.4, 1.6_
-  - [ ] 4.3 Criar `app/Modules/Installer/Requests/InstallRequest.php` com validação dos campos do formulário
+  - [x] 4.3 Criar `app/Modules/Installer/Requests/InstallRequest.php` com validação dos campos do formulário
     - Validar: `db_host`, `db_port`, `db_name`, `db_user`, `admin_name`, `admin_email`, `admin_password`
     - _Requisitos: 1.3_
-  - [ ] 4.4 Criar views do instalador em `resources/views/modules/installer/`
+  - [x] 4.4 Criar views do instalador em `resources/views/modules/installer/`
     - `requirements.blade.php`: lista de requisitos com ícones de status (verde/vermelho)
     - `form.blade.php`: formulário em 3 seções (banco, admin, empresa) com validação inline
     - _Requisitos: 1.2, 1.3_
-  - [ ] 4.5 Criar `app/Modules/Installer/Routes/web.php` com rotas `/install` (GET) e `/install` (POST)
+  - [x] 4.5 Criar `app/Modules/Installer/Routes/web.php` com rotas `/install` (GET) e `/install` (POST)
     - _Requisitos: 1.1_
-  - [ ] 4.6 Escrever teste de propriedade para `InstallerService::checkRequirements()`
+  - [x] 4.6 Escrever teste de propriedade para `InstallerService::checkRequirements()`
     - **Propriedade 1: Verificação de Requisitos Reflete Estado Real**
     - **Valida: Requisito 1.2**
-  - [ ] 4.7 Escrever teste de propriedade para mensagem de erro de instalação
+  - [x] 4.7 Escrever teste de propriedade para mensagem de erro de instalação
     - **Propriedade 2: Mensagem de Erro de Instalação Não Expõe Credenciais**
     - **Valida: Requisito 1.5**
 
 - [ ] 5. Módulo Auth (autenticação e segurança)
-  - [ ] 5.1 Implementar `app/Modules/Auth/Controllers/AuthController.php`
+  - [x] 5.1 Implementar `app/Modules/Auth/Controllers/AuthController.php`
     - `showLogin()`: exibir página de login em duas colunas com animações CSS
     - `login(LoginRequest $request)`: sanitizar campos, autenticar via `Auth::attempt()`, regenerar sessão, redirecionar para dashboard
     - `logout()`: `Auth::logout()`, `Session::invalidate()`, `Session::regenerateToken()`, redirecionar para login
     - _Requisitos: 2.1, 2.2, 2.4, 2.5, 2.10_
-  - [ ] 5.2 Criar `app/Modules/Auth/Requests/LoginRequest.php`
+  - [x] 5.2 Criar `app/Modules/Auth/Requests/LoginRequest.php`
     - Validar `email` (required, email) e `password` (required, string)
     - Aplicar `strip_tags()` e `trim()` nos campos antes da validação
     - _Requisitos: 2.5_
-  - [ ] 5.3 Criar view `resources/views/modules/auth/login.blade.php`
+  - [x] 5.3 Criar view `resources/views/modules/auth/login.blade.php`
     - Layout em duas colunas: coluna esquerda com imagem/branding, coluna direita com formulário
     - Animações CSS de entrada, paleta laranja/preto/grafite
     - Exibir mensagem de bloqueio com tempo restante quando HTTP 429
     - _Requisitos: 2.1, 2.3_
-  - [ ] 5.4 Configurar rate limiting no `app/Modules/Auth/Routes/web.php`
+  - [x] 5.4 Configurar rate limiting no `app/Modules/Auth/Routes/web.php`
     - Aplicar `throttle:5,10` na rota POST `/admin/login`
     - Configurar resposta 429 com mensagem de tempo restante em português
     - Configurar timeout de sessão de 120 minutos em `config/session.php`
     - _Requisitos: 2.3, 2.6_
-  - [ ] 5.5 Escrever teste de propriedade para o Rate Limiter
+  - [x] 5.5 Escrever teste de propriedade para o Rate Limiter
     - **Propriedade 4: Rate Limiter Bloqueia Após N Tentativas Inválidas**
     - **Valida: Requisito 2.3**
-  - [ ] 5.6 Escrever teste de propriedade para hash de senha
+  - [x] 5.6 Escrever teste de propriedade para hash de senha
     - **Propriedade 6: Hash de Senha é Round-Trip Verificável com Custo 12**
     - **Valida: Requisito 2.7**
-  - [ ] 5.7 Escrever teste de propriedade para sanitização de entrada
+  - [x] 5.7 Escrever teste de propriedade para sanitização de entrada
     - **Propriedade 5: Sanitização Remove Todas as Tags HTML da Entrada**
     - **Valida: Requisitos 2.5, 14.1**
 
-- [ ] 6. Checkpoint — Verificar instalação, autenticação e middlewares
+- [x] 6. Checkpoint — Verificar instalação, autenticação e middlewares
   - Garantir que todos os testes passam, verificar fluxo completo de instalação → login → dashboard. Perguntar ao usuário se há dúvidas antes de continuar.
 
 - [ ] 7. Módulo Dashboard (AdminLTE 4)

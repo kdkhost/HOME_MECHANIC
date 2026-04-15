@@ -7,14 +7,10 @@
     
     <title>@yield('title', 'HomeMechanic - Painel Administrativo')</title>
     
-    <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/css/adminlte.min.css">
+    <!-- AdminLTE CSS via Vite -->
+    @vite(['resources/sass/admin-custom.scss', 'resources/js/admin.js'])
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <!-- Dropzone CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/dropzone@6/dist/dropzone.css" type="text/css" />
-    <!-- Custom Admin CSS -->
-    @vite(['resources/sass/admin-custom.scss'])
     
     @yield('styles')
 </head>
@@ -184,34 +180,11 @@
         </footer>
     </div>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- Bootstrap 4 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/js/adminlte.min.js"></script>
-    
-    <!-- Toastify -->
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Dropzone -->
-    <script src="https://unpkg.com/dropzone@6/dist/dropzone-min.js"></script>
-    
+    <!-- Scripts are loaded via Vite in the head section -->
     <script>
-        // Ocultar preloader quando a página carregar
-        window.addEventListener('load', function() {
-            const preloader = document.getElementById('preloader');
-            if (preloader) {
-                preloader.style.display = 'none';
-            }
-        });
-
-        // Configurar CSRF token para requisições AJAX
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
+        // Additional admin-specific JavaScript can go here
+        document.addEventListener('DOMContentLoaded', function() {
+            // Any additional initialization code
         });
     </script>
     

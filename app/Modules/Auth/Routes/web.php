@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')->name('admin.')->group(function () {
     // Login
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login')
+    Route::post('/login', [AuthController::class, 'login'])->name('login.submit')
         ->middleware('throttle:5,10'); // 5 tentativas por 10 minutos
     
     // Logout (precisa estar autenticado)

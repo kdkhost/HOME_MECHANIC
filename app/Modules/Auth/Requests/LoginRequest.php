@@ -91,8 +91,14 @@ class LoginRequest extends FormRequest
             
             if (RateLimiter::tooManyAttempts($key, 5)) {
                 $seconds = RateLimiter::availableIn($key);
+                $minutes = ceil($seconds / 60);
+                
+                $timeMessage = $minutes > 1 
+                    ? "Tente novamente em {$minutes} minutos" 
+                    : "Tente novamente em {$seconds} segundos";
+                
                 $validator->errors()->add('email', 
-                    "Muitas tentativas de login. Tente novamente em {$seconds} segundos."
+                    "Muitas tentativas de login. {$timeMessage}."
                 );
             }
         });

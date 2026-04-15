@@ -35,6 +35,7 @@ class AuthController extends Controller
         
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
+            $minutes = ceil($seconds / 60);
             
             Log::warning('Login rate limit exceeded', [
                 'ip' => $request->ip(),
@@ -42,10 +43,16 @@ class AuthController extends Controller
                 'user_agent' => $request->userAgent()
             ]);
 
+            // Formatação da mensagem em português com tempo restante
+            $timeMessage = $minutes > 1 
+                ? "Tente novamente em {$minutes} minutos" 
+                : "Tente novamente em {$seconds} segundos";
+
             return response()->json([
                 'success' => false,
-                'message' => "Muitas tentativas de login. Tente novamente em {$seconds} segundos.",
-                'retry_after' => $seconds
+                'message' => "Muitas tentativas de login. {$timeMessage}.",
+                'retry_after' => $seconds,
+                'retry_after_minutes' => $minutes
             ], 429);
         }
 
@@ -175,13 +182,19 @@ class AuthController extends Controller
         
         if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
             $retryAfter = RateLimiter::availableIn($key);
+            $minutes = ceil($retryAfter / 60);
+            
+            $timeMessage = $minutes > 1 
+                ? "Bloqueado por {$minutes} minutos" 
+                : "Bloqueado por {$retryAfter} segundos";
             
             return response()->json([
                 'blocked' => true,
                 'attempts' => $attempts,
                 'max_attempts' => $maxAttempts,
                 'retry_after' => $retryAfter,
-                'message' => "Bloqueado por {$retryAfter} segundos devido a muitas tentativas."
+                'retry_after_minutes' => $minutes,
+                'message' => "{$timeMessage} devido a muitas tentativas de login."
             ]);
         }
 
@@ -189,7 +202,10 @@ class AuthController extends Controller
             'blocked' => false,
             'attempts' => $attempts,
             'max_attempts' => $maxAttempts,
-            'attempts_left' => $maxAttempts - $attempts
+            'attempts_left' => $maxAttempts - $attempts,
+            'message' => $attempts > 0 
+                ? "Tentativas restantes: " . ($maxAttempts - $attempts) 
+                : "Nenhuma tentativa de login registrada."
         ]);
     }
 

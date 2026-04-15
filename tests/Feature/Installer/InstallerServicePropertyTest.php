@@ -26,25 +26,25 @@ class InstallerServicePropertyTest extends PropertyTestCase
     public function testProperty1_RequirementsCheckReflectsActualState()
     {
         $this->forAll(
-            // Gerar subconjunto aleatório de extensões para simular
-            Generator\choose(1, 5)->map(function ($count) {
-                $allExtensions = ['pdo', 'pdo_mysql', 'mbstring', 'openssl', 'tokenizer', 'xml', 'ctype', 'json', 'bcmath', 'fileinfo', 'gd'];
-                $selectedExtensions = [];
-                
-                for ($i = 0; $i < $count; $i++) {
-                    $extension = Generator\elements($allExtensions)->realize();
-                    if (!in_array($extension, $selectedExtensions)) {
-                        $selectedExtensions[] = $extension;
-                    }
+            // Gerar número de extensões para testar
+            Generator\choose(1, 5)
+        )->then(function ($count) {
+            $allExtensions = ['pdo', 'pdo_mysql', 'mbstring', 'openssl', 'tokenizer', 'xml', 'ctype', 'json', 'bcmath', 'fileinfo', 'gd'];
+            
+            // Selecionar extensões aleatórias para verificar
+            $selectedExtensions = [];
+            for ($i = 0; $i < $count; $i++) {
+                $randomIndex = array_rand($allExtensions);
+                $extension = $allExtensions[$randomIndex];
+                if (!in_array($extension, $selectedExtensions)) {
+                    $selectedExtensions[] = $extension;
                 }
-                
-                return $selectedExtensions;
-            })
-        )->then(function ($extensionsToCheck) {
+            }
+            
             $requirements = $this->installerService->checkRequirements();
             
             // Verificar que cada extensão testada tem status correto
-            foreach ($extensionsToCheck as $extension) {
+            foreach ($selectedExtensions as $extension) {
                 if (isset($requirements['extensions'][$extension])) {
                     $expectedStatus = extension_loaded($extension);
                     $actualStatus = $requirements['extensions'][$extension]['status'];
@@ -90,9 +90,9 @@ class InstallerServicePropertyTest extends PropertyTestCase
             Generator\associative([
                 'host' => Generator\elements(['localhost', '127.0.0.1', 'invalid-host', 'db.example.com']),
                 'port' => Generator\choose(1000, 9999),
-                'database' => Generator\string()->map(function($str) { return 'db_' . substr(md5($str), 0, 8); }),
-                'username' => Generator\string()->map(function($str) { return 'user_' . substr(md5($str), 0, 6); }),
-                'password' => Generator\string()->map(function($str) { return 'pass_' . $str . '_secret'; })
+                'database' => Generator\elements(['test_db', 'invalid_db', 'db_test', 'random_database']),
+                'username' => Generator\elements(['root', 'admin', 'user123', 'test_user', 'invalid_user']),
+                'password' => Generator\elements(['password123', 'secret_pass', 'admin123', 'test_password', 'super_secret'])
             ])
         )->then(function ($dbConfig) {
             // Testar conexão (que deve falhar com dados aleatórios)

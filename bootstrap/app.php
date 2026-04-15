@@ -18,5 +18,26 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Configurar resposta personalizada para rate limiting (HTTP 429)
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, $request) {
+            if ($request->expectsJson()) {
+                $retryAfter = $e->getHeaders()['Retry-After'] ?? 0;
+                $minutes = ceil($retryAfter / 60);
+                
+                $timeMessage = $minutes > 1 
+                    ? "Tente novamente em {$minutes} minutos" 
+                    : "Tente novamente em {$retryAfter} segundos";
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => "Muitas tentativas de login. {$timeMessage}.",
+                    'retry_after' => $retryAfter,
+                    'retry_after_minutes' => $minutes
+                ], 429);
+            }
+            
+            return response()->view('errors.429', [
+                'retry_after' => $e->getHeaders()['Retry-After'] ?? 0
+            ], 429);
+        });
     })->create();
