@@ -346,6 +346,23 @@ async function startInstallation() {
     
     console.log('Iniciando processo de instalação...');
     
+    // DEBUG: Primeiro enviar para debug-install.php para ver o que está sendo enviado
+    try {
+        const debugResponse = await fetch('/debug-install.php', {
+            method: 'POST',
+            body: formData
+        });
+        const debugData = await debugResponse.json();
+        console.log('DEBUG - Dados sendo enviados:', debugData);
+        
+        if (!debugData.success) {
+            console.error('DEBUG - Campos faltando:', debugData.missing_fields);
+            throw new Error(`Campos obrigatórios faltando: ${debugData.missing_fields.join(', ')}`);
+        }
+    } catch (debugError) {
+        console.error('Erro no debug:', debugError);
+    }
+    
     // Executar instalação
     await performInstallation(formData);
 }
