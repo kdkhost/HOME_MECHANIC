@@ -16,9 +16,16 @@ class CheckInstalled
     public function handle(Request $request, Closure $next): Response
     {
         try {
+            // Verificar se é rota de instalação primeiro (para evitar loops)
+            $isInstallRoute = $request->is('install*') || 
+                             $request->is('test-*') || 
+                             $request->is('debug-*') ||
+                             $request->is('check-*') ||
+                             $request->is('simple-*');
+            
+            // Verificar se sistema está instalado
             $installedFile = storage_path('installed');
             $isInstalled = file_exists($installedFile);
-            $isInstallRoute = $request->is('install*');
             
             // Se não está instalado E não é rota de instalação → redirecionar para instalação
             if (!$isInstalled && !$isInstallRoute) {
@@ -26,16 +33,23 @@ class CheckInstalled
             }
             
             // Se está instalado E é rota de instalação → redirecionar para home
-            if ($isInstalled && $isInstallRoute) {
+            if ($isInstalled && $isInstallRoute && !$request->is('test-*') && !$request->is('debug-*')) {
                 return redirect('/');
             }
             
             return $next($request);
         } catch (\Exception $e) {
-            // Se houver qualquer erro (ex: .env não existe), redirecionar para instalação
-            if (!$request->is('install*')) {
+            // Se houver qualquer erro (ex: .env inválido, banco não conecta)
+            // E não é rota de instalação, redirecionar para instalação
+            if (!$request->is('install*') && 
+                !$request->is('test-*') && 
+                !$request->is('debug-*') &&
+                !$request->is('check-*') &&
+                !$request->is('simple-*')) {
                 return redirect('/install');
             }
+            
+            // Se já está em rota de instalação, deixar passar
             return $next($request);
         }
     }

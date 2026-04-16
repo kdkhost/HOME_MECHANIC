@@ -873,6 +873,24 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
     }
 
     /**
+     * Verificar se está usando .env temporário do instalador
+     */
+    public function isUsingTemporaryEnv(): bool
+    {
+        try {
+            $envPath = base_path('.env');
+            if (!File::exists($envPath)) {
+                return false;
+            }
+            
+            $envContent = File::get($envPath);
+            return strpos($envContent, 'ARQUIVO TEMPORÁRIO PARA INSTALAÇÃO') !== false;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
      * Obter informações da instalação
      */
     public function getInstallationInfo(): ?array
