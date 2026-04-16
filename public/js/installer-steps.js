@@ -146,21 +146,43 @@ async function testDatabase() {
         formData.append('db_user', document.getElementById('db_user').value);
         formData.append('db_password', document.getElementById('db_password').value);
         
-        const response = await fetch('/install/test-database', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
+        console.log('Testando conexão com banco de dados...');
+        
+        // Tentar primeiro a rota do Laravel
+        let response;
+        try {
+            response = await fetch('/install/test-database', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            console.log('Resposta da rota Laravel:', response.status);
+        } catch (error) {
+            console.warn('Erro na rota Laravel, tentando rota direta...', error);
+            
+            // Fallback: usar teste direto sem Laravel
+            response = await fetch('/test-database-direct.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            console.log('Resposta da rota direta:', response.status);
+        }
         
         const data = await response.json();
+        console.log('Dados da resposta:', data);
         
         if (data.success) {
             Swal.fire({
                 icon: 'success',
                 title: 'Conexão Bem-sucedida!',
-                text: data.message,
+                html: `
+                    <p>${data.message}</p>
+                    ${data.version ? `<p><small>MySQL ${data.version}</small></p>` : ''}
+                `,
                 confirmButtonColor: '#FF6B00'
             });
         } else {
@@ -172,6 +194,7 @@ async function testDatabase() {
             });
         }
     } catch (error) {
+        console.error('Erro ao testar conexão:', error);
         Swal.fire({
             icon: 'error',
             title: 'Erro',
