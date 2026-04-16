@@ -61,6 +61,26 @@ class InstallerController extends Controller
     }
 
     /**
+     * Exibir formulário de configuração com debug
+     */
+    public function createDebug()
+    {
+        // Verificar se já está instalado
+        if ($this->installerService->isInstalled()) {
+            return redirect('/')->with('info', 'Sistema já está instalado.');
+        }
+
+        // Verificar requisitos novamente
+        $requirements = $this->installerService->checkRequirements();
+        if (!$this->checkAllRequirements($requirements)) {
+            return redirect()->route('installer.index')
+                ->with('error', 'Alguns requisitos não foram atendidos. Corrija-os antes de continuar.');
+        }
+
+        return view('modules.installer.form-debug');
+    }
+
+    /**
      * Processar instalação
      */
     public function store(InstallRequest $request)
