@@ -190,8 +190,13 @@ class InstallerController extends Controller
             }
         }
 
-        // Verificar mod_rewrite
-        if (!$requirements['mod_rewrite']['status']) {
+        // Verificar URL rewrite (mod_rewrite ou LiteSpeed)
+        if (isset($requirements['url_rewrite']) && !$requirements['url_rewrite']['status']) {
+            return false;
+        }
+
+        // Verificar servidor web
+        if (isset($requirements['web_server']) && !$requirements['web_server']['status']) {
             return false;
         }
 
