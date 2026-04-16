@@ -10,5 +10,6 @@ Route::prefix('install')->name('installer.')->group(function () {
     Route::get('/debug', [InstallerController::class, 'createDebug'])->name('create-debug');
     Route::post('/instalar', [InstallerController::class, 'store'])->name('store');
     Route::post('/testar-banco', [InstallerController::class, 'testDatabase'])->name('test-database');
+    Route::post('/test-database', [InstallerController::class, 'testDatabase'])->name('test-database-en'); // Rota alternativa em inglês
     Route::post('/', [InstallerController::class, 'store']); // Rota alternativa para POST em /install
 });
