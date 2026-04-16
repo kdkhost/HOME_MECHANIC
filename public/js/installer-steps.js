@@ -186,10 +186,103 @@ async function testDatabase() {
 
 // Iniciar instalação
 async function startInstallation() {
+    // Validar todos os steps antes de iniciar
+    console.log('Validando dados antes da instalação...');
+    
+    // Validar Step 1: Banco de Dados
+    const dbHost = document.getElementById('db_host').value;
+    const dbName = document.getElementById('db_name').value;
+    const dbUser = document.getElementById('db_user').value;
+    
+    if (!dbHost || !dbName || !dbUser) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Dados Incompletos',
+            text: 'Por favor, preencha todos os dados do banco de dados no Step 1.',
+            confirmButtonColor: '#FF6B00'
+        });
+        // Voltar para step 1
+        currentStep = 1;
+        updateStepsUI();
+        showStepContent(1);
+        return;
+    }
+    
+    // Validar Step 2: Administrador
+    const adminName = document.getElementById('admin_name').value;
+    const adminEmail = document.getElementById('admin_email').value;
+    const adminPassword = document.getElementById('admin_password').value;
+    const adminPasswordConf = document.getElementById('admin_password_confirmation').value;
+    
+    if (!adminName || !adminEmail || !adminPassword || !adminPasswordConf) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Dados Incompletos',
+            text: 'Por favor, preencha todos os dados do administrador no Step 2.',
+            confirmButtonColor: '#FF6B00'
+        });
+        // Voltar para step 2
+        currentStep = 2;
+        updateStepsUI();
+        showStepContent(2);
+        return;
+    }
+    
+    if (adminPassword.length < 8) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Senha Inválida',
+            text: 'A senha deve ter no mínimo 8 caracteres.',
+            confirmButtonColor: '#FF6B00'
+        });
+        currentStep = 2;
+        updateStepsUI();
+        showStepContent(2);
+        return;
+    }
+    
+    if (adminPassword !== adminPasswordConf) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Senhas não conferem',
+            text: 'A senha e confirmação devem ser iguais.',
+            confirmButtonColor: '#FF6B00'
+        });
+        currentStep = 2;
+        updateStepsUI();
+        showStepContent(2);
+        return;
+    }
+    
+    // Validar Step 3: Empresa
+    const companyName = document.getElementById('company_name').value;
+    
+    if (!companyName) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Dados Incompletos',
+            text: 'Por favor, preencha o nome da empresa no Step 3.',
+            confirmButtonColor: '#FF6B00'
+        });
+        currentStep = 3;
+        updateStepsUI();
+        showStepContent(3);
+        return;
+    }
+    
+    console.log('Todos os dados validados com sucesso!');
+    
     // Confirmar instalação
     const result = await Swal.fire({
         title: 'Confirmar Instalação',
-        text: 'Tem certeza que deseja instalar o sistema com essas configurações?',
+        html: `
+            <div style="text-align: left; margin: 20px 0;">
+                <p><strong>Banco de Dados:</strong> ${dbName} @ ${dbHost}</p>
+                <p><strong>Administrador:</strong> ${adminName} (${adminEmail})</p>
+                <p><strong>Empresa:</strong> ${companyName}</p>
+            </div>
+            <p style="color: #dc3545; font-weight: bold;">Esta ação não pode ser desfeita!</p>
+        `,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#FF6B00',
@@ -208,24 +301,26 @@ async function startInstallation() {
     // Coletar dados do formulário
     const formData = new FormData();
     formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-    formData.append('db_host', document.getElementById('db_host').value);
+    formData.append('db_host', dbHost);
     formData.append('db_port', document.getElementById('db_port').value);
-    formData.append('db_name', document.getElementById('db_name').value);
-    formData.append('db_user', document.getElementById('db_user').value);
+    formData.append('db_name', dbName);
+    formData.append('db_user', dbUser);
     formData.append('db_password', document.getElementById('db_password').value);
-    formData.append('admin_name', document.getElementById('admin_name').value);
-    formData.append('admin_email', document.getElementById('admin_email').value);
-    formData.append('admin_password', document.getElementById('admin_password').value);
-    formData.append('admin_password_confirmation', document.getElementById('admin_password_confirmation').value);
-    formData.append('company_name', document.getElementById('company_name').value);
+    formData.append('admin_name', adminName);
+    formData.append('admin_email', adminEmail);
+    formData.append('admin_password', adminPassword);
+    formData.append('admin_password_confirmation', adminPasswordConf);
+    formData.append('company_name', companyName);
     formData.append('company_description', document.getElementById('company_description').value);
     formData.append('system_url', document.getElementById('system_url').value);
     
     // Guardar dados para exibir depois
     installationData = {
-        email: document.getElementById('admin_email').value,
-        password: document.getElementById('admin_password').value
+        email: adminEmail,
+        password: adminPassword
     };
+    
+    console.log('Iniciando processo de instalação...');
     
     // Executar instalação
     await performInstallation(formData);
@@ -263,6 +358,17 @@ async function performInstallation(formData) {
     });
     
     try {
+        console.log('Enviando requisição de instalação...');
+        
+        // Log dos dados sendo enviados (sem senhas)
+        const debugData = {};
+        for (let [key, value] of formData.entries()) {
+            if (!key.includes('password')) {
+                debugData[key] = value;
+            }
+        }
+        console.log('Dados enviados:', debugData);
+        
         // Enviar requisição de instalação
         const response = await fetch('/install', {
             method: 'POST',
@@ -272,9 +378,22 @@ async function performInstallation(formData) {
             }
         });
         
+        console.log('Resposta recebida:', response.status, response.statusText);
+        
+        // Verificar se a resposta é JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const textResponse = await response.text();
+            console.error('Resposta não é JSON:', textResponse);
+            throw new Error('Resposta do servidor não é JSON. Verifique os logs do servidor.');
+        }
+        
         const data = await response.json();
+        console.log('Dados da resposta:', data);
         
         if (data.success) {
+            console.log('Instalação concluída com sucesso!');
+            
             // Marcar todos os steps como concluídos
             steps.forEach(step => {
                 const stepEl = document.getElementById(`step-${step.id}`);
@@ -289,22 +408,32 @@ async function performInstallation(formData) {
             // Ir para step final
             showSuccessScreen();
         } else {
+            console.error('Instalação falhou:', data);
             throw new Error(data.message || 'Erro durante a instalação');
         }
     } catch (error) {
+        console.error('Erro capturado:', error);
+        
         // Marcar como erro
         progressContainer.innerHTML += `
             <div class="progress-step error">
                 <strong><i class="bi bi-x-circle me-2"></i>Erro na Instalação</strong>
                 <div class="text-danger">${error.message}</div>
+                ${error.stack ? `<details style="margin-top: 10px;"><summary>Detalhes técnicos</summary><pre style="font-size: 11px;">${error.stack}</pre></details>` : ''}
             </div>
         `;
         
         Swal.fire({
             icon: 'error',
             title: 'Erro na Instalação',
-            text: error.message,
-            confirmButtonColor: '#FF6B00'
+            html: `
+                <p>${error.message}</p>
+                <p style="font-size: 12px; color: #6c757d; margin-top: 15px;">
+                    Verifique o console do navegador (F12) para mais detalhes.
+                </p>
+            `,
+            confirmButtonColor: '#FF6B00',
+            footer: '<a href="/fix-env-key.php">Tentar corrigir problemas</a>'
         });
     }
 }
