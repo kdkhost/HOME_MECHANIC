@@ -482,6 +482,13 @@ class InstallerService
      */
     private function createEnvFile(array $data): void
     {
+        // Remover .env temporário se existir (criado pelo index.php)
+        $envPath = base_path('.env');
+        if (File::exists($envPath)) {
+            File::delete($envPath);
+            $this->safeLog('info', 'Arquivo .env temporário removido');
+        }
+
         $envContent = "APP_NAME=\"{$data['company']['name']}\"
 APP_ENV=production
 APP_KEY=
