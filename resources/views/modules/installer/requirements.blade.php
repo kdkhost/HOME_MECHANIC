@@ -615,7 +615,7 @@
                 <!-- Actions -->
                 <div class="action-buttons">
                     @if($allRequirementsMet)
-                        <a href="{{ route('installer.create') }}" class="btn-installer">
+                        <a href="{{ route('installer.create-steps') }}" class="btn-installer">
                             <i class="bi bi-arrow-right me-2"></i>
                             Continuar para Configuração
                         </a>
