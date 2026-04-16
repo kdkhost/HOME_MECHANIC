@@ -7,12 +7,27 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use PDO;
 use PDOException;
 
 class InstallerService
 {
+    /**
+     * Helper para logging que funciona mesmo quando Laravel não está totalmente carregado
+     */
+    private function safeLog(string $level, string $message, array $context = []): void
+    {
+        try {
+            // Tentar usar o Log do Laravel
+            Log::{$level}($message, $context);
+        } catch (Exception $e) {
+            // Se falhar, usar error_log nativo do PHP
+            $contextStr = !empty($context) ? ' - Context: ' . json_encode($context) : '';
+            error_log("HomeMechanic [{$level}] {$message}{$contextStr}");
+        }
+    }
     /**
      * Verificar requisitos do sistema
      */
@@ -104,6 +119,17 @@ class InstallerService
     public function testDatabaseConnection(array $config): array
     {
         try {
+            // Validar parâmetros obrigatórios
+            $requiredKeys = ['host', 'port', 'database', 'username', 'password'];
+            foreach ($requiredKeys as $key) {
+                if (!isset($config[$key])) {
+                    return [
+                        'success' => false,
+                        'message' => "Parâmetro '{$key}' não fornecido na configuração do banco."
+                    ];
+                }
+            }
+
             $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
             
             $pdo = new PDO($dsn, $config['username'], $config['password'], [
@@ -124,17 +150,22 @@ class InstallerService
             // Não expor credenciais na mensagem de erro
             $safeMessage = 'Erro na conexão com banco de dados. Verifique as configurações.';
             
-            // Log detalhado para debug (sem credenciais)
-            \Log::error('Database connection failed', [
-                'host' => $config['host'],
-                'port' => $config['port'],
-                'database' => $config['database'],
+            // Log detalhado para debug (sem credenciais) - usando safeLog
+            $this->safeLog('error', 'Database connection failed', [
+                'host' => $config['host'] ?? 'N/A',
+                'port' => $config['port'] ?? 'N/A',
+                'database' => $config['database'] ?? 'N/A',
                 'error' => $e->getMessage()
             ]);
 
             return [
                 'success' => false,
                 'message' => $safeMessage
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Erro inesperado ao testar conexão: ' . $e->getMessage()
             ];
         }
     }
@@ -145,60 +176,60 @@ class InstallerService
     public function install(array $data): array
     {
         try {
-            \Log::info('Iniciando instalação do HomeMechanic', [
+            $this->safeLog('info', 'Iniciando instalação do HomeMechanic', [
                 'admin_email' => $data['admin']['email'],
                 'company_name' => $data['company']['name'] ?? 'HomeMechanic'
             ]);
 
             // 1. Detectar URL automaticamente se não fornecida
-            \Log::info('Etapa 1: Preparando dados de instalação');
+            $this->safeLog('info', 'Etapa 1: Preparando dados de instalação');
             $data = $this->prepareInstallationData($data);
 
             // 2. Criar arquivo .env
-            \Log::info('Etapa 2: Criando arquivo .env');
+            $this->safeLog('info', 'Etapa 2: Criando arquivo .env');
             $this->createEnvFile($data);
 
             // 3. Limpar caches antes de gerar chave
-            \Log::info('Etapa 3: Limpando caches');
+            $this->safeLog('info', 'Etapa 3: Limpando caches');
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
 
             // 4. Gerar chave da aplicação
-            \Log::info('Etapa 4: Gerando APP_KEY');
+            $this->safeLog('info', 'Etapa 4: Gerando APP_KEY');
             $keyResult = Artisan::call('key:generate', ['--force' => true]);
             if ($keyResult !== 0) {
                 throw new \Exception('Falha ao gerar APP_KEY');
             }
 
             // 5. Recarregar configuração após gerar chave
-            \Log::info('Etapa 5: Recarregando configuração');
+            $this->safeLog('info', 'Etapa 5: Recarregando configuração');
             Artisan::call('config:cache');
 
             // 6. Executar migrations
-            \Log::info('Etapa 6: Executando migrations');
+            $this->safeLog('info', 'Etapa 6: Executando migrations');
             $migrateResult = Artisan::call('migrate', ['--force' => true]);
             if ($migrateResult !== 0) {
                 throw new \Exception('Falha ao executar migrations');
             }
 
             // 7. Executar seeders básicos
-            \Log::info('Etapa 7: Executando seeders básicos');
+            $this->safeLog('info', 'Etapa 7: Executando seeders básicos');
             $this->runBasicSeeders($data);
 
             // 8. Criar usuário superadmin
-            \Log::info('Etapa 8: Criando usuário superadmin');
+            $this->safeLog('info', 'Etapa 8: Criando usuário superadmin');
             $this->createSuperAdminUser($data);
 
             // 9. Criar arquivo de instalação concluída
-            \Log::info('Etapa 9: Criando arquivo de instalação concluída');
+            $this->safeLog('info', 'Etapa 9: Criando arquivo de instalação concluída');
             $this->createInstalledFile($data);
 
             // 10. Otimizar aplicação
-            \Log::info('Etapa 10: Otimizando aplicação');
+            $this->safeLog('info', 'Etapa 10: Otimizando aplicação');
             Artisan::call('config:cache');
             Artisan::call('route:cache');
 
-            \Log::info('Instalação concluída com sucesso', [
+            $this->safeLog('info', 'Instalação concluída com sucesso', [
                 'admin_url' => $data['system']['url'] . '/admin/login',
                 'admin_email' => $data['admin']['email']
             ]);
@@ -212,7 +243,7 @@ class InstallerService
 
         } catch (\Exception $e) {
             // Log detalhado do erro
-            \Log::error('Falha na instalação', [
+            $this->safeLog('error', 'Falha na instalação', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -526,7 +557,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
     private function runBasicSeeders(array $data): void
     {
         try {
-            \Log::info('Iniciando seeders básicos');
+            $this->safeLog('info', 'Iniciando seeders básicos');
 
             // Configurações básicas do sistema
             $settings = [
@@ -547,7 +578,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                 'smtp_from_name' => $data['company']['name'],
             ];
 
-            \Log::info('Inserindo configurações básicas', ['count' => count($settings)]);
+            $this->safeLog('info', 'Inserindo configurações básicas', ['count' => count($settings)]);
 
             // Verificar se tabela settings existe
             if (!Schema::hasTable('settings')) {
@@ -567,7 +598,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                         'updated_at' => now()
                     ]);
                 } catch (\Exception $e) {
-                    \Log::error('Erro ao inserir configuração', [
+                    $this->safeLog('error', 'Erro ao inserir configuração', [
                         'key' => $key,
                         'value' => $value,
                         'error' => $e->getMessage()
@@ -576,7 +607,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                 }
             }
 
-            \Log::info('Configurações básicas inseridas com sucesso');
+            $this->safeLog('info', 'Configurações básicas inseridas com sucesso');
 
             // Verificar se tabela maintenance_ips existe
             if (!Schema::hasTable('maintenance_ips')) {
@@ -588,7 +619,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
 
             // Adicionar IP do instalador à lista de IPs permitidos durante manutenção
             $installerIp = request()->ip();
-            \Log::info('Adicionando IPs de manutenção', ['installer_ip' => $installerIp]);
+            $this->safeLog('info', 'Adicionando IPs de manutenção', ['installer_ip' => $installerIp]);
 
             if ($installerIp && $installerIp !== '127.0.0.1') {
                 try {
@@ -600,7 +631,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                         'updated_at' => now()
                     ]);
                 } catch (\Exception $e) {
-                    \Log::warning('Erro ao inserir IP do instalador (não crítico)', [
+                    $this->safeLog('warning', 'Erro ao inserir IP do instalador (não crítico)', [
                         'ip' => $installerIp,
                         'error' => $e->getMessage()
                     ]);
@@ -617,13 +648,13 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                     'updated_at' => now()
                 ]);
             } catch (\Exception $e) {
-                \Log::warning('Erro ao inserir localhost (não crítico)', ['error' => $e->getMessage()]);
+                $this->safeLog('warning', 'Erro ao inserir localhost (não crítico)', ['error' => $e->getMessage()]);
             }
 
-            \Log::info('IPs de manutenção adicionados com sucesso');
+            $this->safeLog('info', 'IPs de manutenção adicionados com sucesso');
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao executar seeders básicos', [
+            $this->safeLog('error', 'Erro ao executar seeders básicos', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
@@ -654,7 +685,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
     private function createSuperAdminUser(array $data): void
     {
         try {
-            \Log::info('Iniciando criação do usuário superadmin', [
+            $this->safeLog('info', 'Iniciando criação do usuário superadmin', [
                 'name' => $data['admin']['name'],
                 'email' => $data['admin']['email']
             ]);
@@ -662,7 +693,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
             // Verificar se usuário já existe
             $existingUser = DB::table('users')->where('email', $data['admin']['email'])->first();
             if ($existingUser) {
-                \Log::warning('Usuário com este email já existe', ['email' => $data['admin']['email']]);
+                $this->safeLog('warning', 'Usuário com este email já existe', ['email' => $data['admin']['email']]);
                 throw new \Exception('Já existe um usuário com este email: ' . $data['admin']['email']);
             }
 
@@ -681,7 +712,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                 throw new \Exception('Senha do administrador deve ter pelo menos 8 caracteres');
             }
 
-            \Log::info('Dados do admin validados, criando usuário');
+            $this->safeLog('info', 'Dados do admin validados, criando usuário');
 
             // Criar usuário
             $userId = DB::table('users')->insertGetId([
@@ -698,7 +729,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                 throw new \Exception('Falha ao inserir usuário na base de dados');
             }
 
-            \Log::info('Usuário criado com sucesso', ['user_id' => $userId]);
+            $this->safeLog('info', 'Usuário criado com sucesso', ['user_id' => $userId]);
 
             // Registrar criação do usuário no audit log
             try {
@@ -719,13 +750,13 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                     'created_at' => now()
                 ]);
 
-                \Log::info('Audit log criado para usuário superadmin');
+                $this->safeLog('info', 'Audit log criado para usuário superadmin');
             } catch (\Exception $e) {
-                \Log::warning('Falha ao criar audit log (não crítico)', ['error' => $e->getMessage()]);
+                $this->safeLog('warning', 'Falha ao criar audit log (não crítico)', ['error' => $e->getMessage()]);
                 // Não falhar a instalação por causa do audit log
             }
 
-            \Log::info('Usuário superadmin criado durante instalação', [
+            $this->safeLog('info', 'Usuário superadmin criado durante instalação', [
                 'user_id' => $userId,
                 'name' => $data['admin']['name'],
                 'email' => $data['admin']['email'],
@@ -733,7 +764,7 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao criar usuário superadmin', [
+            $this->safeLog('error', 'Erro ao criar usuário superadmin', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -777,20 +808,20 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
     private function cleanup(): void
     {
         try {
-            \Log::info('Iniciando limpeza após erro na instalação');
+            $this->safeLog('info', 'Iniciando limpeza após erro na instalação');
 
             // Remover .env se foi criado
             $envPath = base_path('.env');
             if (File::exists($envPath)) {
                 File::delete($envPath);
-                \Log::info('Arquivo .env removido');
+                $this->safeLog('info', 'Arquivo .env removido');
             }
 
             // Remover arquivo de instalação se existe
             $installedPath = storage_path('installed');
             if (File::exists($installedPath)) {
                 File::delete($installedPath);
-                \Log::info('Arquivo installed removido');
+                $this->safeLog('info', 'Arquivo installed removido');
             }
 
             // Limpar caches
@@ -799,9 +830,9 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                 Artisan::call('route:clear');
                 Artisan::call('cache:clear');
                 Artisan::call('view:clear');
-                \Log::info('Caches limpos');
+                $this->safeLog('info', 'Caches limpos');
             } catch (\Exception $e) {
-                \Log::warning('Erro ao limpar caches durante cleanup', ['error' => $e->getMessage()]);
+                $this->safeLog('warning', 'Erro ao limpar caches durante cleanup', ['error' => $e->getMessage()]);
             }
 
             // Tentar fazer rollback das migrations (se possível)
@@ -813,16 +844,16 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                 
                 if (strpos($status, 'Ran') !== false) {
                     Artisan::call('migrate:rollback', ['--force' => true]);
-                    \Log::info('Rollback de migrations executado');
+                    $this->safeLog('info', 'Rollback de migrations executado');
                 }
             } catch (\Exception $e) {
-                \Log::warning('Erro ao fazer rollback das migrations', ['error' => $e->getMessage()]);
+                $this->safeLog('warning', 'Erro ao fazer rollback das migrations', ['error' => $e->getMessage()]);
             }
 
-            \Log::info('Limpeza concluída');
+            $this->safeLog('info', 'Limpeza concluída');
 
         } catch (\Exception $e) {
-            \Log::error('Erro durante limpeza', ['error' => $e->getMessage()]);
+            $this->safeLog('error', 'Erro durante limpeza', ['error' => $e->getMessage()]);
         }
     }
 
