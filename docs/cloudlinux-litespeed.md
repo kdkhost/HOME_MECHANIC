@@ -2,7 +2,15 @@
 
 ## 🌟 Configuração Otimizada
 
-O HomeMechanic System foi especialmente otimizado para funcionar perfeitamente em ambientes **CloudLinux + LiteSpeed + Imunify360**, oferecendo máxima performance, segurança e estabilidade.
+O HomeMechanic System foi especialmente otimizado para funcionar perfeitamente em ambientes **CloudLinux + LiteSpeed + Imunify360** com **PHP 8.4.x**, oferecendo máxima performance, segurança e estabilidade.
+
+## ⚠️ Requisitos Específicos de Versão
+
+### PHP 8.4.x (OBRIGATÓRIO)
+- **Versão exata:** PHP 8.4.x
+- **NÃO usar:** PHP 8.5+ (pode causar incompatibilidades)
+- **NÃO usar:** PHP 8.3 ou inferior (recursos ausentes)
+- **Configuração:** Via CloudLinux PHP Selector no cPanel
 
 ## 🔧 Configurações Específicas
 

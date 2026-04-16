@@ -7,7 +7,15 @@ echo "<style>body{font-family:Arial;margin:20px;} .ok{color:green;} .error{color
 
 // 1. Verificar PHP
 echo "<h2>1. Informações PHP</h2>";
-echo "Versão PHP: " . PHP_VERSION . "<br>";
+echo "Versão PHP: " . PHP_VERSION;
+if (version_compare(PHP_VERSION, '8.4.0', '>=') && version_compare(PHP_VERSION, '8.5.0', '<')) {
+    echo ' <span class="ok">✓ PHP 8.4.x OK</span>';
+} elseif (version_compare(PHP_VERSION, '8.4.0', '<')) {
+    echo ' <span class="error">✗ Necessário PHP 8.4+</span>';
+} else {
+    echo ' <span class="warning">⚠ PHP 8.5+ pode ter incompatibilidades</span>';
+}
+echo "<br>";
 echo "SAPI: " . php_sapi_name() . "<br>";
 echo "Servidor: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Desconhecido') . "<br>";
 

@@ -21,7 +21,7 @@ class InstallerService
             'php_version' => [
                 'name' => 'PHP 8.4+',
                 'required' => true,
-                'status' => version_compare(PHP_VERSION, '8.4.0', '>='),
+                'status' => version_compare(PHP_VERSION, '8.4.0', '>=') && version_compare(PHP_VERSION, '8.5.0', '<'),
                 'current' => PHP_VERSION
             ],
             'extensions' => []

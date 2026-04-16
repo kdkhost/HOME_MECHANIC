@@ -10,7 +10,7 @@
 - **Ambiente:** CloudLinux + LiteSpeed + Imunify360
 
 ## 🔧 Pré-requisitos no Servidor
-- PHP 8.4+ (CloudLinux PHP Selector)
+- **PHP 8.4.x** (CloudLinux PHP Selector - NÃO usar 8.5+)
 - MySQL/MariaDB
 - Extensões PHP: pdo_mysql, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, fileinfo, gd
 - LiteSpeed Web Server com rewrite habilitado
@@ -129,11 +129,18 @@ chmod -R 777 /home/homemechanic/public_html/storage
 chmod -R 777 /home/homemechanic/public_html/bootstrap/cache
 ```
 
-### Erro de Extensões PHP (CloudLinux)
+### Verificar Versão PHP (CloudLinux)
 ```bash
-# Verificar extensões via CloudLinux Selector
-# Ou verificar manualmente:
-php -m | grep -E "(pdo_mysql|mbstring|openssl|tokenizer|xml|ctype|json|bcmath|fileinfo|gd)"
+# Verificar versão atual
+php -v
+
+# Se não for PHP 8.4.x, configurar via CloudLinux Selector
+# Acesse cPanel > CloudLinux PHP Selector
+# Selecione PHP 8.4.x
+# Ative as extensões necessárias
+
+# Ou via linha de comando (se disponível):
+/usr/bin/php84 -v
 ```
 
 ### Problemas com LiteSpeed
