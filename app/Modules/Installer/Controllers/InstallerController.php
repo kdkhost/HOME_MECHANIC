@@ -130,19 +130,57 @@ class InstallerController extends Controller
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => $result['message']
+                    'message' => $result['message'],
+                    'details' => $result['details'] ?? null
                 ], 500);
             }
 
-        } catch (\Exception $e) {
-            Log::error('Erro durante instalação', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação durante instalação', [
+                'errors' => $e->errors(),
+                'input' => $request->except(['admin_password', 'admin_password_confirmation', 'db_password'])
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro interno durante a instalação. Verifique os logs.'
+                'message' => 'Dados de entrada inválidos.',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Erro durante instalação', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'input' => $request->except(['admin_password', 'admin_password_confirmation', 'db_password'])
+            ]);
+
+            // Retornar erro mais específico baseado no tipo de exceção
+            $errorMessage = 'Erro interno durante a instalação.';
+            $errorDetails = null;
+
+            if (strpos($e->getMessage(), 'SQLSTATE') !== false) {
+                $errorMessage = 'Erro de banco de dados durante a instalação.';
+                $errorDetails = 'Verifique as configurações do banco de dados e permissões.';
+            } elseif (strpos($e->getMessage(), 'file_put_contents') !== false) {
+                $errorMessage = 'Erro de permissão de arquivo durante a instalação.';
+                $errorDetails = 'Verifique as permissões dos diretórios storage/ e bootstrap/cache/.';
+            } elseif (strpos($e->getMessage(), 'Class') !== false && strpos($e->getMessage(), 'not found') !== false) {
+                $errorMessage = 'Erro de classe não encontrada.';
+                $errorDetails = 'Possível problema com autoloader ou dependências.';
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage,
+                'details' => $errorDetails,
+                'debug_info' => config('app.debug') ? [
+                    'exception' => get_class($e),
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ] : null
             ], 500);
         }
     }
