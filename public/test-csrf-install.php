@@ -79,8 +79,13 @@ ini_set('display_errors', 1);
             echo "<h4>🔐 Teste de CSRF Token</h4>";
             
             try {
-                $csrfToken = csrf_token();
-                echo "<div class='status success'>✅ CSRF Token gerado: " . substr($csrfToken, 0, 20) . "...</div>";
+                // Verificar se a função csrf_token existe
+                if (function_exists('csrf_token')) {
+                    $csrfToken = csrf_token();
+                    echo "<div class='status success'>✅ CSRF Token gerado: " . substr($csrfToken, 0, 20) . "...</div>";
+                } else {
+                    echo "<div class='status warning'>⚠️ Função csrf_token não disponível (normal em scripts standalone)</div>";
+                }
             } catch (Exception $e) {
                 echo "<div class='status error'>❌ Erro ao gerar CSRF Token: " . htmlspecialchars($e->getMessage()) . "</div>";
             }

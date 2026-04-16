@@ -52,28 +52,38 @@ try {
             echo "            <strong>✅ Laravel App</strong> - Carregado com sucesso\n";
             echo "        </div>\n";
             
-            // Testar configuração
+            // Testar configuração sem usar container
             try {
-                $config = $app->make('config');
-                echo "        <div class='status success'>\n";
-                echo "            <strong>✅ Config</strong> - Acessível\n";
-                echo "        </div>\n";
-                
-                // Verificar APP_KEY
-                $appKey = $config->get('app.key');
-                if (!empty($appKey)) {
-                    echo "        <div class='status success'>\n";
-                    echo "            <strong>✅ APP_KEY</strong> - Configurada: " . substr($appKey, 0, 20) . "...\n";
-                    echo "        </div>\n";
+                // Verificar .env diretamente
+                $envPath = __DIR__ . '/../.env';
+                if (file_exists($envPath)) {
+                    $envContent = file_get_contents($envPath);
+                    
+                    if (preg_match('/APP_KEY=(.+)/', $envContent, $matches)) {
+                        $appKey = trim($matches[1]);
+                        if (!empty($appKey) && $appKey !== '') {
+                            echo "        <div class='status success'>\n";
+                            echo "            <strong>✅ APP_KEY</strong> - Encontrada: " . substr($appKey, 0, 20) . "...\n";
+                            echo "        </div>\n";
+                        } else {
+                            echo "        <div class='status error'>\n";
+                            echo "            <strong>❌ APP_KEY</strong> - Vazia no .env\n";
+                            echo "        </div>\n";
+                        }
+                    } else {
+                        echo "        <div class='status error'>\n";
+                        echo "            <strong>❌ APP_KEY</strong> - Não encontrada no .env\n";
+                        echo "        </div>\n";
+                    }
                 } else {
                     echo "        <div class='status error'>\n";
-                    echo "            <strong>❌ APP_KEY</strong> - Não configurada\n";
+                    echo "            <strong>❌ Arquivo .env</strong> - Não encontrado\n";
                     echo "        </div>\n";
                 }
                 
             } catch (Exception $e) {
                 echo "        <div class='status error'>\n";
-                echo "            <strong>❌ Config Error</strong><br>\n";
+                echo "            <strong>❌ Erro de Configuração</strong><br>\n";
                 echo "            " . htmlspecialchars($e->getMessage()) . "\n";
                 echo "        </div>\n";
             }

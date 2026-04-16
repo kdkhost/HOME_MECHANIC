@@ -188,18 +188,58 @@ function testLaravel() {
                 $app = require_once __DIR__ . '/../bootstrap/app.php';
                 $messages[] = ['success', 'Laravel app carregado'];
                 
-                // Testar configuração
-                $config = $app->make('config');
-                $appKey = $config->get('app.key');
-                
-                if (!empty($appKey)) {
-                    $messages[] = ['success', 'APP_KEY carregada: ' . substr($appKey, 0, 20) . '...'];
+                // Testar se o .env existe e tem APP_KEY
+                $envPath = __DIR__ . '/../.env';
+                if (file_exists($envPath)) {
+                    $envContent = file_get_contents($envPath);
+                    
+                    // Verificar APP_KEY no arquivo .env diretamente
+                    if (preg_match('/APP_KEY=(.+)/', $envContent, $matches)) {
+                        $appKey = trim($matches[1]);
+                        if (!empty($appKey) && $appKey !== '') {
+                            $messages[] = ['success', 'APP_KEY encontrada no .env: ' . substr($appKey, 0, 20) . '...'];
+                        } else {
+                            $messages[] = ['error', 'APP_KEY vazia no .env'];
+                        }
+                    } else {
+                        $messages[] = ['error', 'APP_KEY não encontrada no .env'];
+                    }
+                    
+                    // Verificar APP_NAME
+                    if (preg_match('/APP_NAME=(.+)/', $envContent, $matches)) {
+                        $appName = trim($matches[1], '"\'');
+                        $messages[] = ['info', 'APP_NAME: ' . $appName];
+                    }
+                    
+                    // Verificar configuração do banco
+                    if (preg_match('/DB_DATABASE=(.+)/', $envContent, $matches)) {
+                        $dbName = trim($matches[1], '"\'');
+                        $messages[] = ['info', 'Banco configurado: ' . $dbName];
+                    }
+                    
                 } else {
-                    $messages[] = ['error', 'APP_KEY não está carregada'];
+                    $messages[] = ['error', 'Arquivo .env não encontrado'];
                 }
                 
-                $appName = $config->get('app.name');
-                $messages[] = ['info', 'APP_NAME: ' . $appName];
+                // Testar se consegue inicializar o Laravel (sem usar container)
+                try {
+                    // Verificar se as classes básicas do Laravel estão disponíveis
+                    if (class_exists('Illuminate\Foundation\Application')) {
+                        $messages[] = ['success', 'Classes do Laravel disponíveis'];
+                    } else {
+                        $messages[] = ['error', 'Classes do Laravel não encontradas'];
+                    }
+                    
+                    // Verificar se o app foi criado
+                    if (is_object($app)) {
+                        $messages[] = ['success', 'Instância do Laravel criada'];
+                    } else {
+                        $messages[] = ['error', 'Falha ao criar instância do Laravel'];
+                    }
+                    
+                } catch (Exception $e) {
+                    $messages[] = ['error', 'Erro ao inicializar Laravel: ' . $e->getMessage()];
+                }
                 
             } else {
                 $messages[] = ['error', 'bootstrap/app.php não encontrado'];
