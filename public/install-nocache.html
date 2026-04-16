@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Sem Cache</title>
+</head>
+<body>
+    <h1>Redirecionando...</h1>
+    <script>
+        // Limpar cache e redirecionar
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                for (let name of names) caches.delete(name);
+            });
+        }
+        
+        // Redirecionar com timestamp para forçar reload
+        setTimeout(function() {
+            window.location.href = '/install/steps?nocache=' + Date.now();
+        }, 1000);
+    </script>
+</body>
+</html>

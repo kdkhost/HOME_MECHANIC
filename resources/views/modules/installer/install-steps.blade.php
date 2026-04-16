@@ -485,6 +485,6 @@
         </div>
     </div>
     
-    <script src="{{ asset('js/installer-steps.js') }}"></script>
+    <script src="{{ asset('js/installer-steps.js') }}?v={{ time() }}"></script>
 </body>
 </html>
