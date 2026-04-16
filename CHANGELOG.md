@@ -14,6 +14,37 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Sistema de agendamento online
 - App mobile (React Native)
 
+## [1.0.1] - 2026-04-16
+
+### Corrigido
+- **Instalação**: Migration da tabela `settings` - adicionado campo `created_at` ausente
+- **Instalação**: Erro "mod_rewrite" → "url_rewrite" na verificação de requisitos
+- **Instalação**: Método `createSuperAdminUser` com validação robusta e tratamento de erros
+- **Instalação**: Método `runBasicSeeders` com verificação de tabelas e cleanup automático
+- **Instalação**: Tratamento de exceções genéricas no processo de instalação
+
+### Adicionado
+- **Debug**: `/debug-installation.php` - Diagnóstico geral do sistema
+- **Debug**: `/debug-error.php` - Simulação completa do processo de instalação
+- **Debug**: `/test-installation.php` - Teste automatizado com dados pré-configurados
+- **Debug**: `/check-install-error.php` - Teste personalizado com dados do usuário
+- **Debug**: `/test-csrf-install.php` - Teste de CSRF e rotas
+- **Documentação**: `CORREÇÕES-INSTALACAO.md` - Guia completo das correções implementadas
+- **Documentação**: `INSTALACAO-COMPLETA.md` - Guia detalhado de instalação e solução de problemas
+
+### Alterado
+- **Debug**: `/fix-key-emergency.php` - Melhorado com mais funcionalidades de correção
+- **Instalação**: Logging detalhado em todas as etapas da instalação
+- **Instalação**: Validação de dados de entrada mais robusta
+- **Instalação**: Mensagens de erro mais específicas e informativas
+- **Instalação**: Cleanup automático em caso de falha na instalação
+- **Instalação**: Verificação de tabelas antes de inserir dados
+
+### Segurança
+- **Instalação**: Sanitização aprimorada de dados sensíveis nos logs
+- **Instalação**: Validação de entrada em todas as etapas do processo
+- **Instalação**: Proteção contra reinstalação acidental
+
 ## [1.0.0] - 2026-04-15
 
 ### Adicionado

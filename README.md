@@ -240,6 +240,51 @@ composer install --no-dev --optimize-autoloader
 
 ## 🐛 Solução de Problemas
 
+### 🛠️ Ferramentas de Debug (v1.0.1+)
+
+Para problemas de instalação, use as ferramentas de debug integradas:
+
+#### 1. Correção de Emergência
+```
+https://seudominio.com/fix-key-emergency.php
+```
+- Corrige arquivo .env
+- Gera nova APP_KEY
+- Limpa caches
+- Verifica permissões
+
+#### 2. Debug Completo da Instalação
+```
+https://seudominio.com/debug-error.php
+```
+- Simula processo completo de instalação
+- Captura todos os erros
+- Mostra stack traces detalhados
+
+#### 3. Teste Personalizado
+```
+https://seudominio.com/check-install-error.php
+```
+- Formulário com seus dados reais
+- Teste passo a passo
+- Logs específicos da instalação
+
+#### 4. Teste de CSRF e Rotas
+```
+https://seudominio.com/test-csrf-install.php
+```
+- Verifica CSRF tokens
+- Testa rotas do sistema
+- Compara formulário vs AJAX
+
+#### 5. Diagnóstico Geral
+```
+https://seudominio.com/debug-installation.php
+```
+- Verifica requisitos do sistema
+- Testa conexão com banco
+- Analisa logs de erro
+
 ### Problemas Comuns
 
 #### Erro 500 - Internal Server Error

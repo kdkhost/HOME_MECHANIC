@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use PDO;
 use PDOException;
 
@@ -144,50 +145,91 @@ class InstallerService
     public function install(array $data): array
     {
         try {
+            \Log::info('Iniciando instalação do HomeMechanic', [
+                'admin_email' => $data['admin']['email'],
+                'company_name' => $data['company']['name'] ?? 'HomeMechanic'
+            ]);
+
             // 1. Detectar URL automaticamente se não fornecida
+            \Log::info('Etapa 1: Preparando dados de instalação');
             $data = $this->prepareInstallationData($data);
 
             // 2. Criar arquivo .env
+            \Log::info('Etapa 2: Criando arquivo .env');
             $this->createEnvFile($data);
 
-            // 3. Gerar chave da aplicação
-            Artisan::call('key:generate', ['--force' => true]);
+            // 3. Limpar caches antes de gerar chave
+            \Log::info('Etapa 3: Limpando caches');
+            Artisan::call('config:clear');
+            Artisan::call('cache:clear');
 
-            // 4. Executar migrations
-            Artisan::call('migrate', ['--force' => true]);
+            // 4. Gerar chave da aplicação
+            \Log::info('Etapa 4: Gerando APP_KEY');
+            $keyResult = Artisan::call('key:generate', ['--force' => true]);
+            if ($keyResult !== 0) {
+                throw new \Exception('Falha ao gerar APP_KEY');
+            }
 
-            // 5. Executar seeders básicos
+            // 5. Recarregar configuração após gerar chave
+            \Log::info('Etapa 5: Recarregando configuração');
+            Artisan::call('config:cache');
+
+            // 6. Executar migrations
+            \Log::info('Etapa 6: Executando migrations');
+            $migrateResult = Artisan::call('migrate', ['--force' => true]);
+            if ($migrateResult !== 0) {
+                throw new \Exception('Falha ao executar migrations');
+            }
+
+            // 7. Executar seeders básicos
+            \Log::info('Etapa 7: Executando seeders básicos');
             $this->runBasicSeeders($data);
 
-            // 6. Criar usuário superadmin
+            // 8. Criar usuário superadmin
+            \Log::info('Etapa 8: Criando usuário superadmin');
             $this->createSuperAdminUser($data);
 
-            // 7. Criar arquivo de instalação concluída
+            // 9. Criar arquivo de instalação concluída
+            \Log::info('Etapa 9: Criando arquivo de instalação concluída');
             $this->createInstalledFile($data);
 
-            // 8. Otimizar aplicação
+            // 10. Otimizar aplicação
+            \Log::info('Etapa 10: Otimizando aplicação');
             Artisan::call('config:cache');
             Artisan::call('route:cache');
+
+            \Log::info('Instalação concluída com sucesso', [
+                'admin_url' => $data['system']['url'] . '/admin/login',
+                'admin_email' => $data['admin']['email']
+            ]);
 
             return [
                 'success' => true,
                 'message' => 'Instalação concluída com sucesso!',
-                'admin_url' => $data['system']['url'] . '/admin',
+                'admin_url' => $data['system']['url'] . '/admin/login',
                 'admin_email' => $data['admin']['email']
             ];
 
-        } catch (Exception $e) {
-            // Limpar em caso de erro
-            $this->cleanup();
-
-            \Log::error('Installation failed', [
+        } catch (\Exception $e) {
+            // Log detalhado do erro
+            \Log::error('Falha na instalação', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
 
+            // Limpar em caso de erro
+            $this->cleanup();
+
             return [
                 'success' => false,
-                'message' => 'Erro durante a instalação: ' . $e->getMessage()
+                'message' => 'Erro durante a instalação: ' . $e->getMessage(),
+                'details' => [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'type' => get_class($e)
+                ]
             ];
         }
     }
@@ -483,55 +525,111 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
      */
     private function runBasicSeeders(array $data): void
     {
-        // Configurações básicas do sistema
-        $settings = [
-            'site_name' => $data['company']['name'],
-            'site_description' => $data['company']['description'],
-            'site_url' => $data['system']['url'],
-            'site_logo' => null,
-            'site_favicon' => null,
-            'maintenance_mode' => '0',
-            'maintenance_message' => 'Sistema em manutenção. Voltaremos em breve.',
-            'maintenance_eta' => null,
-            'smtp_host' => '',
-            'smtp_port' => '587',
-            'smtp_username' => '',
-            'smtp_password' => '',
-            'smtp_encryption' => 'tls',
-            'smtp_from_address' => "noreply@{$data['system']['domain']}",
-            'smtp_from_name' => $data['company']['name'],
-        ];
+        try {
+            \Log::info('Iniciando seeders básicos');
 
-        foreach ($settings as $key => $value) {
-            DB::table('settings')->insert([
-                'key' => $key,
-                'value' => $value,
-                'group' => $this->getSettingGroup($key),
-                'created_at' => now(),
-                'updated_at' => now()
+            // Configurações básicas do sistema
+            $settings = [
+                'site_name' => $data['company']['name'],
+                'site_description' => $data['company']['description'],
+                'site_url' => $data['system']['url'],
+                'site_logo' => null,
+                'site_favicon' => null,
+                'maintenance_mode' => '0',
+                'maintenance_message' => 'Sistema em manutenção. Voltaremos em breve.',
+                'maintenance_eta' => null,
+                'smtp_host' => '',
+                'smtp_port' => '587',
+                'smtp_username' => '',
+                'smtp_password' => '',
+                'smtp_encryption' => 'tls',
+                'smtp_from_address' => "noreply@{$data['system']['domain']}",
+                'smtp_from_name' => $data['company']['name'],
+            ];
+
+            \Log::info('Inserindo configurações básicas', ['count' => count($settings)]);
+
+            // Verificar se tabela settings existe
+            if (!Schema::hasTable('settings')) {
+                throw new \Exception('Tabela settings não existe. Verifique se as migrations foram executadas.');
+            }
+
+            // Limpar configurações existentes (caso seja uma reinstalação)
+            DB::table('settings')->truncate();
+
+            foreach ($settings as $key => $value) {
+                try {
+                    DB::table('settings')->insert([
+                        'key' => $key,
+                        'value' => $value,
+                        'group' => $this->getSettingGroup($key),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Erro ao inserir configuração', [
+                        'key' => $key,
+                        'value' => $value,
+                        'error' => $e->getMessage()
+                    ]);
+                    throw new \Exception("Falha ao inserir configuração '{$key}': " . $e->getMessage());
+                }
+            }
+
+            \Log::info('Configurações básicas inseridas com sucesso');
+
+            // Verificar se tabela maintenance_ips existe
+            if (!Schema::hasTable('maintenance_ips')) {
+                throw new \Exception('Tabela maintenance_ips não existe. Verifique se as migrations foram executadas.');
+            }
+
+            // Limpar IPs existentes
+            DB::table('maintenance_ips')->truncate();
+
+            // Adicionar IP do instalador à lista de IPs permitidos durante manutenção
+            $installerIp = request()->ip();
+            \Log::info('Adicionando IPs de manutenção', ['installer_ip' => $installerIp]);
+
+            if ($installerIp && $installerIp !== '127.0.0.1') {
+                try {
+                    DB::table('maintenance_ips')->insert([
+                        'ip_address' => $installerIp,
+                        'label' => 'IP do Instalador',
+                        'active' => true,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::warning('Erro ao inserir IP do instalador (não crítico)', [
+                        'ip' => $installerIp,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            // Sempre adicionar localhost
+            try {
+                DB::table('maintenance_ips')->insert([
+                    'ip_address' => '127.0.0.1',
+                    'label' => 'Localhost',
+                    'active' => true,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            } catch (\Exception $e) {
+                \Log::warning('Erro ao inserir localhost (não crítico)', ['error' => $e->getMessage()]);
+            }
+
+            \Log::info('IPs de manutenção adicionados com sucesso');
+
+        } catch (\Exception $e) {
+            \Log::error('Erro ao executar seeders básicos', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
+            throw new \Exception('Falha ao executar seeders básicos: ' . $e->getMessage());
         }
-
-        // Adicionar IP do instalador à lista de IPs permitidos durante manutenção
-        $installerIp = request()->ip();
-        if ($installerIp && $installerIp !== '127.0.0.1') {
-            DB::table('maintenance_ips')->insert([
-                'ip_address' => $installerIp,
-                'label' => 'IP do Instalador',
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-        }
-
-        // Sempre adicionar localhost
-        DB::table('maintenance_ips')->insert([
-            'ip_address' => '127.0.0.1',
-            'label' => 'Localhost',
-            'active' => true,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
     }
 
     /**
@@ -555,40 +653,97 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
      */
     private function createSuperAdminUser(array $data): void
     {
-        $userId = DB::table('users')->insertGetId([
-            'name' => $data['admin']['name'],
-            'email' => $data['admin']['email'],
-            'password' => Hash::make($data['admin']['password']),
-            'role' => 'admin',
-            'email_verified_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        try {
+            \Log::info('Iniciando criação do usuário superadmin', [
+                'name' => $data['admin']['name'],
+                'email' => $data['admin']['email']
+            ]);
 
-        // Registrar criação do usuário no audit log
-        DB::table('audit_logs')->insert([
-            'user_id' => null, // Sistema
-            'action' => 'superadmin_created',
-            'model_type' => 'App\Models\User',
-            'model_id' => $userId,
-            'old_values' => json_encode([]),
-            'new_values' => json_encode([
-                'id' => $userId,
+            // Verificar se usuário já existe
+            $existingUser = DB::table('users')->where('email', $data['admin']['email'])->first();
+            if ($existingUser) {
+                \Log::warning('Usuário com este email já existe', ['email' => $data['admin']['email']]);
+                throw new \Exception('Já existe um usuário com este email: ' . $data['admin']['email']);
+            }
+
+            // Validar dados do admin
+            if (empty($data['admin']['name']) || empty($data['admin']['email']) || empty($data['admin']['password'])) {
+                throw new \Exception('Dados do administrador incompletos');
+            }
+
+            // Validar email
+            if (!filter_var($data['admin']['email'], FILTER_VALIDATE_EMAIL)) {
+                throw new \Exception('Email do administrador inválido: ' . $data['admin']['email']);
+            }
+
+            // Validar senha
+            if (strlen($data['admin']['password']) < 8) {
+                throw new \Exception('Senha do administrador deve ter pelo menos 8 caracteres');
+            }
+
+            \Log::info('Dados do admin validados, criando usuário');
+
+            // Criar usuário
+            $userId = DB::table('users')->insertGetId([
                 'name' => $data['admin']['name'],
                 'email' => $data['admin']['email'],
-                'role' => 'admin'
-            ]),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'created_at' => now()
-        ]);
+                'password' => Hash::make($data['admin']['password']),
+                'role' => 'admin',
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
 
-        \Log::info('Usuário superadmin criado durante instalação', [
-            'user_id' => $userId,
-            'name' => $data['admin']['name'],
-            'email' => $data['admin']['email'],
-            'ip' => request()->ip()
-        ]);
+            if (!$userId) {
+                throw new \Exception('Falha ao inserir usuário na base de dados');
+            }
+
+            \Log::info('Usuário criado com sucesso', ['user_id' => $userId]);
+
+            // Registrar criação do usuário no audit log
+            try {
+                DB::table('audit_logs')->insert([
+                    'user_id' => null, // Sistema
+                    'action' => 'superadmin_created',
+                    'model_type' => 'App\Models\User',
+                    'model_id' => $userId,
+                    'old_values' => json_encode([]),
+                    'new_values' => json_encode([
+                        'id' => $userId,
+                        'name' => $data['admin']['name'],
+                        'email' => $data['admin']['email'],
+                        'role' => 'admin'
+                    ]),
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'created_at' => now()
+                ]);
+
+                \Log::info('Audit log criado para usuário superadmin');
+            } catch (\Exception $e) {
+                \Log::warning('Falha ao criar audit log (não crítico)', ['error' => $e->getMessage()]);
+                // Não falhar a instalação por causa do audit log
+            }
+
+            \Log::info('Usuário superadmin criado durante instalação', [
+                'user_id' => $userId,
+                'name' => $data['admin']['name'],
+                'email' => $data['admin']['email'],
+                'ip' => request()->ip()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erro ao criar usuário superadmin', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'admin_data' => [
+                    'name' => $data['admin']['name'] ?? 'N/A',
+                    'email' => $data['admin']['email'] ?? 'N/A'
+                ]
+            ]);
+            throw new \Exception('Falha ao criar usuário administrador: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -621,25 +776,53 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
      */
     private function cleanup(): void
     {
-        // Remover .env se foi criado
-        $envPath = base_path('.env');
-        if (File::exists($envPath)) {
-            File::delete($envPath);
-        }
-
-        // Remover arquivo de instalação se existe
-        $installedPath = storage_path('installed');
-        if (File::exists($installedPath)) {
-            File::delete($installedPath);
-        }
-
-        // Limpar caches
         try {
-            Artisan::call('config:clear');
-            Artisan::call('route:clear');
-            Artisan::call('cache:clear');
-        } catch (Exception $e) {
-            // Ignorar erros de limpeza
+            \Log::info('Iniciando limpeza após erro na instalação');
+
+            // Remover .env se foi criado
+            $envPath = base_path('.env');
+            if (File::exists($envPath)) {
+                File::delete($envPath);
+                \Log::info('Arquivo .env removido');
+            }
+
+            // Remover arquivo de instalação se existe
+            $installedPath = storage_path('installed');
+            if (File::exists($installedPath)) {
+                File::delete($installedPath);
+                \Log::info('Arquivo installed removido');
+            }
+
+            // Limpar caches
+            try {
+                Artisan::call('config:clear');
+                Artisan::call('route:clear');
+                Artisan::call('cache:clear');
+                Artisan::call('view:clear');
+                \Log::info('Caches limpos');
+            } catch (\Exception $e) {
+                \Log::warning('Erro ao limpar caches durante cleanup', ['error' => $e->getMessage()]);
+            }
+
+            // Tentar fazer rollback das migrations (se possível)
+            try {
+                // Verificar se há migrations para fazer rollback
+                $output = Artisan::output();
+                Artisan::call('migrate:status');
+                $status = Artisan::output();
+                
+                if (strpos($status, 'Ran') !== false) {
+                    Artisan::call('migrate:rollback', ['--force' => true]);
+                    \Log::info('Rollback de migrations executado');
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Erro ao fazer rollback das migrations', ['error' => $e->getMessage()]);
+            }
+
+            \Log::info('Limpeza concluída');
+
+        } catch (\Exception $e) {
+            \Log::error('Erro durante limpeza', ['error' => $e->getMessage()]);
         }
     }
 

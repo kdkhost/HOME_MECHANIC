@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('key')->unique();
             $table->text('value')->nullable();
             $table->string('group')->default('general');
-            $table->timestamp('updated_at');
+            $table->timestamps();
         });
     }
 
