@@ -7,8 +7,10 @@
     
     <title>@yield('title', 'HomeMechanic - Painel Administrativo')</title>
     
-    <!-- AdminLTE CSS via Vite -->
-    @vite(['resources/sass/admin-custom.scss', 'resources/js/admin.js'])
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
@@ -180,7 +182,15 @@
         </footer>
     </div>
 
-    <!-- Scripts are loaded via Vite in the head section -->
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- Admin JS -->
+    <script src="{{ asset('js/admin.js') }}"></script>
+    
     <script>
         // Additional admin-specific JavaScript can go here
         document.addEventListener('DOMContentLoaded', function() {

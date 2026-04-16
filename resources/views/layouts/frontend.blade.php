@@ -30,7 +30,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     
     <!-- Custom CSS -->
-    @vite(['resources/css/app.css'])
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     
     @yield('styles')
     
@@ -243,7 +243,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Custom JS -->
-    @vite(['resources/js/app.js'])
+    <script src="{{ asset('js/app.js') }}"></script>
     
     <script>
         // Ocultar preloader quando a página carregar
