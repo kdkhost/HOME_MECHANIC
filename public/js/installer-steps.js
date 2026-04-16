@@ -336,6 +336,7 @@ async function startInstallation() {
     formData.append('company_name', companyName);
     formData.append('company_description', document.getElementById('company_description').value);
     formData.append('system_url', document.getElementById('system_url').value);
+    formData.append('terms_accepted', document.getElementById('terms_accepted').checked ? '1' : '0');
     
     // Guardar dados para exibir depois
     installationData = {
@@ -432,6 +433,18 @@ async function performInstallation(formData) {
             showSuccessScreen();
         } else {
             console.error('Instalação falhou:', data);
+            
+            // Se houver erros de validação, mostrar detalhadamente
+            if (data.errors) {
+                let errorList = '<ul style="text-align: left;">';
+                for (let field in data.errors) {
+                    errorList += `<li><strong>${field}:</strong> ${data.errors[field].join(', ')}</li>`;
+                }
+                errorList += '</ul>';
+                
+                throw new Error(`Erros de validação:\n${errorList}`);
+            }
+            
             throw new Error(data.message || 'Erro durante a instalação');
         }
     } catch (error) {

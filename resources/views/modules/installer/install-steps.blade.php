@@ -418,6 +418,13 @@
                             <small class="text-muted">Será detectada automaticamente se deixar em branco</small>
                         </div>
                         
+                        <div class="form-check" style="margin-top: 20px;">
+                            <input class="form-check-input" type="checkbox" id="terms_accepted" name="terms_accepted" value="1" checked required>
+                            <label class="form-check-label" for="terms_accepted">
+                                Aceito os termos de uso e confirmo que os dados fornecidos estão corretos
+                            </label>
+                        </div>
+                        
                         <div class="text-end mt-4">
                             <button type="button" class="btn btn-secondary me-2" onclick="prevStep(2)">
                                 <i class="bi bi-arrow-left me-1"></i>Voltar
