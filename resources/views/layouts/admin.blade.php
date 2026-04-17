@@ -7,12 +7,16 @@
     
     <title>@yield('title', 'HomeMechanic - Painel Administrativo')</title>
     
-    <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- AdminLTE -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Custom Admin CSS -->
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
     
     @yield('styles')
 </head>
@@ -29,7 +33,7 @@
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="bi bi-list"></i>
+                        <i class="fas fa-bars"></i>
                     </a>
                 </li>
             </ul>
@@ -38,18 +42,18 @@
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#">
-                        <i class="bi bi-person-circle"></i>
+                        <i class="far fa-user-circle"></i>
                         {{ Auth::user()->name ?? 'Admin' }}
                     </a>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                         <a href="#" class="dropdown-item">
-                            <i class="bi bi-person mr-2"></i> Perfil
+                            <i class="fas fa-user mr-2"></i> Perfil
                         </a>
                         <div class="dropdown-divider"></div>
                         <form method="POST" action="{{ route('admin.logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
-                                <i class="bi bi-box-arrow-right mr-2"></i> Sair
+                                <i class="fas fa-sign-out-alt mr-2"></i> Sair
                             </button>
                         </form>
                     </div>
@@ -69,42 +73,54 @@
             <div class="sidebar">
                 <!-- Sidebar Menu -->
                 <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                         <li class="nav-item">
                             <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-speedometer2"></i>
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Dashboard</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-tools"></i>
+                                <i class="nav-icon fas fa-tools"></i>
                                 <p>Serviços</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('admin.gallery.index') }}" class="nav-link {{ request()->routeIs('admin.gallery.*') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-images"></i>
+                                <i class="nav-icon fas fa-images"></i>
                                 <p>Galeria</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.seo.index') }}" class="nav-link {{ request()->routeIs('admin.seo.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-search"></i>
+                                <p>SEO</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.documentation.index') }}" class="nav-link {{ request()->routeIs('admin.documentation.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>Documentação</p>
                             </a>
                         </li>
                         {{-- Módulos em desenvolvimento --}}
                         {{--
                         <li class="nav-item">
                             <a href="{{ route('admin.blog.index') }}" class="nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-newspaper"></i>
+                                <i class="nav-icon fas fa-newspaper"></i>
                                 <p>Blog</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-chat-quote"></i>
+                                <i class="nav-icon fas fa-quote-left"></i>
                                 <p>Depoimentos</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('admin.contact.index') }}" class="nav-link {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-envelope"></i>
+                                <i class="nav-icon fas fa-envelope"></i>
                                 <p>Mensagens</p>
                             </a>
                         </li>
@@ -112,40 +128,34 @@
                         {{-- Configurações em desenvolvimento
                         <li class="nav-item">
                             <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-gear"></i>
+                                <i class="nav-icon fas fa-cog"></i>
                                 <p>
                                     Configurações
-                                    <i class="right bi bi-chevron-left"></i>
+                                    <i class="right fas fa-angle-left"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <a href="{{ route('admin.settings.general') }}" class="nav-link">
-                                        <i class="bi bi-circle nav-icon"></i>
+                                        <i class="far fa-circle nav-icon"></i>
                                         <p>Gerais</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('admin.settings.smtp') }}" class="nav-link">
-                                        <i class="bi bi-circle nav-icon"></i>
+                                        <i class="far fa-circle nav-icon"></i>
                                         <p>SMTP</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('admin.maintenance.index') }}" class="nav-link">
-                                        <i class="bi bi-circle nav-icon"></i>
+                                        <i class="far fa-circle nav-icon"></i>
                                         <p>Manutenção</p>
                                     </a>
                                 </li>
                             </ul>
                         </li>
                         --}}
-                        <li class="nav-item">
-                            <a href="{{ route('admin.documentation.index') }}" class="nav-link {{ request()->routeIs('admin.documentation.*') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-book"></i>
-                                <p>Documentação</p>
-                            </a>
-                        </li>
                     </ul>
                 </nav>
             </div>
@@ -187,19 +197,28 @@
         </footer>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Toastify JS -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <!-- Admin JS -->
+    <!-- Custom Admin JS -->
     <script src="{{ asset('js/admin.js') }}"></script>
     
     <script>
-        // Additional admin-specific JavaScript can go here
-        document.addEventListener('DOMContentLoaded', function() {
-            // Any additional initialization code
+        // Remove preloader after page load
+        $(window).on('load', function() {
+            $('#preloader').fadeOut('slow');
+        });
+        
+        // CSRF Token for AJAX requests
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
         });
     </script>
     

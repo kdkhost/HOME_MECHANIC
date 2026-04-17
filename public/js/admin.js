@@ -1,379 +1,257 @@
-// HomeMechanic Admin Panel JavaScript
+/**
+ * HomeMechanic Admin Panel JavaScript
+ */
 
-document.addEventListener('DOMContentLoaded', function() {
+$(document).ready(function() {
+    console.log('HomeMechanic Admin Panel - Loaded');
     
-    // Hide preloader after page load
-    const preloader = document.querySelector('.preloader');
-    if (preloader) {
-        setTimeout(() => {
-            preloader.style.display = 'none';
-        }, 1000);
-    }
-
+    // Remove preloader after 500ms
+    setTimeout(function() {
+        $('#preloader').fadeOut('slow');
+    }, 500);
+    
     // Initialize tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
+    $('[data-toggle="tooltip"]').tooltip();
+    
     // Initialize popovers
-    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl);
-    });
-
-    // Sidebar toggle functionality
-    const sidebarToggle = document.querySelector('[data-widget="pushmenu"]');
-    const body = document.body;
+    $('[data-toggle="popover"]').popover();
     
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            body.classList.toggle('sidebar-collapse');
-            
-            // Save state to localStorage
-            if (body.classList.contains('sidebar-collapse')) {
-                localStorage.setItem('sidebar-state', 'collapsed');
-            } else {
-                localStorage.setItem('sidebar-state', 'expanded');
-            }
-        });
-    }
-
-    // Restore sidebar state from localStorage
-    const sidebarState = localStorage.getItem('sidebar-state');
-    if (sidebarState === 'collapsed') {
-        body.classList.add('sidebar-collapse');
-    }
-
-    // Form validation enhancement
-    const forms = document.querySelectorAll('.needs-validation');
-    forms.forEach(form => {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // Show first invalid field
-                const firstInvalid = form.querySelector(':invalid');
-                if (firstInvalid) {
-                    firstInvalid.focus();
-                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-            form.classList.add('was-validated');
-        });
-    });
-
-    // Auto-hide alerts after 5 seconds
-    const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            alert.style.opacity = '0';
-            setTimeout(() => {
-                alert.remove();
-            }, 300);
-        }, 5000);
-    });
-
-    // Loading button states
-    document.querySelectorAll('.btn-loading').forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (this.disabled) return;
-            
-            const originalText = this.innerHTML;
-            this.innerHTML = '<span class="loading-spinner me-2"></span>Processando...';
-            this.disabled = true;
-            
-            // Re-enable after form submission or timeout
-            setTimeout(() => {
-                this.innerHTML = originalText;
-                this.disabled = false;
-            }, 5000);
-        });
-    });
-
     // Confirm delete actions
-    document.querySelectorAll('.btn-delete, .delete-action').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const itemName = this.getAttribute('data-item-name') || 'este item';
-            const form = this.closest('form') || document.querySelector(this.getAttribute('data-form'));
-            
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Tem certeza?',
-                    text: `Você está prestes a excluir ${itemName}. Esta ação não pode ser desfeita.`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sim, excluir!',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        if (form) {
-                            form.submit();
-                        } else if (this.href) {
-                            window.location.href = this.href;
+    $('.btn-delete, .delete-btn').on('click', function(e) {
+        e.preventDefault();
+        const form = $(this).closest('form');
+        const itemName = $(this).data('name') || 'este item';
+        
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: `Deseja realmente excluir ${itemName}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+    
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert:not(.alert-permanent)').fadeOut('slow');
+    }, 5000);
+    
+    // Handle AJAX form submissions
+    $('.ajax-form').on('submit', function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        
+        // Disable button and show loading
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processando...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: form.attr('method') || 'POST',
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso!',
+                        text: response.message || 'Operação realizada com sucesso!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        if (response.redirect) {
+                            window.location.href = response.redirect;
+                        } else {
+                            location.reload();
                         }
-                    }
-                });
-            } else {
-                // Fallback to native confirm
-                if (confirm(`Tem certeza que deseja excluir ${itemName}?`)) {
-                    if (form) {
-                        form.submit();
-                    } else if (this.href) {
-                        window.location.href = this.href;
-                    }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: response.message || 'Ocorreu um erro ao processar a solicitação.'
+                    });
                 }
+            },
+            error: function(xhr) {
+                let errorMessage = 'Ocorreu um erro ao processar a solicitação.';
+                
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    // Validation errors
+                    const errors = xhr.responseJSON.errors;
+                    errorMessage = Object.values(errors).flat().join('<br>');
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    html: errorMessage
+                });
+            },
+            complete: function() {
+                // Re-enable button
+                submitBtn.prop('disabled', false).html(originalText);
             }
         });
     });
-
-    // File upload drag and drop
-    const fileUploadAreas = document.querySelectorAll('.file-upload-area');
-    fileUploadAreas.forEach(area => {
-        const input = area.querySelector('input[type="file"]');
+    
+    // Character counter for textareas
+    $('textarea[maxlength]').each(function() {
+        const textarea = $(this);
+        const maxLength = textarea.attr('maxlength');
+        const counter = $('<small class="form-text text-muted char-counter"></small>');
+        textarea.after(counter);
         
-        if (input) {
-            area.addEventListener('click', () => input.click());
-            
-            area.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                area.classList.add('dragover');
-            });
-            
-            area.addEventListener('dragleave', () => {
-                area.classList.remove('dragover');
-            });
-            
-            area.addEventListener('drop', (e) => {
-                e.preventDefault();
-                area.classList.remove('dragover');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    input.files = files;
-                    
-                    // Trigger change event
-                    const event = new Event('change', { bubbles: true });
-                    input.dispatchEvent(event);
-                }
-            });
-            
-            input.addEventListener('change', function() {
-                const fileName = this.files[0]?.name;
-                if (fileName) {
-                    const label = area.querySelector('.file-name');
-                    if (label) {
-                        label.textContent = fileName;
-                    }
-                }
-            });
-        }
-    });
-
-    // Data tables enhancement
-    const tables = document.querySelectorAll('.data-table');
-    tables.forEach(table => {
-        // Add search functionality
-        const searchInput = document.querySelector(`[data-table="${table.id}"]`);
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = table.querySelectorAll('tbody tr');
-                
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm) ? '' : 'none';
-                });
-            });
+        function updateCounter() {
+            const remaining = maxLength - textarea.val().length;
+            counter.text(`${remaining} caracteres restantes`);
         }
         
-        // Add sorting functionality
-        const headers = table.querySelectorAll('th[data-sort]');
-        headers.forEach(header => {
-            header.style.cursor = 'pointer';
-            header.addEventListener('click', function() {
-                const column = this.getAttribute('data-sort');
-                const tbody = table.querySelector('tbody');
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                
-                const isAscending = this.classList.contains('sort-asc');
-                
-                // Remove sort classes from all headers
-                headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
-                
-                // Add appropriate class to current header
-                this.classList.add(isAscending ? 'sort-desc' : 'sort-asc');
-                
-                // Sort rows
-                rows.sort((a, b) => {
-                    const aVal = a.querySelector(`[data-sort="${column}"]`)?.textContent || '';
-                    const bVal = b.querySelector(`[data-sort="${column}"]`)?.textContent || '';
-                    
-                    if (isAscending) {
-                        return bVal.localeCompare(aVal);
-                    } else {
-                        return aVal.localeCompare(bVal);
-                    }
-                });
-                
-                // Reorder DOM
-                rows.forEach(row => tbody.appendChild(row));
-            });
-        });
+        updateCounter();
+        textarea.on('input', updateCounter);
     });
-
-    // Auto-save functionality for forms
-    const autoSaveForms = document.querySelectorAll('.auto-save');
-    autoSaveForms.forEach(form => {
-        let saveTimeout;
+    
+    // Image preview for file inputs
+    $('input[type="file"][accept*="image"]').on('change', function() {
+        const input = this;
+        const preview = $(input).data('preview');
         
-        form.addEventListener('input', function() {
-            clearTimeout(saveTimeout);
+        if (input.files && input.files[0] && preview) {
+            const reader = new FileReader();
             
-            // Show saving indicator
-            const indicator = form.querySelector('.save-indicator');
-            if (indicator) {
-                indicator.textContent = 'Salvando...';
-                indicator.className = 'save-indicator text-warning';
+            reader.onload = function(e) {
+                $(preview).attr('src', e.target.result).show();
+            };
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    });
+    
+    // Sortable lists (if jQuery UI is loaded)
+    if ($.fn.sortable) {
+        $('.sortable-list').sortable({
+            handle: '.drag-handle',
+            update: function(event, ui) {
+                const order = $(this).sortable('toArray', { attribute: 'data-id' });
+                const url = $(this).data('sort-url');
+                
+                if (url) {
+                    $.post(url, { order: order }, function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Ordem atualizada!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    });
+                }
             }
-            
-            saveTimeout = setTimeout(() => {
-                // Simulate auto-save (implement actual save logic as needed)
-                if (indicator) {
-                    indicator.textContent = 'Salvo automaticamente';
-                    indicator.className = 'save-indicator text-success';
-                    
-                    setTimeout(() => {
-                        indicator.textContent = '';
-                    }, 2000);
+        });
+    }
+    
+    // Toggle switches
+    $('.toggle-switch').on('change', function() {
+        const checkbox = $(this);
+        const url = checkbox.data('url');
+        const field = checkbox.data('field');
+        const value = checkbox.is(':checked') ? 1 : 0;
+        
+        if (url) {
+            $.post(url, { [field]: value }, function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Atualizado!',
+                        text: response.message || 'Status atualizado com sucesso!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Revert checkbox
+                    checkbox.prop('checked', !checkbox.is(':checked'));
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: response.message || 'Erro ao atualizar status.'
+                    });
                 }
-            }, 2000);
+            }).fail(function() {
+                // Revert checkbox
+                checkbox.prop('checked', !checkbox.is(':checked'));
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro ao atualizar status.'
+                });
+            });
+        }
+    });
+    
+    // Copy to clipboard
+    $('.copy-to-clipboard').on('click', function() {
+        const text = $(this).data('text') || $(this).text();
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Copiado!',
+            text: 'Texto copiado para a área de transferência.',
+            timer: 1500,
+            showConfirmButton: false
         });
     });
-
-    // CSRF Token setup for AJAX requests
-    const token = document.querySelector('meta[name="csrf-token"]');
-    if (token) {
-        // Setup for jQuery if available
-        if (typeof $ !== 'undefined') {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': token.getAttribute('content')
-                }
-            });
-        }
-        
-        // Setup for Axios if available
-        if (typeof axios !== 'undefined') {
-            axios.defaults.headers.common['X-CSRF-TOKEN'] = token.getAttribute('content');
-        }
-    }
-
-    // Toast notifications helper
-    window.showToast = function(message, type = 'success') {
-        if (typeof Toastify !== 'undefined') {
-            Toastify({
-                text: message,
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: type === 'success' ? "#28a745" : 
-                                type === 'error' ? "#dc3545" : 
-                                type === 'warning' ? "#ffc107" : "#007bff",
-                stopOnFocus: true
-            }).showToast();
-        } else {
-            // Fallback to alert
-            alert(message);
-        }
-    };
-
-    // Quick stats update (for dashboard)
-    function updateStats() {
-        const statElements = document.querySelectorAll('[data-stat]');
-        statElements.forEach(element => {
-            const statType = element.getAttribute('data-stat');
-            // Implement actual stat fetching logic here
-            // This is just a placeholder
-        });
-    }
-
-    // Update stats every 30 seconds on dashboard
-    if (window.location.pathname.includes('dashboard')) {
-        setInterval(updateStats, 30000);
-    }
-
-    // Initialize rich text editors (if TinyMCE is available)
-    if (typeof tinymce !== 'undefined') {
-        tinymce.init({
-            selector: '.rich-editor',
-            height: 300,
-            plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
-            toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }'
-        });
-    }
-
-    console.log('HomeMechanic Admin Panel initialized successfully!');
 });
 
-// Global error handler for AJAX requests
-window.addEventListener('unhandledrejection', function(event) {
-    console.error('Unhandled promise rejection:', event.reason);
+// Helper function to show toast notifications
+function showToast(message, type = 'success') {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+        }
+    });
     
-    if (typeof showToast === 'function') {
-        showToast('Ocorreu um erro inesperado. Tente novamente.', 'error');
-    }
-});
+    Toast.fire({
+        icon: type,
+        title: message
+    });
+}
 
-// Utility functions for admin panel
-window.AdminUtils = {
-    // Confirm action with SweetAlert or native confirm
-    confirmAction: function(title, text, confirmText = 'Confirmar', cancelText = 'Cancelar') {
-        if (typeof Swal !== 'undefined') {
-            return Swal.fire({
-                title: title,
-                text: text,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#FF6B00',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: confirmText,
-                cancelButtonText: cancelText
-            });
-        } else {
-            return Promise.resolve({ isConfirmed: confirm(title + '\n' + text) });
+// Helper function to confirm action
+function confirmAction(message, callback) {
+    Swal.fire({
+        title: 'Tem certeza?',
+        text: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, confirmar!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed && typeof callback === 'function') {
+            callback();
         }
-    },
-    
-    // Show loading state on button
-    setButtonLoading: function(button, loading = true) {
-        if (loading) {
-            button.dataset.originalText = button.innerHTML;
-            button.innerHTML = '<span class="loading-spinner me-2"></span>Carregando...';
-            button.disabled = true;
-        } else {
-            button.innerHTML = button.dataset.originalText || button.innerHTML;
-            button.disabled = false;
-        }
-    },
-    
-    // Format number with thousands separator
-    formatNumber: function(num) {
-        return new Intl.NumberFormat('pt-BR').format(num);
-    },
-    
-    // Format currency
-    formatCurrency: function(amount) {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        }).format(amount);
-    }
-};
+    });
+}
