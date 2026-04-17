@@ -1,52 +1,55 @@
 <?php
 /**
- * Debug de Instalação
- * Mostra exatamente o que está sendo enviado
+ * Script de debug para verificar dados enviados pelo instalador
+ * Este arquivo será removido após a instalação
  */
 
 header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Mostrar todos os dados recebidos
-    $data = [
-        'method' => $_SERVER['REQUEST_METHOD'],
-        'post_data' => $_POST,
-        'files' => $_FILES,
-        'headers' => getallheaders(),
-        'content_type' => $_SERVER['CONTENT_TYPE'] ?? 'N/A',
-        'request_uri' => $_SERVER['REQUEST_URI'] ?? 'N/A'
-    ];
-    
-    // Verificar campos obrigatórios
-    $required = [
-        'db_host',
-        'db_name', 
-        'db_user',
-        'admin_name',
-        'admin_email',
-        'admin_password',
-        'admin_password_confirmation',
-        'terms_accepted'
-    ];
-    
-    $missing = [];
-    foreach ($required as $field) {
-        if (empty($_POST[$field])) {
-            $missing[] = $field;
-        }
+// Coletar todos os dados enviados
+$postData = $_POST;
+$getData = $_GET;
+$rawInput = file_get_contents('php://input');
+
+// Campos obrigatórios esperados
+$requiredFields = [
+    'db_host',
+    'db_port',
+    'db_name',
+    'db_user',
+    'admin_name',
+    'admin_email',
+    'admin_password',
+    'admin_password_confirmation',
+    'company_name',
+    'terms_accepted'
+];
+
+// Verificar quais campos estão presentes
+$presentFields = [];
+$missingFields = [];
+
+foreach ($requiredFields as $field) {
+    if (isset($postData[$field]) && !empty($postData[$field])) {
+        $presentFields[$field] = $field === 'admin_password' || $field === 'admin_password_confirmation' || $field === 'db_password' 
+            ? '***OCULTO***' 
+            : $postData[$field];
+    } else {
+        $missingFields[] = $field;
     }
-    
-    echo json_encode([
-        'success' => count($missing) === 0,
-        'message' => count($missing) === 0 ? 'Todos os campos presentes' : 'Campos faltando',
-        'missing_fields' => $missing,
-        'received_data' => $data,
-        'post_count' => count($_POST),
-        'fields_received' => array_keys($_POST)
-    ], JSON_PRETTY_PRINT);
-} else {
-    echo json_encode([
-        'error' => 'Use POST method',
-        'method_used' => $_SERVER['REQUEST_METHOD']
-    ]);
 }
+
+// Resposta
+$response = [
+    'success' => empty($missingFields),
+    'message' => empty($missingFields) ? 'Todos os campos obrigatórios presentes' : 'Campos obrigatórios faltando',
+    'present_fields' => $presentFields,
+    'missing_fields' => $missingFields,
+    'total_post_fields' => count($postData),
+    'total_get_fields' => count($getData),
+    'raw_input_length' => strlen($rawInput),
+    'request_method' => $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN',
+    'content_type' => $_SERVER['CONTENT_TYPE'] ?? 'UNKNOWN'
+];
+
+echo json_encode($response, JSON_PRETTY_PRINT);

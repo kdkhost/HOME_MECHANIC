@@ -134,8 +134,15 @@ class InstallerController extends Controller
             }
 
             // Preparar dados para instalação
+            // IMPORTANTE: O Service espera 'name' mas testDatabaseConnection espera 'database'
             $installData = [
-                'database' => $dbConfig,
+                'database' => [
+                    'host' => $request->input('db_host'),
+                    'port' => $request->input('db_port', 3306),
+                    'name' => $request->input('db_name'), // Service espera 'name'
+                    'username' => $request->input('db_user'),
+                    'password' => $request->input('db_password', '')
+                ],
                 'admin' => [
                     'name' => $request->input('admin_name'),
                     'email' => $request->input('admin_email'),
@@ -149,6 +156,18 @@ class InstallerController extends Controller
                     'url' => $request->input('system_url') // Será detectado automaticamente se vazio
                 ]
             ];
+
+            // Log detalhado dos dados sendo enviados ao Service (sem senhas)
+            Log::info('Dados preparados para instalação', [
+                'database_name' => $installData['database']['name'],
+                'database_host' => $installData['database']['host'],
+                'database_port' => $installData['database']['port'],
+                'database_username' => $installData['database']['username'],
+                'admin_name' => $installData['admin']['name'],
+                'admin_email' => $installData['admin']['email'],
+                'company_name' => $installData['company']['name'],
+                'system_url' => $installData['system']['url']
+            ]);
 
             // Executar instalação
             $result = $this->installerService->install($installData);

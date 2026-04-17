@@ -176,14 +176,42 @@ class InstallerService
     public function install(array $data): array
     {
         try {
+            // Log dos dados recebidos (sem senhas)
             $this->safeLog('info', 'Iniciando instalação do HomeMechanic', [
-                'admin_email' => $data['admin']['email'],
-                'company_name' => $data['company']['name'] ?? 'HomeMechanic'
+                'admin_email' => $data['admin']['email'] ?? 'N/A',
+                'company_name' => $data['company']['name'] ?? 'N/A',
+                'database_name' => $data['database']['name'] ?? 'N/A',
+                'database_host' => $data['database']['host'] ?? 'N/A'
             ]);
+            
+            // Validar dados obrigatórios ANTES de começar
+            if (empty($data['database']['name'])) {
+                throw new \Exception('Nome do banco de dados não fornecido');
+            }
+            if (empty($data['database']['host'])) {
+                throw new \Exception('Host do banco de dados não fornecido');
+            }
+            if (empty($data['database']['username'])) {
+                throw new \Exception('Usuário do banco de dados não fornecido');
+            }
+            if (empty($data['admin']['email'])) {
+                throw new \Exception('Email do administrador não fornecido');
+            }
+            if (empty($data['admin']['password'])) {
+                throw new \Exception('Senha do administrador não fornecida');
+            }
 
             // 1. Detectar URL automaticamente se não fornecida
             $this->safeLog('info', 'Etapa 1: Preparando dados de instalação');
             $data = $this->prepareInstallationData($data);
+            
+            // Log dos dados após preparação
+            $this->safeLog('info', 'Dados preparados', [
+                'database_name' => $data['database']['name'],
+                'database_host' => $data['database']['host'],
+                'company_name' => $data['company']['name'],
+                'system_url' => $data['system']['url']
+            ]);
 
             // 2. Criar arquivo .env
             $this->safeLog('info', 'Etapa 2: Criando arquivo .env');

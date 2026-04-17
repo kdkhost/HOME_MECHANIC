@@ -348,9 +348,24 @@ async function startInstallation() {
     
     // DEBUG: Primeiro enviar para debug-install.php para ver o que está sendo enviado
     try {
+        const debugFormData = new FormData();
+        debugFormData.append('db_host', dbHost);
+        debugFormData.append('db_port', document.getElementById('db_port').value);
+        debugFormData.append('db_name', dbName);
+        debugFormData.append('db_user', dbUser);
+        debugFormData.append('db_password', document.getElementById('db_password').value);
+        debugFormData.append('admin_name', adminName);
+        debugFormData.append('admin_email', adminEmail);
+        debugFormData.append('admin_password', adminPassword);
+        debugFormData.append('admin_password_confirmation', adminPasswordConf);
+        debugFormData.append('company_name', companyName);
+        debugFormData.append('company_description', document.getElementById('company_description').value);
+        debugFormData.append('system_url', document.getElementById('system_url').value);
+        debugFormData.append('terms_accepted', document.getElementById('terms_accepted').checked ? '1' : '0');
+        
         const debugResponse = await fetch('/debug-install.php', {
             method: 'POST',
-            body: formData
+            body: debugFormData
         });
         const debugData = await debugResponse.json();
         console.log('DEBUG - Dados sendo enviados:', debugData);
