@@ -204,6 +204,30 @@ class InstallerService
             // 5. Recarregar configuração após gerar chave
             $this->safeLog('info', 'Etapa 5: Recarregando configuração');
             Artisan::call('config:cache');
+            
+            // 5.1. Reconectar ao banco de dados com as novas configurações
+            $this->safeLog('info', 'Etapa 5.1: Reconectando ao banco de dados');
+            
+            // Configurar conexão com banco dinamicamente
+            config([
+                'database.connections.mysql.host' => $data['database']['host'],
+                'database.connections.mysql.port' => $data['database']['port'],
+                'database.connections.mysql.database' => $data['database']['name'],
+                'database.connections.mysql.username' => $data['database']['username'],
+                'database.connections.mysql.password' => $data['database']['password'],
+            ]);
+            
+            DB::purge('mysql'); // Limpar conexão antiga
+            DB::reconnect('mysql'); // Reconectar com novo .env
+            
+            // Testar conexão
+            try {
+                DB::connection()->getPdo();
+                $dbName = DB::connection()->getDatabaseName();
+                $this->safeLog('info', 'Conexão com banco de dados estabelecida', ['database' => $dbName]);
+            } catch (\Exception $e) {
+                throw new \Exception('Falha ao conectar ao banco após criar .env: ' . $e->getMessage());
+            }
 
             // 6. Executar migrations
             $this->safeLog('info', 'Etapa 6: Executando migrations');
