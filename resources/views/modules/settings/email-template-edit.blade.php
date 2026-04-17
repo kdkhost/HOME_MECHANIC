@@ -8,46 +8,26 @@
 @endsection
 
 @section('styles')
-{{-- Summernote — usa versão lite sem dependência do Bootstrap --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css">
 <style>
-/* ── Summernote lite overrides ─────────────────────────── */
-.note-editor.note-frame {
-    border: 1.5px solid #e2e8f0 !important;
-    border-radius: 0 0 8px 8px !important;
-}
+/* ── Summernote overrides ──────────────────────────────── */
+.note-editor.note-frame { border: 1.5px solid #e2e8f0 !important; border-radius: 0 0 8px 8px !important; }
 .note-toolbar {
-    background: #f8fafc !important;
-    border: 1.5px solid #e2e8f0 !important;
-    border-bottom: none !important;
-    border-radius: 8px 8px 0 0 !important;
-    padding: 6px 8px !important;
+    background: #f8fafc !important; border: 1.5px solid #e2e8f0 !important;
+    border-bottom: none !important; border-radius: 8px 8px 0 0 !important; padding: 6px 8px !important;
 }
 .note-toolbar .note-btn {
-    border-radius: 5px !important;
-    font-size: 0.8rem !important;
-    padding: 3px 7px !important;
-    border: 1px solid #e2e8f0 !important;
-    background: #fff !important;
-    color: #475569 !important;
-    transition: all 0.15s !important;
+    border-radius: 5px !important; font-size: 0.8rem !important; padding: 3px 7px !important;
+    border: 1px solid #e2e8f0 !important; background: #fff !important; color: #475569 !important; transition: all 0.15s !important;
 }
-.note-toolbar .note-btn:hover,
-.note-toolbar .note-btn.active {
-    background: #FF6B00 !important;
-    color: #fff !important;
-    border-color: #FF6B00 !important;
+.note-toolbar .note-btn:hover, .note-toolbar .note-btn.active {
+    background: #FF6B00 !important; color: #fff !important; border-color: #FF6B00 !important;
 }
 .note-editable {
-    min-height: 260px !important;
-    font-family: 'Segoe UI', Arial, sans-serif !important;
-    font-size: 14px !important;
-    line-height: 1.7 !important;
-    color: #374151 !important;
-    padding: 16px !important;
+    min-height: 280px !important; font-family: 'Segoe UI', Arial, sans-serif !important;
+    font-size: 14px !important; line-height: 1.7 !important; color: #374151 !important; padding: 16px !important;
 }
 .note-statusbar { border-radius: 0 0 8px 8px !important; }
-.note-popover .popover-content { padding: 4px 8px !important; }
 
 /* ── Variáveis ─────────────────────────────────────────── */
 .var-chip {
@@ -56,8 +36,7 @@
     border: 1px solid rgba(255,107,0,0.25);
     padding: 0.22rem 0.65rem; border-radius: 20px;
     font-size: 0.72rem; font-weight: 700; font-family: monospace;
-    cursor: pointer; transition: all 0.18s; user-select: none;
-    white-space: nowrap;
+    cursor: pointer; transition: all 0.18s; user-select: none; white-space: nowrap;
 }
 .var-chip:hover { background: #FF6B00; color: #fff; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(255,107,0,0.3); }
 
@@ -75,7 +54,7 @@
 /* ── Preview ───────────────────────────────────────────── */
 .preview-sticky { position: sticky; top: 72px; }
 #preview-frame {
-    width: 100%; height: 480px;
+    width: 100%; height: 500px;
     border: 1.5px solid #e2e8f0; border-radius: 8px;
     background: #f8fafc; display: block;
 }
@@ -90,6 +69,13 @@
     letter-spacing: 1px; color: #94a3b8; flex-shrink: 0;
 }
 .preview-subject-bar .val { color: #1e293b; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Preview loading ───────────────────────────────────── */
+.preview-loading {
+    display: flex; align-items: center; justify-content: center;
+    height: 500px; color: #94a3b8; font-family: sans-serif;
+    flex-direction: column; gap: 0.75rem;
+}
 </style>
 @endsection
 
@@ -141,8 +127,8 @@
                         <label>Assunto do E-mail <span class="text-danger">*</span></label>
                         <input type="text" name="subject" id="subject" class="form-control"
                                value="{{ old('subject', $subject) }}" required
-                               placeholder="Ex: Bem-vindo à @{{site_name}}!">
-                        <small class="form-text">Use variáveis como <code style="color:#FF6B00;background:rgba(255,107,0,0.08);padding:0 4px;border-radius:3px;">@{{site_name}}</code> no assunto.</small>
+                               placeholder="Ex: Bem-vindo à &#123;&#123;site_name&#125;&#125;!">
+                        <small class="form-text">Use variáveis como <code style="color:#FF6B00;background:rgba(255,107,0,0.08);padding:0 4px;border-radius:3px;">&#123;&#123;site_name&#125;&#125;</code> no assunto.</small>
                     </div>
 
                     {{-- Corpo --}}
@@ -164,7 +150,7 @@
 
                         <div id="htmlEditorWrap" style="display:none;">
                             <textarea id="htmlBody" class="form-control"
-                                      style="font-family:'Courier New',monospace;font-size:0.82rem;min-height:260px;resize:vertical;border-radius:0 0 8px 8px;border-top:none;"
+                                      style="font-family:'Courier New',monospace;font-size:0.82rem;min-height:280px;resize:vertical;border-radius:0 0 8px 8px;border-top:none;"
                                       placeholder="<p>Seu HTML aqui...</p>"></textarea>
                         </div>
                     </div>
@@ -203,9 +189,16 @@
                         <span class="lbl">Assunto:</span>
                         <span class="val" id="preview-subject">{{ $subject }}</span>
                     </div>
-                    <iframe id="preview-frame"
-                            srcdoc="<div style='padding:2rem;color:#94a3b8;text-align:center;font-family:sans-serif;'><div style='font-size:2.5rem;margin-bottom:1rem;'>📧</div>O preview aparecerá aqui automaticamente.</div>">
-                    </iframe>
+                    {{-- Usamos div+iframe para controle total do conteúdo --}}
+                    <div id="preview-container" style="position:relative;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;min-height:500px;background:#f8fafc;">
+                        <div id="preview-loading" class="preview-loading">
+                            <div style="font-size:2.5rem;">📧</div>
+                            <div>Carregando preview...</div>
+                        </div>
+                        <iframe id="preview-frame"
+                                style="width:100%;height:500px;border:none;display:none;"
+                                sandbox="allow-same-origin"></iframe>
+                    </div>
                 </div>
             </div>
 
@@ -262,7 +255,6 @@
 @endsection
 
 @section('scripts')
-{{-- Summernote Lite — sem dependência do Bootstrap --}}
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/lang/summernote-pt-BR.min.js"></script>
 
@@ -272,37 +264,51 @@ var TEST_URL     = '{{ route("admin.settings.email.test") }}';
 var CSRF         = document.querySelector('meta[name="csrf-token"]').content;
 var currentMode  = 'rich';
 var previewTimer = null;
+var summernoteReady = false;
 
 $(function() {
     // ── Inicializar Summernote Lite ───────────────────────
     $('#summernote').summernote({
         lang: 'pt-BR',
-        height: 260,
+        height: 280,
         toolbar: [
-            ['style',   ['style']],
-            ['font',    ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
-            ['fontsize',['fontsize']],
-            ['color',   ['color']],
-            ['para',    ['ul', 'ol', 'paragraph', 'height']],
-            ['table',   ['table']],
-            ['insert',  ['link', 'picture', 'hr']],
-            ['view',    ['codeview', 'fullscreen']],
+            ['style',    ['style']],
+            ['font',     ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+            ['fontsize', ['fontsize']],
+            ['color',    ['color']],
+            ['para',     ['ul', 'ol', 'paragraph', 'height']],
+            ['table',    ['table']],
+            ['insert',   ['link', 'picture', 'hr']],
+            ['view',     ['codeview', 'fullscreen']],
         ],
         fontSizes: ['12', '13', '14', '15', '16', '18', '20', '24'],
         callbacks: {
             onInit: function() {
-                // Preview logo após o Summernote estar pronto
-                refreshPreview();
+                summernoteReady = true;
+                // Pequeno delay para garantir que o DOM do Summernote está pronto
+                setTimeout(function() { refreshPreview(); }, 300);
             },
-            onChange: function() { schedulePreview(); }
+            onChange: function() {
+                schedulePreview();
+            },
+            onImageUpload: function(files) {
+                HMToast.warning('Upload de imagens não suportado. Use uma URL externa.');
+            }
         },
         placeholder: 'Digite o conteúdo do e-mail aqui...',
-        disableDragAndDrop: false,
         tabsize: 2,
     });
 
     // Assunto → preview ao digitar
     $('#subject').on('input', schedulePreview);
+
+    // Fallback: se onInit não disparar em 2s, forçar preview
+    setTimeout(function() {
+        if (!summernoteReady) {
+            summernoteReady = true;
+            refreshPreview();
+        }
+    }, 2000);
 });
 
 // ── Alternar modo ─────────────────────────────────────────
@@ -312,23 +318,33 @@ function switchMode(mode) {
     $('#tabHtml').toggleClass('active', mode === 'html');
 
     if (mode === 'html') {
-        $('#htmlBody').val($('#summernote').summernote('code'));
+        var code = '';
+        try { code = $('#summernote').summernote('code'); } catch(e) {}
+        $('#htmlBody').val(code);
         $('#richEditorWrap').hide();
         $('#htmlEditorWrap').show();
         $('#htmlBody').off('input').on('input', schedulePreview);
     } else {
         var html = $('#htmlBody').val();
-        if (html) $('#summernote').summernote('code', html);
+        if (html) {
+            try { $('#summernote').summernote('code', html); } catch(e) {}
+        }
         $('#richEditorWrap').show();
         $('#htmlEditorWrap').hide();
     }
+    schedulePreview();
 }
 
 // ── Obter corpo atual ─────────────────────────────────────
 function getBody() {
-    return currentMode === 'html'
-        ? $('#htmlBody').val()
-        : $('#summernote').summernote('code');
+    if (currentMode === 'html') {
+        return $('#htmlBody').val() || '';
+    }
+    try {
+        return $('#summernote').summernote('code') || '';
+    } catch(e) {
+        return $('#summernote').val() || '';
+    }
 }
 
 // ── Inserir variável ──────────────────────────────────────
@@ -340,8 +356,12 @@ function insertVariable(varName) {
         ta.selectionStart = ta.selectionEnd = pos + varName.length;
         ta.focus();
     } else {
-        $('#summernote').summernote('focus');
-        $('#summernote').summernote('insertText', varName);
+        try {
+            $('#summernote').summernote('focus');
+            $('#summernote').summernote('insertText', varName);
+        } catch(e) {
+            HMToast.warning('Clique no editor antes de inserir a variável.');
+        }
     }
     schedulePreview();
 }
@@ -349,17 +369,49 @@ function insertVariable(varName) {
 // ── Preview ───────────────────────────────────────────────
 function schedulePreview() {
     clearTimeout(previewTimer);
-    previewTimer = setTimeout(refreshPreview, 700);
+    previewTimer = setTimeout(refreshPreview, 600);
+}
+
+function showPreviewLoading() {
+    document.getElementById('preview-loading').style.display = 'flex';
+    document.getElementById('preview-frame').style.display   = 'none';
+}
+
+function showPreviewFrame(html) {
+    var frame = document.getElementById('preview-frame');
+    frame.style.display = 'block';
+    document.getElementById('preview-loading').style.display = 'none';
+
+    // Escrever diretamente no documento do iframe
+    try {
+        var doc = frame.contentDocument || frame.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+    } catch(e) {
+        // Fallback: srcdoc
+        frame.srcdoc = html;
+    }
+}
+
+function showPreviewError(msg) {
+    document.getElementById('preview-loading').innerHTML =
+        '<div style="font-size:1.5rem;margin-bottom:0.5rem;">❌</div>' +
+        '<div style="color:#dc2626;font-size:0.85rem;text-align:center;padding:0 1rem;">' + msg + '</div>';
+    document.getElementById('preview-loading').style.display = 'flex';
+    document.getElementById('preview-frame').style.display   = 'none';
 }
 
 function refreshPreview() {
     var subject = $('#subject').val() || '';
-    var body    = getBody() || '';
+    var body    = getBody();
 
-    // Mostrar loading no iframe
-    document.getElementById('preview-frame').srcdoc =
-        "<div style='padding:2rem;color:#94a3b8;text-align:center;font-family:sans-serif;'>" +
-        "<div style='font-size:1.5rem;margin-bottom:0.5rem;'>⏳</div>Gerando preview...</div>";
+    if (!body && !subject) {
+        showPreviewLoading();
+        return;
+    }
+
+    showPreviewLoading();
 
     $.ajax({
         url:         PREVIEW_URL,
@@ -372,14 +424,17 @@ function refreshPreview() {
                 $('#preview-subject').text(data.subject || '(sem assunto)');
             }
             if (data.html) {
-                document.getElementById('preview-frame').srcdoc = data.html;
+                showPreviewFrame(data.html);
+            } else {
+                showPreviewError('Resposta inválida do servidor.');
             }
         },
         error: function(xhr) {
-            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao gerar preview.';
-            document.getElementById('preview-frame').srcdoc =
-                "<div style='padding:2rem;color:#dc2626;text-align:center;font-family:sans-serif;'>" +
-                "<div style='font-size:1.5rem;margin-bottom:0.5rem;'>❌</div>" + msg + "</div>";
+            var msg = 'Erro ao gerar preview.';
+            if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+            else if (xhr.status === 419) msg = 'Sessão expirada. Recarregue a página.';
+            else if (xhr.status === 500) msg = 'Erro interno do servidor (500).';
+            showPreviewError(msg);
         }
     });
 }
@@ -387,7 +442,12 @@ function refreshPreview() {
 // ── Sincronizar antes de salvar ───────────────────────────
 $('#tplForm').on('submit', function() {
     if (currentMode === 'html') {
-        $('#summernote').summernote('code', $('#htmlBody').val());
+        try { $('#summernote').summernote('code', $('#htmlBody').val()); } catch(e) {}
+    }
+    // Garantir que o textarea name="body" tem o valor correto
+    var body = getBody();
+    if (!$('textarea[name="body"]').length) {
+        $('<input>').attr({ type: 'hidden', name: 'body', value: body }).appendTo(this);
     }
 });
 
@@ -397,7 +457,8 @@ function sendTestEmail() {
 
     Swal.fire({
         title: 'Enviar e-mail de teste',
-        html: '<p style="font-size:0.88rem;color:#64748b;margin-bottom:0.75rem;">O e-mail será enviado com o conteúdo atual do editor.</p><input type="email" id="swalTestEmail" class="swal2-input" placeholder="seu@email.com" value="' + userEmail + '">',
+        html: '<p style="font-size:0.88rem;color:#64748b;margin-bottom:0.75rem;">O e-mail será enviado com o conteúdo atual do editor.</p>' +
+              '<input type="email" id="swalTestEmail" class="swal2-input" placeholder="seu@email.com" value="' + userEmail + '">',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#FF6B00',
