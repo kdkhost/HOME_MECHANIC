@@ -82,9 +82,9 @@
         <div class="row g-4 mb-5">
             @php
             $infos = [
-                ['icon'=>'bi-geo-alt-fill','title'=>'Endereço','text'=>'Av. das Supercars, 1500<br>Jardim Europa — São Paulo, SP<br>CEP: 01452-000'],
-                ['icon'=>'bi-telephone-fill','title'=>'Telefone & WhatsApp','text'=>'(11) 99999-9999<br>(11) 3333-4444<br>Seg–Sex: 8h–18h'],
-                ['icon'=>'bi-envelope-fill','title'=>'E-mail','text'=>'contato@homemechanic.com.br<br>orcamento@homemechanic.com.br'],
+                ['icon'=>'bi-geo-alt-fill','title'=>'Endereço','text'=> !empty($siteSettings['address']) ? nl2br(e($siteSettings['address'])) : 'Av. das Supercars, 1500<br>Jardim Europa — São Paulo, SP'],
+                ['icon'=>'bi-telephone-fill','title'=>'Telefone & WhatsApp','text'=> ($siteSettings['phone'] ?? '(11) 99999-9999') . (!empty($siteSettings['whatsapp']) ? '<br>'.$siteSettings['whatsapp'] : '') . '<br>Seg–Sex: 8h–18h'],
+                ['icon'=>'bi-envelope-fill','title'=>'E-mail','text'=> $siteSettings['email'] ?? 'contato@homemechanic.com.br'],
                 ['icon'=>'bi-clock-fill','title'=>'Horário de Funcionamento','text'=>'Segunda a Sexta: 8h às 18h<br>Sábado: 8h às 13h<br>Domingo: Fechado'],
             ];
             @endphp
@@ -208,7 +208,7 @@
                     <p style="color:var(--gray); font-size:0.88rem; margin-bottom:1.5rem;">
                         Para respostas rápidas, fale diretamente com nossa equipe pelo WhatsApp.
                     </p>
-                    <a href="https://wa.me/5511999999999" target="_blank" class="btn-orange w-100" style="justify-content:center; background:linear-gradient(135deg,#128C7E,#25D366);">
+                    <a href="https://wa.me/{{ preg_replace('/\D/','',$siteSettings['whatsapp'] ?? '5511999999999') }}" target="_blank" class="btn-orange w-100" style="justify-content:center; background:linear-gradient(135deg,#128C7E,#25D366) !important; border-color:transparent !important; box-shadow:0 4px 16px rgba(37,211,102,0.3) !important;">
                         <i class="bi bi-whatsapp"></i> Chamar no WhatsApp
                     </a>
                     <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.06);">

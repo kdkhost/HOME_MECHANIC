@@ -171,89 +171,90 @@
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,107,0,0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
     }
 
-    /* ── Buttons ───────────────────────────────────────────── */
-    .btn-orange {
-        background: linear-gradient(135deg, var(--orange-dark), var(--orange)) !important;
-        color: var(--black) !important;
+    /* ── Buttons — sem conflito Bootstrap ─────────────────── */
+    /* Seletor de alta especificidade para vencer o Bootstrap */
+    a.btn-orange, button.btn-orange, .btn-orange {
+        background: linear-gradient(135deg, #E55A00, #FF6B00) !important;
+        color: #0A0A0A !important;
         font-family: var(--font-body);
-        font-weight: 700; font-size: 0.85rem;
-        letter-spacing: 1.5px; text-transform: uppercase;
+        font-weight: 700 !important;
+        font-size: 0.85rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
         padding: 0.9rem 2.2rem;
-        border: none !important;
+        border: 2px solid transparent !important;
         border-radius: 6px;
-        transition: var(--transition);
-        display: inline-flex; align-items: center; gap: 0.6rem;
-        box-shadow: 0 4px 20px rgba(255,107,0,0.3) !important;
-        position: relative; overflow: hidden;
+        transition: all 0.3s ease;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 0.6rem;
+        box-shadow: 0 4px 20px rgba(255,107,0,0.35) !important;
         text-decoration: none !important;
         cursor: pointer;
         outline: none !important;
         -webkit-tap-highlight-color: transparent;
+        will-change: transform, box-shadow;
     }
-    .btn-orange::before {
-        content: '';
-        position: absolute; inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
-        opacity: 0; transition: opacity 0.25s;
-        pointer-events: none;
+    a.btn-orange:hover, button.btn-orange:hover, .btn-orange:hover {
+        background: linear-gradient(135deg, #FF6B00, #FF8C3A) !important;
+        color: #0A0A0A !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 28px rgba(255,107,0,0.55) !important;
+        text-decoration: none !important;
+        border-color: transparent !important;
     }
-    .btn-orange:hover,
-    .btn-orange:focus,
-    .btn-orange:active,
-    .btn-orange:focus-visible,
-    .btn-orange:visited {
-        color: var(--black) !important;
-        background: linear-gradient(135deg, var(--orange-dark), var(--orange)) !important;
-        box-shadow: 0 8px 28px rgba(255,107,0,0.5) !important;
+    a.btn-orange:active, button.btn-orange:active, .btn-orange:active,
+    a.btn-orange:focus, button.btn-orange:focus, .btn-orange:focus,
+    a.btn-orange:focus-visible, button.btn-orange:focus-visible {
+        background: linear-gradient(135deg, #E55A00, #FF6B00) !important;
+        color: #0A0A0A !important;
+        transform: translateY(0) scale(0.98) !important;
+        box-shadow: 0 4px 16px rgba(255,107,0,0.4) !important;
         text-decoration: none !important;
         outline: none !important;
-        border: none !important;
+        border-color: transparent !important;
     }
-    .btn-orange:hover { transform: translateY(-2px); }
-    .btn-orange:active { transform: translateY(0px) scale(0.98); }
-    .btn-orange:hover::before { opacity: 1; }
 
-    .btn-outline-orange {
+    a.btn-outline-orange, button.btn-outline-orange, .btn-outline-orange {
         background: transparent !important;
-        color: var(--orange) !important;
-        border: 1.5px solid var(--orange) !important;
+        color: #FF6B00 !important;
+        border: 2px solid #FF6B00 !important;
         font-family: var(--font-body);
-        font-weight: 700; font-size: 0.85rem;
-        letter-spacing: 1.5px; text-transform: uppercase;
-        padding: 0.9rem 2.2rem;
+        font-weight: 700 !important;
+        font-size: 0.85rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: calc(0.9rem - 1px) 2.2rem;
         border-radius: 6px;
-        transition: var(--transition);
-        display: inline-flex; align-items: center; gap: 0.6rem;
+        transition: all 0.3s ease;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 0.6rem;
         text-decoration: none !important;
-        position: relative; overflow: hidden;
-        isolation: isolate;
         cursor: pointer;
         outline: none !important;
         -webkit-tap-highlight-color: transparent;
+        will-change: transform, background, color;
     }
-    .btn-outline-orange::before {
-        content: '';
-        position: absolute; inset: 0;
-        background: var(--orange);
-        transform: scaleX(0); transform-origin: left;
-        transition: transform 0.3s ease;
-        z-index: -1;
+    a.btn-outline-orange:hover, button.btn-outline-orange:hover, .btn-outline-orange:hover {
+        background: #FF6B00 !important;
+        color: #0A0A0A !important;
+        border-color: #FF6B00 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(255,107,0,0.4) !important;
+        text-decoration: none !important;
     }
-    .btn-outline-orange:hover,
-    .btn-outline-orange:focus,
-    .btn-outline-orange:active,
-    .btn-outline-orange:focus-visible,
-    .btn-outline-orange:visited {
-        color: var(--black) !important;
-        border-color: var(--orange) !important;
+    a.btn-outline-orange:active, button.btn-outline-orange:active, .btn-outline-orange:active,
+    a.btn-outline-orange:focus, button.btn-outline-orange:focus, .btn-outline-orange:focus,
+    a.btn-outline-orange:focus-visible, button.btn-outline-orange:focus-visible {
+        background: #E55A00 !important;
+        color: #0A0A0A !important;
+        border-color: #E55A00 !important;
+        transform: translateY(0) scale(0.98) !important;
+        box-shadow: 0 4px 14px rgba(255,107,0,0.35) !important;
         text-decoration: none !important;
         outline: none !important;
-        box-shadow: none !important;
     }
-    .btn-outline-orange:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,0,0.3) !important; }
-    .btn-outline-orange:active { transform: translateY(0px) scale(0.98); }
-    .btn-outline-orange:hover::before,
-    .btn-outline-orange:active::before { transform: scaleX(1); }
 
     /* ── Section titles ────────────────────────────────────── */
     .section-label {
@@ -641,7 +642,7 @@
         <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
         <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
         <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
-        <a href="https://wa.me/5511999999999" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+        <a href="https://wa.me/{{ preg_replace('/\D/','',$siteSettings['whatsapp'] ?? '5511999999999') }}" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
     </div>
 </div>
 
@@ -715,16 +716,17 @@
     <div class="container">
         <div class="row g-5 pb-5">
             <div class="col-lg-4">
-                <div class="footer-brand mb-3">HOMEMECHANIC</div>
-                <p class="footer-text mb-4">
-                    Especialistas em tuning, performance e manutenção de carros de luxo. 
-                    Mais de 15 anos transformando supercars em obras de arte mecânica.
-                </p>
+                <div class="footer-brand mb-3">{{ strtoupper($siteSettings['site_name'] ?? 'HOMEMECHANIC') }}</div>
+                <p class="footer-text mb-4">{{ $siteSettings['site_desc'] ?? 'Especialistas em tuning, performance e manutenção de carros de luxo.' }}</p>
                 <div class="social-links">
-                    <a href="#"><i class="bi bi-instagram"></i></a>
-                    <a href="#"><i class="bi bi-facebook"></i></a>
-                    <a href="#"><i class="bi bi-youtube"></i></a>
-                    <a href="#"><i class="bi bi-whatsapp"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                    @if(!empty($siteSettings['whatsapp']))
+                    <a href="https://wa.me/{{ preg_replace('/\D/','',$siteSettings['whatsapp']) }}" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    @else
+                    <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    @endif
                 </div>
             </div>
             <div class="col-6 col-lg-2">
@@ -740,19 +742,37 @@
             <div class="col-6 col-lg-2">
                 <div class="footer-title">Serviços</div>
                 <ul class="footer-links">
-                    <li><a href="#">Tuning Motor</a></li>
-                    <li><a href="#">Suspensão Sport</a></li>
-                    <li><a href="#">Freios Performance</a></li>
-                    <li><a href="#">Estética Premium</a></li>
-                    <li><a href="#">Diagnóstico</a></li>
+                    <li><a href="{{ route('services') }}">Tuning Motor</a></li>
+                    <li><a href="{{ route('services') }}">Suspensão Sport</a></li>
+                    <li><a href="{{ route('services') }}">Freios Performance</a></li>
+                    <li><a href="{{ route('services') }}">Estética Premium</a></li>
+                    <li><a href="{{ route('services') }}">Diagnóstico</a></li>
                 </ul>
             </div>
             <div class="col-lg-4">
                 <div class="footer-title">Contato</div>
                 <ul class="footer-contact list-unstyled">
-                    <li><i class="bi bi-geo-alt-fill"></i> Av. das Supercars, 1500 — São Paulo, SP</li>
-                    <li><i class="bi bi-telephone-fill"></i> (11) 99999-9999</li>
-                    <li><i class="bi bi-envelope-fill"></i> contato@homemechanic.com.br</li>
+                    @if(!empty($siteSettings['address']))
+                    <li><i class="bi bi-geo-alt-fill"></i> {{ $siteSettings['address'] }}</li>
+                    @endif
+                    @if(!empty($siteSettings['phone']))
+                    <li>
+                        <i class="bi bi-telephone-fill"></i>
+                        <a href="tel:{{ preg_replace('/\D/','',$siteSettings['phone']) }}" style="color:inherit;">{{ $siteSettings['phone'] }}</a>
+                    </li>
+                    @endif
+                    @if(!empty($siteSettings['whatsapp']))
+                    <li>
+                        <i class="bi bi-whatsapp"></i>
+                        <a href="https://wa.me/{{ preg_replace('/\D/','',$siteSettings['whatsapp']) }}" target="_blank" style="color:inherit;">{{ $siteSettings['whatsapp'] }}</a>
+                    </li>
+                    @endif
+                    @if(!empty($siteSettings['email']))
+                    <li>
+                        <i class="bi bi-envelope-fill"></i>
+                        <a href="mailto:{{ $siteSettings['email'] }}" style="color:inherit;">{{ $siteSettings['email'] }}</a>
+                    </li>
+                    @endif
                     <li><i class="bi bi-clock-fill"></i> Seg–Sex: 8h–18h &nbsp;|&nbsp; Sáb: 8h–13h</li>
                 </ul>
             </div>
@@ -760,8 +780,8 @@
     </div>
     <div class="footer-bottom">
         <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <span>&copy; {{ date('Y') }} HomeMechanic. Todos os direitos reservados.</span>
-            <span>Desenvolvido com <i class="bi bi-heart-fill text-gold"></i> para amantes de carros</span>
+            <span>&copy; {{ date('Y') }} {{ $siteSettings['site_name'] ?? 'HomeMechanic' }}. Todos os direitos reservados.</span>
+            <span>Desenvolvido com <i class="bi bi-heart-fill text-orange"></i> para amantes de carros</span>
         </div>
     </div>
 </footer>
