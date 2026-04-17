@@ -28,6 +28,23 @@ body {
     background-color: var(--hm-sidebar-bg) !important;
 }
 
+/* Forçar content-wrapper com margem do sidebar aberto */
+.content-wrapper,
+.main-footer,
+.main-header.navbar {
+    margin-left: 250px !important;
+}
+
+/* Quando o usuário fecha pelo hambúrguer */
+body.sidebar-collapse .content-wrapper,
+body.sidebar-collapse .main-footer,
+body.sidebar-collapse .main-header.navbar {
+    margin-left: 0 !important;
+}
+body.sidebar-collapse .main-sidebar {
+    margin-left: -250px !important;
+}
+
 .brand-link {
     background-color: rgba(0,0,0,0.3) !important;
     border-bottom: 2px solid var(--hm-primary) !important;
