@@ -31,36 +31,135 @@
 <div class="app-wrapper">
 
     <!--begin::Header-->
-    <nav class="app-header navbar navbar-expand bg-body">
-        <div class="container-fluid">
-            <ul class="navbar-nav">
+    <nav class="app-header navbar navbar-expand bg-body" id="mainNavbar">
+        <div class="container-fluid px-3">
+
+            <!-- ── Esquerda ──────────────────────────────── -->
+            <ul class="navbar-nav align-items-center">
+
+                <!-- Hambúrguer -->
                 <li class="nav-item">
-                    <a class="nav-link" id="sidebarToggle" href="#" role="button">
-                        <i class="bi bi-list"></i>
-                    </a>
+                    <button class="nav-btn" id="sidebarToggle" title="Recolher/expandir menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
                 </li>
-                <li class="nav-item d-none d-md-block">
-                    <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
-                        <i class="bi bi-house me-1"></i> Dashboard
+
+                <!-- Breadcrumb rápido -->
+                <li class="nav-item d-none d-lg-flex align-items-center ms-2">
+                    <a href="{{ route('admin.dashboard.index') }}" class="nav-link py-0 px-2" style="font-size:0.82rem;">
+                        <i class="fas fa-home me-1"></i> Dashboard
                     </a>
                 </li>
             </ul>
 
-            <ul class="navbar-nav ms-auto">
+            <!-- ── Direita ────────────────────────────────── -->
+            <ul class="navbar-nav ms-auto align-items-center gap-1">
+
+                <!-- Busca rápida -->
+                <li class="nav-item d-none d-md-block">
+                    <div class="navbar-search" id="searchWrap">
+                        <i class="fas fa-search navbar-search-icon"></i>
+                        <input type="text" id="navSearch" placeholder="Buscar no painel..." autocomplete="off">
+                        <div class="navbar-search-results" id="searchResults"></div>
+                    </div>
+                </li>
+
+                <!-- Modo escuro -->
+                <li class="nav-item">
+                    <button class="nav-btn" id="darkModeToggle" title="Alternar modo escuro">
+                        <i class="fas fa-moon" id="darkIcon"></i>
+                    </button>
+                </li>
+
+                <!-- Notificações -->
+                <li class="nav-item dropdown">
+                    <button class="nav-btn position-relative" data-bs-toggle="dropdown" title="Notificações">
+                        <i class="fas fa-bell"></i>
+                        <span class="nav-badge" id="notifBadge" style="display:none;">0</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end notif-dropdown" style="width:340px;">
+                        <div class="notif-header">
+                            <span class="notif-title">Notificações</span>
+                            <button class="notif-clear" id="clearNotifs">Limpar tudo</button>
+                        </div>
+                        <div id="notifList">
+                            <div class="notif-empty">
+                                <i class="fas fa-bell-slash"></i>
+                                <span>Nenhuma notificação</span>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- Atalhos rápidos -->
+                <li class="nav-item dropdown d-none d-md-block">
+                    <button class="nav-btn" data-bs-toggle="dropdown" title="Atalhos">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end shortcuts-dropdown" style="width:280px;">
+                        <div class="notif-header"><span class="notif-title">Atalhos Rápidos</span></div>
+                        <div class="shortcuts-grid">
+                            <a href="{{ route('admin.services.index') }}" class="shortcut-item">
+                                <i class="fas fa-tools"></i><span>Serviços</span>
+                            </a>
+                            <a href="{{ route('admin.gallery.index') }}" class="shortcut-item">
+                                <i class="fas fa-images"></i><span>Galeria</span>
+                            </a>
+                            <a href="{{ route('admin.blog.index') }}" class="shortcut-item">
+                                <i class="fas fa-newspaper"></i><span>Blog</span>
+                            </a>
+                            <a href="{{ route('admin.contact.index') }}" class="shortcut-item">
+                                <i class="fas fa-envelope"></i><span>Mensagens</span>
+                            </a>
+                            <a href="{{ route('admin.seo.index') }}" class="shortcut-item">
+                                <i class="fas fa-search"></i><span>SEO</span>
+                            </a>
+                            <a href="{{ route('admin.analytics.index') }}" class="shortcut-item">
+                                <i class="fas fa-chart-line"></i><span>Analytics</span>
+                            </a>
+                            <a href="{{ route('admin.users.index') }}" class="shortcut-item">
+                                <i class="fas fa-users"></i><span>Usuários</span>
+                            </a>
+                            <a href="{{ route('admin.settings.index') }}" class="shortcut-item">
+                                <i class="fas fa-cog"></i><span>Config.</span>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- Divisor -->
+                <li class="nav-item d-none d-md-flex align-items-center">
+                    <div style="width:1px;height:22px;background:var(--hm-border);margin:0 4px;"></div>
+                </li>
+
                 <!-- Usuário -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle fs-5"></i>
-                        <span class="d-none d-md-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width:220px;">
-                        <li class="px-3 py-2 border-bottom">
-                            <div class="fw-bold" style="font-size:0.88rem;">{{ Auth::user()->name ?? 'Admin' }}</div>
-                            <div class="text-muted" style="font-size:0.75rem;">{{ Auth::user()->email ?? '' }}</div>
+                    <button class="nav-user-btn" data-bs-toggle="dropdown">
+                        <div class="nav-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</div>
+                        <div class="d-none d-md-block text-start">
+                            <div class="nav-user-name">{{ Auth::user()->name ?? 'Admin' }}</div>
+                            <div class="nav-user-role">{{ Auth::user()->role === 'admin' ? 'Administrador' : 'Usuário' }}</div>
+                        </div>
+                        <i class="fas fa-angle-down ms-1 d-none d-md-block" style="font-size:0.7rem;color:var(--hm-text-muted);"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" style="min-width:220px;">
+                        <li class="px-3 py-2" style="border-bottom:1px solid var(--hm-border);">
+                            <div style="font-weight:700;font-size:0.88rem;color:var(--hm-text);">{{ Auth::user()->name ?? 'Admin' }}</div>
+                            <div style="font-size:0.75rem;color:var(--hm-text-muted);">{{ Auth::user()->email ?? '' }}</div>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.users.edit', Auth::id()) }}" class="dropdown-item">
+                                <i class="fas fa-user-edit"></i> Meu Perfil
+                            </a>
                         </li>
                         <li>
                             <a href="{{ route('admin.settings.index') }}" class="dropdown-item">
-                                <i class="bi bi-gear me-2"></i> Configurações
+                                <i class="fas fa-cog"></i> Configurações
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('home') }}" class="dropdown-item" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> Ver Site
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
@@ -68,12 +167,13 @@
                             <form method="POST" action="{{ route('admin.logout') }}">
                                 @csrf
                                 <button type="submit" class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-right me-2"></i> Sair
+                                    <i class="fas fa-sign-out-alt"></i> Sair
                                 </button>
                             </form>
                         </li>
                     </ul>
                 </li>
+
             </ul>
         </div>
     </nav>
