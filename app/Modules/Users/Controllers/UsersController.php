@@ -48,10 +48,15 @@ class UsersController extends Controller
                 'email'              => $request->email,
                 'password'           => Hash::make($request->password),
                 'role'               => $request->role,
-                'phone'              => $request->phone,
-                'bio'                => $request->bio,
                 'email_verified_at'  => now(),
             ];
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone')) {
+                $data['phone'] = $request->phone;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'bio')) {
+                $data['bio'] = $request->bio;
+            }
 
             if ($request->hasFile('avatar')) {
                 $data['avatar'] = $this->uploadAvatar($request->file('avatar'));
@@ -109,25 +114,31 @@ class UsersController extends Controller
                 'name'  => $request->name,
                 'email' => $request->email,
                 'role'  => $request->role,
-                'phone' => $request->phone,
-                'bio'   => $request->bio,
             ];
+
+            // Campos opcionais — só inclui se a coluna existir no banco
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone')) {
+                $data['phone'] = $request->phone;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'bio')) {
+                $data['bio'] = $request->bio;
+            }
 
             if ($request->filled('password')) {
                 $data['password'] = Hash::make($request->password);
             }
 
             if ($request->hasFile('avatar')) {
-                // Remover avatar antigo
-                if ($user->avatar) {
-                    Storage::disk('public')->delete($user->avatar);
+                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
+                    $data['avatar'] = $this->uploadAvatar($request->file('avatar'));
                 }
-                $data['avatar'] = $this->uploadAvatar($request->file('avatar'));
             }
 
             // Remover avatar
-            if ($request->input('remove_avatar') === '1' && $user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
+            if ($request->input('remove_avatar') === '1' && \Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
+                if ($user->avatar) {
+                    Storage::disk('public')->delete($user->avatar);
+                }
                 $data['avatar'] = null;
             }
 
