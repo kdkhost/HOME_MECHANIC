@@ -6,98 +6,74 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — HomeMechanic Admin</title>
 
-    <!-- AdminLTE 4 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/css/adminlte.min.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <!-- Custom -->
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 
     @yield('styles')
 </head>
-<body class="layout-fixed sidebar-expand-lg">
+{{-- sidebar-mini = necessário para layout-fixed funcionar
+     NÃO adicionamos sidebar-collapse = sidebar fica aberto --}}
+<body class="hold-transition sidebar-mini layout-fixed">
 
-<div class="app-wrapper">
+<div class="wrapper">
 
-    <!-- ── Navbar ─────────────────────────────────────────── -->
-    <nav class="app-header navbar navbar-expand bg-body">
-        <div class="container-fluid">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
-                        <i class="bi bi-list"></i>
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="far fa-user-circle mr-1"></i>
+                    <span class="d-none d-md-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" style="min-width:200px;">
+                    <div class="px-3 py-2 border-bottom">
+                        <div style="font-weight:700;font-size:0.88rem;">{{ Auth::user()->name ?? 'Admin' }}</div>
+                        <div style="font-size:0.75rem;color:#718096;">{{ Auth::user()->email ?? '' }}</div>
+                    </div>
+                    <a href="{{ route('admin.settings.index') }}" class="dropdown-item">
+                        <i class="fas fa-cog mr-2"></i> Configurações
                     </a>
-                </li>
-                <li class="nav-item d-none d-md-block">
-                    <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
-                        <i class="fas fa-home mr-1"></i> Dashboard
-                    </a>
-                </li>
-            </ul>
-
-            <ul class="navbar-nav ms-auto">
-                <!-- Usuário -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="far fa-user-circle me-1"></i>
-                        <span class="d-none d-md-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li class="dropdown-header">
-                            <strong>{{ Auth::user()->name ?? 'Admin' }}</strong><br>
-                            <small class="text-muted">{{ Auth::user()->email ?? '' }}</small>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a href="{{ route('admin.settings.index') }}" class="dropdown-item">
-                                <i class="fas fa-cog me-2"></i> Configurações
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="POST" action="{{ route('admin.logout') }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Sair
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+                    <div class="dropdown-divider"></div>
+                    <form method="POST" action="{{ route('admin.logout') }}">
+                        @csrf
+                        <button type="submit" class="dropdown-item text-danger" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Sair
+                        </button>
+                    </form>
+                </div>
+            </li>
+        </ul>
     </nav>
 
-    <!-- ── Sidebar ────────────────────────────────────────── -->
-    <aside class="app-sidebar bg-dark shadow" data-bs-theme="dark">
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="{{ route('admin.dashboard.index') }}" class="brand-link">
+            <i class="fas fa-tools brand-image" style="font-size:1.5rem;color:var(--hm-primary);margin-left:0.5rem;"></i>
+            <span class="brand-text font-weight-bold">HomeMechanic</span>
+        </a>
 
-        <!-- Brand -->
-        <div class="sidebar-brand">
-            <a href="{{ route('admin.dashboard.index') }}" class="brand-link">
-                <i class="fas fa-tools brand-image" style="color:var(--hm-primary);font-size:1.4rem;margin-right:0.5rem;"></i>
-                <span class="brand-text fw-bold" style="color:var(--hm-primary);">HomeMechanic</span>
-            </a>
-        </div>
+        <div class="sidebar">
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <i class="fas fa-user-circle fa-2x" style="color:var(--hm-primary);"></i>
+                </div>
+                <div class="info">
+                    <a href="#" class="d-block">{{ Auth::user()->name ?? 'Administrador' }}</a>
+                </div>
+            </div>
 
-        <!-- Sidebar content -->
-        <div class="sidebar-wrapper">
             <nav class="mt-2">
-                <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu">
-
-                    <!-- User panel -->
-                    <li class="nav-item px-3 py-2 mb-1" style="border-bottom:1px solid rgba(255,255,255,0.07);">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-user-circle fa-2x" style="color:var(--hm-primary);"></i>
-                            <div>
-                                <div class="text-white fw-semibold" style="font-size:0.88rem;">{{ Auth::user()->name ?? 'Administrador' }}</div>
-                                <div class="text-muted" style="font-size:0.75rem;">{{ Auth::user()->email ?? '' }}</div>
-                            </div>
-                        </div>
-                    </li>
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
                     <li class="nav-item">
                         <a href="{{ route('admin.dashboard.index') }}" class="nav-link {{ request()->routeIs('admin.dashboard.*') ? 'active' : '' }}">
@@ -164,27 +140,27 @@
                     <li class="nav-item {{ request()->routeIs('admin.settings.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-cog"></i>
-                            <p>Configurações <i class="nav-arrow fas fa-angle-right ms-auto"></i></p>
+                            <p>Configurações <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
-                                    <i class="nav-icon far fa-circle"></i><p>Geral</p>
+                                    <i class="far fa-circle nav-icon"></i><p>Geral</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.seo') }}" class="nav-link {{ request()->routeIs('admin.settings.seo') ? 'active' : '' }}">
-                                    <i class="nav-icon far fa-circle"></i><p>SEO</p>
+                                    <i class="far fa-circle nav-icon"></i><p>SEO</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.email') }}" class="nav-link {{ request()->routeIs('admin.settings.email') ? 'active' : '' }}">
-                                    <i class="nav-icon far fa-circle"></i><p>E-mail (SMTP)</p>
+                                    <i class="far fa-circle nav-icon"></i><p>E-mail (SMTP)</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.backup') }}" class="nav-link {{ request()->routeIs('admin.settings.backup') ? 'active' : '' }}">
-                                    <i class="nav-icon far fa-circle"></i><p>Backup / Manutenção</p>
+                                    <i class="far fa-circle nav-icon"></i><p>Backup / Manutenção</p>
                                 </a>
                             </li>
                         </ul>
@@ -209,18 +185,16 @@
         </div>
     </aside>
 
-    <!-- ── Content ────────────────────────────────────────── -->
-    <main class="app-main">
-
-        <!-- Page header -->
-        <div class="app-content-header">
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <div class="content-header">
             <div class="container-fluid">
-                <div class="row">
+                <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h3 class="mb-0">@yield('page-title', 'Dashboard')</h3>
+                        <h1 class="m-0">@yield('page-title', 'Dashboard')</h1>
                     </div>
                     <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-end">
+                        <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item">
                                 <a href="{{ route('admin.dashboard.index') }}"><i class="fas fa-home"></i></a>
                             </li>
@@ -231,73 +205,61 @@
             </div>
         </div>
 
-        <!-- Content -->
-        <div class="app-content">
+        <section class="content">
             <div class="container-fluid">
 
                 @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show">
-                        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show">
-                        <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="alert alert-danger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
                     </div>
                 @endif
                 @if(session('warning'))
-                    <div class="alert alert-warning alert-dismissible fade show">
-                        <i class="fas fa-exclamation-triangle me-2"></i>{{ session('warning') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="alert alert-warning alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('warning') }}
                     </div>
                 @endif
 
                 @yield('content')
 
             </div>
-        </div>
-    </main>
+        </section>
+    </div>
 
-    <!-- Footer -->
-    <footer class="app-footer">
+    <footer class="main-footer">
         <strong>Copyright &copy; {{ date('Y') }} <a href="https://homemechanic.com.br">HomeMechanic</a>.</strong>
         Todos os direitos reservados.
-        <div class="float-end d-none d-sm-inline-block">
+        <div class="float-right d-none d-sm-inline-block">
             Laravel {{ app()->version() }} | PHP {{ PHP_MAJOR_VERSION }}.{{ PHP_MINOR_VERSION }}
         </div>
     </footer>
 
 </div>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-beta2/dist/js/adminlte.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('js/admin.js') }}"></script>
 
 <script>
-    // CSRF
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
-
-    // Auto-hide alerts
     setTimeout(function() { $('.alert').fadeOut('slow'); }, 5000);
-
-    // Confirm delete
     $(document).on('click', '.btn-delete', function(e) {
         e.preventDefault();
         const form = $(this).closest('form');
         Swal.fire({
-            title: 'Confirmar exclusão',
-            text: 'Esta ação não pode ser desfeita.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sim, excluir!',
-            cancelButtonText: 'Cancelar'
+            title: 'Confirmar exclusão', text: 'Esta ação não pode ser desfeita.',
+            icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sim, excluir!', cancelButtonText: 'Cancelar'
         }).then(r => { if (r.isConfirmed) form.submit(); });
     });
 </script>
