@@ -2,16 +2,20 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
+use App\Modules\Frontend\Controllers\FrontendController;
 
+// Rota raiz — verifica instalação e redireciona
 Route::get('/', function () {
-    // Verificar se o sistema está instalado
     $installedFile = storage_path('installed');
-    
     if (!File::exists($installedFile)) {
-        // Sistema não instalado - redirecionar para instalador
         return redirect('/install');
     }
-    
-    // Sistema instalado - exibir página inicial do site
-    return view('modules.frontend.home');
-});
+    return app(FrontendController::class)->home();
+})->name('home');
+
+// Rotas do frontend
+Route::get('/servicos', [FrontendController::class, 'services'])->name('services');
+Route::get('/galeria',  [FrontendController::class, 'gallery'])->name('gallery');
+Route::get('/blog',     [FrontendController::class, 'blog'])->name('blog');
+Route::get('/contato',  [FrontendController::class, 'contact'])->name('contact');
+Route::post('/contato', [FrontendController::class, 'sendContact'])->name('contact.send');
