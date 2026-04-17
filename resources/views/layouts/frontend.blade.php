@@ -149,16 +149,23 @@
         padding: 0.55rem 1.4rem !important;
         box-shadow: 0 4px 16px rgba(255,107,0,0.3) !important;
         transition: var(--transition) !important;
+        outline: none !important;
+        -webkit-tap-highlight-color: transparent;
     }
     .nav-cta::after { display: none !important; }
     .nav-cta:hover,
     .nav-cta:focus,
-    .nav-cta:active {
+    .nav-cta:active,
+    .nav-cta:focus-visible,
+    .nav-cta:visited {
         background: linear-gradient(135deg, var(--orange), var(--orange-light)) !important;
         color: var(--black) !important;
         box-shadow: 0 6px 24px rgba(255,107,0,0.5) !important;
-        transform: translateY(-1px);
+        outline: none !important;
+        text-decoration: none !important;
     }
+    .nav-cta:hover { transform: translateY(-1px); }
+    .nav-cta:active { transform: translateY(0) scale(0.97); }
     .navbar-toggler { border-color: rgba(255,107,0,0.4); }
     .navbar-toggler-icon {
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,107,0,0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
@@ -166,36 +173,50 @@
 
     /* ── Buttons ───────────────────────────────────────────── */
     .btn-orange {
-        background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+        background: linear-gradient(135deg, var(--orange-dark), var(--orange)) !important;
         color: var(--black) !important;
         font-family: var(--font-body);
         font-weight: 700; font-size: 0.85rem;
         letter-spacing: 1.5px; text-transform: uppercase;
         padding: 0.9rem 2.2rem;
-        border: none; border-radius: 6px;
+        border: none !important;
+        border-radius: 6px;
         transition: var(--transition);
         display: inline-flex; align-items: center; gap: 0.6rem;
-        box-shadow: 0 4px 20px rgba(255,107,0,0.3);
+        box-shadow: 0 4px 20px rgba(255,107,0,0.3) !important;
         position: relative; overflow: hidden;
         text-decoration: none !important;
+        cursor: pointer;
+        outline: none !important;
+        -webkit-tap-highlight-color: transparent;
     }
     .btn-orange::before {
         content: '';
         position: absolute; inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+        background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
         opacity: 0; transition: opacity 0.25s;
+        pointer-events: none;
     }
-    .btn-orange:hover {
+    .btn-orange:hover,
+    .btn-orange:focus,
+    .btn-orange:active,
+    .btn-orange:focus-visible,
+    .btn-orange:visited {
         color: var(--black) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 28px rgba(255,107,0,0.5);
+        background: linear-gradient(135deg, var(--orange-dark), var(--orange)) !important;
+        box-shadow: 0 8px 28px rgba(255,107,0,0.5) !important;
+        text-decoration: none !important;
+        outline: none !important;
+        border: none !important;
     }
+    .btn-orange:hover { transform: translateY(-2px); }
+    .btn-orange:active { transform: translateY(0px) scale(0.98); }
     .btn-orange:hover::before { opacity: 1; }
 
     .btn-outline-orange {
-        background: transparent;
+        background: transparent !important;
         color: var(--orange) !important;
-        border: 1.5px solid var(--orange);
+        border: 1.5px solid var(--orange) !important;
         font-family: var(--font-body);
         font-weight: 700; font-size: 0.85rem;
         letter-spacing: 1.5px; text-transform: uppercase;
@@ -206,6 +227,9 @@
         text-decoration: none !important;
         position: relative; overflow: hidden;
         isolation: isolate;
+        cursor: pointer;
+        outline: none !important;
+        -webkit-tap-highlight-color: transparent;
     }
     .btn-outline-orange::before {
         content: '';
@@ -215,13 +239,21 @@
         transition: transform 0.3s ease;
         z-index: -1;
     }
-    .btn-outline-orange:hover {
+    .btn-outline-orange:hover,
+    .btn-outline-orange:focus,
+    .btn-outline-orange:active,
+    .btn-outline-orange:focus-visible,
+    .btn-outline-orange:visited {
         color: var(--black) !important;
-        border-color: var(--orange);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255,107,0,0.3);
+        border-color: var(--orange) !important;
+        text-decoration: none !important;
+        outline: none !important;
+        box-shadow: none !important;
     }
-    .btn-outline-orange:hover::before { transform: scaleX(1); }
+    .btn-outline-orange:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,0,0.3) !important; }
+    .btn-outline-orange:active { transform: translateY(0px) scale(0.98); }
+    .btn-outline-orange:hover::before,
+    .btn-outline-orange:active::before { transform: scaleX(1); }
 
     /* ── Section titles ────────────────────────────────────── */
     .section-label {
@@ -448,15 +480,26 @@
     }
     .drawer-cta a {
         display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-        background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+        background: linear-gradient(135deg, var(--orange-dark), var(--orange)) !important;
         color: var(--black) !important;
         font-weight: 700; font-size: 0.88rem;
         letter-spacing: 1.5px; text-transform: uppercase;
         padding: 0.9rem; border-radius: 6px;
-        text-decoration: none;
+        text-decoration: none !important;
         transition: var(--transition);
+        outline: none !important;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .drawer-cta a:hover,
+    .drawer-cta a:focus,
+    .drawer-cta a:active,
+    .drawer-cta a:visited {
+        color: var(--black) !important;
+        text-decoration: none !important;
+        outline: none !important;
     }
     .drawer-cta a:hover { box-shadow: 0 6px 20px rgba(255,107,0,0.4); transform: translateY(-1px); }
+    .drawer-cta a:active { transform: scale(0.98); }
 
     /* Drawer social */
     .drawer-social {
