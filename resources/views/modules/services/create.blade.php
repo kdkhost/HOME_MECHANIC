@@ -4,7 +4,7 @@
 @section('page-title', 'Novo Serviço')
 
 @section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ route('admin.dashboard.index') }}">Dashboard</a></li>
 <li class="breadcrumb-item"><a href="{{ route('admin.services.index') }}">Serviços</a></li>
 <li class="breadcrumb-item active">Novo Serviço</li>
 @endsection

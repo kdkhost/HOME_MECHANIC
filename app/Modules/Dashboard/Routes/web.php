@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     // Dashboard principal
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     
     // Rotas AJAX para dados do dashboard
     Route::get('/dashboard/data', [DashboardController::class, 'getData'])->name('dashboard.data');

@@ -19,7 +19,7 @@ class AuthController extends Controller
     {
         // Redirecionar se já estiver autenticado
         if (Auth::check()) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.dashboard.index');
         }
 
         return view('modules.auth.login');
@@ -80,7 +80,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Login realizado com sucesso!',
-                'redirect' => route('admin.dashboard')
+                'redirect' => route('admin.dashboard.index')
             ]);
         }
 
