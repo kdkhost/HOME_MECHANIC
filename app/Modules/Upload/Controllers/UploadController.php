@@ -227,6 +227,11 @@ class UploadController extends Controller
      */
     public function index(Request $request)
     {
+        // Requisição normal (navegador) → retorna a view
+        if (!$request->wantsJson() && !$request->ajax()) {
+            return view('modules.upload.index');
+        }
+
         try {
             $query = Upload::byUser(Auth::id())
                           ->with('user')
@@ -235,24 +240,16 @@ class UploadController extends Controller
             // Filtros
             if ($request->has('type')) {
                 switch ($request->input('type')) {
-                    case 'images':
-                        $query->images();
-                        break;
-                    case 'videos':
-                        $query->videos();
-                        break;
-                    case 'documents':
-                        $query->documents();
-                        break;
+                    case 'images':   $query->images();    break;
+                    case 'videos':   $query->videos();    break;
+                    case 'documents':$query->documents(); break;
                 }
             }
 
             if ($request->has('search')) {
-                $search = $request->input('search');
-                $query->where('original_name', 'like', "%{$search}%");
+                $query->where('original_name', 'like', '%' . $request->input('search') . '%');
             }
 
-            // Paginação
             $perPage = min($request->input('per_page', 20), 100);
             $uploads = $query->paginate($perPage);
 
@@ -261,22 +258,16 @@ class UploadController extends Controller
                 'data' => $uploads->items(),
                 'pagination' => [
                     'current_page' => $uploads->currentPage(),
-                    'last_page' => $uploads->lastPage(),
-                    'per_page' => $uploads->perPage(),
-                    'total' => $uploads->total()
+                    'last_page'    => $uploads->lastPage(),
+                    'per_page'     => $uploads->perPage(),
+                    'total'        => $uploads->total()
                 ]
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao listar uploads', [
-                'error' => $e->getMessage(),
-                'user_id' => Auth::id()
-            ]);
+            Log::error('Erro ao listar uploads', ['error' => $e->getMessage(), 'user_id' => Auth::id()]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro interno no servidor.'
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Erro interno no servidor.'], 500);
         }
     }
 
