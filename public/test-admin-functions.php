@@ -1,149 +1,144 @@
 <?php
 /**
- * Script de teste para verificar funcionalidades do painel admin
+ * Script para testar funcionalidades do admin
+ * Acesse: /test-admin-functions.php
  */
 
-header('Content-Type: application/json');
+echo "🧪 Teste das Funcionalidades Admin\n\n";
 
-// Verificar se Laravel está carregado
-$laravelPath = __DIR__ . '/../vendor/autoload.php';
-if (!file_exists($laravelPath)) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Laravel não encontrado'
-    ]);
-    exit;
-}
-
-require $laravelPath;
-
-$app = require_once __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-
-// Testar rotas admin
-$routes = [
-    'admin.dashboard' => '/admin/dashboard',
-    'admin.services.index' => '/admin/services',
-    'admin.gallery.index' => '/admin/gallery',
-    'admin.upload.index' => '/admin/upload',
-    'admin.seo.index' => '/admin/seo',
-    'admin.documentation.index' => '/admin/documentacao',
-];
-
-$results = [];
-
-foreach ($routes as $name => $uri) {
-    try {
-        $route = app('router')->getRoutes()->getByName($name);
-        
-        $results[$name] = [
-            'exists' => $route !== null,
-            'uri' => $route ? $route->uri() : 'N/A',
-            'methods' => $route ? $route->methods() : [],
-            'action' => $route ? $route->getActionName() : 'N/A'
-        ];
-    } catch (Exception $e) {
-        $results[$name] = [
-            'exists' => false,
-            'error' => $e->getMessage()
-        ];
-    }
-}
-
-// Verificar controllers
-$controllers = [
-    'Dashboard' => 'App\\Modules\\Dashboard\\Controllers\\DashboardController',
-    'Services' => 'App\\Modules\\Services\\Controllers\\ServiceController',
-    'Gallery' => 'App\\Modules\\Gallery\\Controllers\\GalleryController',
-    'Upload' => 'App\\Modules\\Upload\\Controllers\\UploadController',
-    'SEO' => 'App\\Modules\\Seo\\Controllers\\SeoController',
-    'Documentation' => 'App\\Modules\\Documentation\\Controllers\\DocumentationController',
-];
-
-$controllerStatus = [];
-
-foreach ($controllers as $name => $class) {
-    $controllerStatus[$name] = [
-        'exists' => class_exists($class),
-        'class' => $class,
-        'methods' => class_exists($class) ? get_class_methods($class) : []
-    ];
-}
-
-// Verificar views
-$views = [
-    'layouts.admin' => resource_path('views/layouts/admin.blade.php'),
-    'dashboard.index' => resource_path('views/modules/dashboard/index.blade.php'),
-    'services.index' => resource_path('views/modules/services/index.blade.php'),
-    'gallery.index' => resource_path('views/modules/gallery/index.blade.php'),
-];
-
-$viewStatus = [];
-
-foreach ($views as $name => $path) {
-    $viewStatus[$name] = [
-        'exists' => file_exists($path),
-        'path' => $path,
-        'size' => file_exists($path) ? filesize($path) : 0
-    ];
-}
-
-// Verificar assets
-$assets = [
-    'admin.css' => public_path('css/admin.css'),
-    'admin.js' => public_path('js/admin.js'),
-];
-
-$assetStatus = [];
-
-foreach ($assets as $name => $path) {
-    $assetStatus[$name] = [
-        'exists' => file_exists($path),
-        'path' => $path,
-        'size' => file_exists($path) ? filesize($path) : 0
-    ];
-}
-
-// Verificar banco de dados
-$dbStatus = [
-    'connected' => false,
-    'tables' => []
-];
+// Carregar Laravel
+require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
-    DB::connection()->getPdo();
-    $dbStatus['connected'] = true;
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
     
-    $tables = DB::select('SHOW TABLES');
-    $dbStatus['tables'] = array_map(function($table) {
-        return array_values((array)$table)[0];
-    }, $tables);
+    echo "✅ Laravel carregado com sucesso!\n\n";
     
-    $dbStatus['table_count'] = count($dbStatus['tables']);
+    // Testar rotas
+    echo "🔍 Testando rotas disponíveis...\n";
+    
+    $routes = [
+        'admin.dashboard.index' => 'Dashboard',
+        'admin.analytics.index' => 'Analytics',
+        'admin.gallery.index' => 'Galeria',
+        'admin.blog.index' => 'Blog',
+        'admin.contact.index' => 'Mensagens',
+        'admin.settings.index' => 'Configurações',
+        'admin.users.index' => 'Usuários',
+        'admin.documentation.index' => 'Documentação',
+        'admin.login' => 'Login',
+        'admin.logout' => 'Logout'
+    ];
+    
+    $routeCollection = app('router')->getRoutes();
+    
+    foreach ($routes as $routeName => $description) {
+        try {
+            $route = $routeCollection->getByName($routeName);
+            if ($route) {
+                echo "   ✅ {$description}: {$routeName}\n";
+            } else {
+                echo "   ❌ {$description}: {$routeName} (não encontrada)\n";
+            }
+        } catch (Exception $e) {
+            echo "   ❌ {$description}: {$routeName} (erro: {$e->getMessage()})\n";
+        }
+    }
+    
+    echo "\n🔍 Testando controllers...\n";
+    
+    $controllers = [
+        'App\Modules\Dashboard\Controllers\DashboardController' => 'Dashboard',
+        'App\Modules\Analytics\Controllers\AnalyticsController' => 'Analytics',
+        'App\Modules\Gallery\Controllers\GalleryController' => 'Galeria',
+        'App\Modules\Blog\Controllers\BlogController' => 'Blog',
+        'App\Modules\Contact\Controllers\ContactController' => 'Contato',
+        'App\Modules\Settings\Controllers\SettingsController' => 'Configurações',
+        'App\Modules\Users\Controllers\UsersController' => 'Usuários',
+        'App\Modules\Auth\Controllers\AuthController' => 'Autenticação'
+    ];
+    
+    foreach ($controllers as $class => $description) {
+        if (class_exists($class)) {
+            echo "   ✅ {$description}: {$class}\n";
+        } else {
+            echo "   ❌ {$description}: {$class} (não encontrada)\n";
+        }
+    }
+    
+    echo "\n🔍 Testando views...\n";
+    
+    $views = [
+        'layouts.admin' => 'Layout Admin',
+        'modules.dashboard.index' => 'Dashboard',
+        'modules.analytics.index' => 'Analytics',
+        'modules.blog.index' => 'Blog',
+        'modules.contact.index' => 'Contato',
+        'modules.settings.index' => 'Configurações',
+        'modules.users.index' => 'Usuários'
+    ];
+    
+    foreach ($views as $viewName => $description) {
+        try {
+            $viewPath = resource_path('views/' . str_replace('.', '/', $viewName) . '.blade.php');
+            if (file_exists($viewPath)) {
+                echo "   ✅ {$description}: {$viewName}\n";
+            } else {
+                echo "   ❌ {$description}: {$viewName} (arquivo não encontrado)\n";
+            }
+        } catch (Exception $e) {
+            echo "   ❌ {$description}: {$viewName} (erro: {$e->getMessage()})\n";
+        }
+    }
+    
+    echo "\n🔍 Testando configurações...\n";
+    
+    // Testar .env
+    if (file_exists(__DIR__ . '/../.env')) {
+        echo "   ✅ Arquivo .env existe\n";
+        
+        $envVars = ['APP_KEY', 'DB_CONNECTION', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME'];
+        foreach ($envVars as $var) {
+            $value = env($var);
+            if ($value !== null) {
+                echo "   ✅ {$var}: " . (strlen($value) > 20 ? substr($value, 0, 20) . '...' : $value) . "\n";
+            } else {
+                echo "   ❌ {$var}: não definida\n";
+            }
+        }
+    } else {
+        echo "   ❌ Arquivo .env não encontrado\n";
+    }
+    
+    // Testar conexão com banco
+    echo "\n🔍 Testando conexão com banco...\n";
+    try {
+        DB::connection()->getPdo();
+        echo "   ✅ Conexão com banco estabelecida\n";
+        
+        // Testar tabela users
+        if (Schema::hasTable('users')) {
+            $userCount = DB::table('users')->count();
+            echo "   ✅ Tabela users existe ({$userCount} registros)\n";
+        } else {
+            echo "   ⚠️  Tabela users não existe (execute o instalador)\n";
+        }
+        
+    } catch (Exception $e) {
+        echo "   ❌ Erro de conexão: " . $e->getMessage() . "\n";
+    }
+    
 } catch (Exception $e) {
-    $dbStatus['error'] = $e->getMessage();
+    echo "❌ Erro ao carregar Laravel: " . $e->getMessage() . "\n";
 }
 
-// Resposta final
-$response = [
-    'success' => true,
-    'timestamp' => date('Y-m-d H:i:s'),
-    'routes' => $results,
-    'controllers' => $controllerStatus,
-    'views' => $viewStatus,
-    'assets' => $assetStatus,
-    'database' => $dbStatus,
-    'summary' => [
-        'routes_working' => count(array_filter($results, fn($r) => $r['exists'] ?? false)),
-        'routes_total' => count($results),
-        'controllers_working' => count(array_filter($controllerStatus, fn($c) => $c['exists'])),
-        'controllers_total' => count($controllerStatus),
-        'views_working' => count(array_filter($viewStatus, fn($v) => $v['exists'])),
-        'views_total' => count($viewStatus),
-        'assets_working' => count(array_filter($assetStatus, fn($a) => $a['exists'])),
-        'assets_total' => count($assetStatus),
-        'database_connected' => $dbStatus['connected']
-    ]
-];
+echo "\n" . str_repeat("=", 50) . "\n";
+echo "📋 RESUMO:\n";
+echo "- Verifique os itens marcados com ❌\n";
+echo "- Inicie o MySQL se necessário\n";
+echo "- Execute o instalador se as tabelas não existirem\n";
+echo "- Acesse /admin para testar o painel\n\n";
 
-echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+echo "Teste concluído em " . date('d/m/Y H:i:s') . "\n";
+?>

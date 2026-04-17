@@ -227,7 +227,7 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('admin.dashboard') }}" class="nav-link">
+                    <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
                         <i class="fas fa-home"></i> Dashboard
                     </a>
                 </li>
@@ -254,11 +254,11 @@
                     </a>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                         <div class="dropdown-divider"></div>
-                        <a href="{{ route('admin.dashboard') }}" class="dropdown-item">
+                        <a href="{{ route('admin.dashboard.index') }}" class="dropdown-item">
                             <i class="fas fa-user mr-2"></i> Meu Perfil
                         </a>
                         <div class="dropdown-divider"></div>
-                        <a href="{{ route('admin.dashboard') }}" class="dropdown-item">
+                        <a href="{{ route('admin.settings.index') }}" class="dropdown-item">
                             <i class="fas fa-cog mr-2"></i> Configurações
                         </a>
                         <div class="dropdown-divider"></div>
@@ -283,7 +283,7 @@
         <!-- Main Sidebar -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
-            <a href="{{ route('admin.dashboard') }}" class="brand-link text-center">
+            <a href="{{ route('admin.dashboard.index') }}" class="brand-link text-center">
                 <span class="brand-text">
                     <i class="fas fa-tools"></i> HomeMechanic
                 </span>
@@ -297,7 +297,7 @@
                         <i class="fas fa-user-circle fa-2x text-warning"></i>
                     </div>
                     <div class="info">
-                        <a href="{{ route('admin.dashboard') }}" class="d-block">{{ Auth::user()->name ?? 'Administrador' }}</a>
+                        <a href="{{ route('admin.dashboard.index') }}" class="d-block">{{ Auth::user()->name ?? 'Administrador' }}</a>
                         <small class="text-muted d-block">{{ Auth::user()->email ?? '' }}</small>
                     </div>
                 </div>
@@ -308,7 +308,7 @@
                         
                         <!-- Dashboard -->
                         <li class="nav-item">
-                            <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            <a href="{{ route('admin.dashboard.index') }}" class="nav-link {{ request()->routeIs('admin.dashboard.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Dashboard</p>
                             </a>
@@ -319,7 +319,7 @@
 
                         <!-- Serviços -->
                         <li class="nav-item">
-                            <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
                                 <i class="nav-icon fas fa-tools"></i>
                                 <p>Serviços</p>
                             </a>
@@ -333,9 +333,25 @@
                             </a>
                         </li>
 
+                        <!-- Blog -->
+                        <li class="nav-item">
+                            <a href="{{ route('admin.blog.index') }}" class="nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-newspaper"></i>
+                                <p>Blog</p>
+                            </a>
+                        </li>
+
+                        <!-- Mensagens -->
+                        <li class="nav-item">
+                            <a href="{{ route('admin.contact.index') }}" class="nav-link {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-envelope"></i>
+                                <p>Mensagens</p>
+                            </a>
+                        </li>
+
                         <!-- Upload -->
                         <li class="nav-item">
-                            <a href="{{ route('admin.upload.index') }}" class="nav-link {{ request()->routeIs('admin.upload.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
                                 <i class="nav-icon fas fa-cloud-upload-alt"></i>
                                 <p>Upload de Arquivos</p>
                             </a>
@@ -346,7 +362,7 @@
 
                         <!-- SEO -->
                         <li class="nav-item">
-                            <a href="{{ route('admin.seo.index') }}" class="nav-link {{ request()->routeIs('admin.seo.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
                                 <i class="nav-icon fas fa-search"></i>
                                 <p>SEO</p>
                             </a>
@@ -382,19 +398,19 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.dashboard') }}" class="nav-link">
+                                    <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Gerais</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.dashboard') }}" class="nav-link">
+                                    <a href="{{ route('admin.settings.email') }}" class="nav-link {{ request()->routeIs('admin.settings.email') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>E-mail (SMTP)</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.dashboard') }}" class="nav-link">
+                                    <a href="{{ route('admin.settings.backup') }}" class="nav-link {{ request()->routeIs('admin.settings.backup') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Manutenção</p>
                                     </a>
@@ -404,7 +420,7 @@
 
                         <!-- Usuários -->
                         <li class="nav-item">
-                            <a href="{{ route('admin.dashboard') }}" class="nav-link">
+                            <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-users"></i>
                                 <p>Usuários</p>
                             </a>
@@ -412,7 +428,7 @@
 
                         <!-- Logs -->
                         <li class="nav-item">
-                            <a href="{{ route('admin.dashboard') }}" class="nav-link">
+                            <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
                                 <i class="nav-icon fas fa-history"></i>
                                 <p>Logs de Auditoria</p>
                             </a>

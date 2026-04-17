@@ -163,7 +163,6 @@ class AnalyticsController extends Controller
             ], 500);
         }
     }
-}
 
     /**
      * Relatório detalhado

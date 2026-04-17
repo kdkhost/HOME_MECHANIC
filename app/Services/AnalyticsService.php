@@ -137,20 +137,50 @@ class AnalyticsService
     /**
      * Obter informações do dispositivo
      */
-    private function getDeviceInfo(): array
+    private function getDeviceInfo(string $userAgent): array
     {
-        $deviceType = 'desktop';
+        $userAgent = strtolower($userAgent);
         
-        if ($this->agent->isMobile()) {
+        // Detectar tipo de dispositivo
+        $deviceType = 'desktop';
+        if (str_contains($userAgent, 'mobile') || str_contains($userAgent, 'android')) {
             $deviceType = 'mobile';
-        } elseif ($this->agent->isTablet()) {
+        } elseif (str_contains($userAgent, 'tablet') || str_contains($userAgent, 'ipad')) {
             $deviceType = 'tablet';
+        }
+
+        // Detectar navegador
+        $browser = 'Unknown';
+        if (str_contains($userAgent, 'chrome')) {
+            $browser = 'Chrome';
+        } elseif (str_contains($userAgent, 'firefox')) {
+            $browser = 'Firefox';
+        } elseif (str_contains($userAgent, 'safari')) {
+            $browser = 'Safari';
+        } elseif (str_contains($userAgent, 'edge')) {
+            $browser = 'Edge';
+        } elseif (str_contains($userAgent, 'opera')) {
+            $browser = 'Opera';
+        }
+
+        // Detectar sistema operacional
+        $os = 'Unknown';
+        if (str_contains($userAgent, 'windows')) {
+            $os = 'Windows';
+        } elseif (str_contains($userAgent, 'mac')) {
+            $os = 'macOS';
+        } elseif (str_contains($userAgent, 'linux')) {
+            $os = 'Linux';
+        } elseif (str_contains($userAgent, 'android')) {
+            $os = 'Android';
+        } elseif (str_contains($userAgent, 'ios')) {
+            $os = 'iOS';
         }
 
         return [
             'device_type' => $deviceType,
-            'browser' => $this->agent->browser() ?: 'Unknown',
-            'os' => $this->agent->platform() ?: 'Unknown'
+            'browser' => $browser,
+            'os' => $os
         ];
     }
 
