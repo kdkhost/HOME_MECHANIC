@@ -3,46 +3,67 @@
 namespace App\Modules\Frontend\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
+use App\Modules\Contact\Models\ContactMessage;
+use App\Modules\Settings\Controllers\RecaptchaController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class FrontendController extends Controller
 {
-    public function home()
-    {
-        return view('modules.frontend.home');
-    }
-
-    public function services()
-    {
-        return view('modules.frontend.services');
-    }
-
-    public function gallery()
-    {
-        return view('modules.frontend.gallery');
-    }
-
-    public function blog()
-    {
-        return view('modules.frontend.blog');
-    }
-
-    public function contact()
-    {
-        return view('modules.frontend.contact');
-    }
+    public function home()     { return view('modules.frontend.home'); }
+    public function services() { return view('modules.frontend.services'); }
+    public function gallery()  { return view('modules.frontend.gallery'); }
+    public function blog()     { return view('modules.frontend.blog'); }
+    public function contact()  { return view('modules.frontend.contact'); }
 
     public function sendContact(Request $request)
     {
         $request->validate([
             'name'    => 'required|string|max:255',
-            'email'   => 'required|email',
+            'email'   => 'required|email|max:255',
             'phone'   => 'nullable|string|max:20',
             'subject' => 'required|string|max:255',
-            'message' => 'required|string|min:10',
+            'message' => 'required|string|min:10|max:5000',
         ]);
 
-        // TODO: salvar no banco / enviar email
+        // ── reCAPTCHA v3 ──────────────────────────────────────
+        $recaptchaEnabled = Setting::get('recaptcha_enabled', '0') === '1';
+
+        if ($recaptchaEnabled) {
+            $token  = $request->input('recaptcha_token', '');
+            $result = RecaptchaController::verify($token, 'contact');
+
+            if (!$result['success'] && !($result['skipped'] ?? false)) {
+                Log::warning('reCAPTCHA bloqueou envio de contato', [
+                    'ip'    => $request->ip(),
+                    'email' => $request->input('email'),
+                    'score' => $result['score'] ?? 0,
+                    'error' => $result['error'] ?? '',
+                ]);
+
+                return back()
+                    ->withInput()
+                    ->withErrors(['recaptcha' => 'Verificação de segurança falhou. Tente novamente.']);
+            }
+        }
+
+        // ── Salvar no banco ───────────────────────────────────
+        try {
+            ContactMessage::create([
+                'name'    => $request->input('name'),
+                'email'   => $request->input('email'),
+                'phone'   => $request->input('phone'),
+                'subject' => $request->input('subject'),
+                'message' => $request->input('message'),
+                'ip'      => $request->ip(),
+                'read'    => false,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao salvar mensagem de contato', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Erro ao enviar mensagem. Tente novamente.');
+        }
+
         return back()->with('success', 'Mensagem enviada com sucesso! Entraremos em contato em breve.');
     }
 }

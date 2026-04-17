@@ -116,8 +116,12 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('contact.send') }}">
+                    <form method="POST" action="{{ route('contact.send') }}" id="contactForm">
                         @csrf
+                        @php $recaptchaKey = \App\Models\Setting::get('recaptcha_site_key',''); $recaptchaOn = \App\Models\Setting::get('recaptcha_enabled','0') === '1' && !empty($recaptchaKey); @endphp
+                        @if($recaptchaOn)
+                            <input type="hidden" name="recaptcha_token" id="recaptchaToken">
+                        @endif
                         <div class="row g-3">
                             <div class="col-sm-6">
                                 <label class="form-label-custom">Nome Completo *</label>
@@ -155,11 +159,31 @@
                                           placeholder="Descreva seu veículo e o serviço desejado..." required>{{ old('message') }}</textarea>
                                 @error('message')<div style="color:#ea868f;font-size:0.78rem;margin-top:0.25rem;">{{ $message }}</div>@enderror
                             </div>
+
+                            @error('recaptcha')
                             <div class="col-12">
-                                <button type="submit" class="btn-orange w-100" style="justify-content:center;">
+                                <div style="background:rgba(220,38,38,0.12);border:1px solid rgba(220,38,38,0.3);color:#fca5a5;padding:0.75rem 1rem;border-radius:6px;font-size:0.85rem;display:flex;align-items:center;gap:0.6rem;">
+                                    <i class="bi bi-shield-exclamation"></i> {{ $message }}
+                                </div>
+                            </div>
+                            @enderror
+
+                            <div class="col-12">
+                                <button type="submit" class="btn-orange w-100" id="submitBtn" style="justify-content:center;">
                                     <i class="bi bi-send-fill"></i> Enviar Mensagem
                                 </button>
                             </div>
+
+                            @if($recaptchaOn)
+                            <div class="col-12">
+                                <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);text-align:center;line-height:1.5;">
+                                    <i class="bi bi-shield-check" style="color:rgba(255,107,0,0.5);"></i>
+                                    Protegido por reCAPTCHA v3 —
+                                    <a href="https://policies.google.com/privacy" target="_blank" style="color:rgba(255,107,0,0.5);">Privacidade</a> &
+                                    <a href="https://policies.google.com/terms" target="_blank" style="color:rgba(255,107,0,0.5);">Termos</a>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </form>
                 </div>
@@ -203,4 +227,31 @@
 
     </div>
 </section>
+@endsection
+
+@section('scripts')
+@php $recaptchaKey = \App\Models\Setting::get('recaptcha_site_key',''); $recaptchaOn = \App\Models\Setting::get('recaptcha_enabled','0') === '1' && !empty($recaptchaKey); @endphp
+@if($recaptchaOn)
+<script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaKey }}"></script>
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var btn  = document.getElementById('submitBtn');
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-shield-check"></i> Verificando...';
+
+    grecaptcha.ready(function() {
+        grecaptcha.execute('{{ $recaptchaKey }}', { action: 'contact' }).then(function(token) {
+            document.getElementById('recaptchaToken').value = token;
+            form.submit();
+        }).catch(function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-send-fill"></i> Enviar Mensagem';
+        });
+    });
+});
+</script>
+@endif
 @endsection

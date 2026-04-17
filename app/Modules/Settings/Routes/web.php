@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Modules\Settings\Controllers\SettingsController;
 use App\Modules\Settings\Controllers\EmailTemplateController;
+use App\Modules\Settings\Controllers\RecaptchaController;
 
 Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::prefix('settings')->name('settings.')->group(function () {
@@ -13,6 +14,10 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         Route::get('/email',   [SettingsController::class, 'email'])->name('email');
         Route::get('/backup',  [SettingsController::class, 'backup'])->name('backup');
         Route::post('/email/test', [SettingsController::class, 'testEmail'])->name('email.test');
+
+        // reCAPTCHA
+        Route::get('/recaptcha',  [RecaptchaController::class, 'index'])->name('recaptcha');
+        Route::post('/recaptcha', [RecaptchaController::class, 'update'])->name('recaptcha.update');
 
         // Templates de e-mail
         Route::get('/email/templates',           [EmailTemplateController::class, 'index'])->name('email.templates');

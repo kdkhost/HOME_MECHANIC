@@ -316,6 +316,11 @@
                                     <i class="nav-icon bi bi-circle"></i><p>Backup / Manutenção</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.settings.recaptcha') }}" class="nav-link {{ request()->routeIs('admin.settings.recaptcha') ? 'active' : '' }}">
+                                    <i class="nav-icon bi bi-circle"></i><p>reCAPTCHA / Segurança</p>
+                                </a>
+                            </li>
                         </ul>
                     </li>
 

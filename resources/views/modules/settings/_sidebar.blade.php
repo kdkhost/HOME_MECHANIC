@@ -33,6 +33,12 @@
                         <i class="fas fa-tools"></i> Backup / Manutenção
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.settings.recaptcha') }}"
+                       class="nav-link {{ ($active ?? '') === 'recaptcha' ? 'active' : '' }}">
+                        <i class="fas fa-shield-alt"></i> reCAPTCHA / Segurança
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
