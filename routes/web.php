@@ -14,8 +14,9 @@ Route::get('/', function () {
 })->name('home');
 
 // Rotas do frontend
-Route::get('/servicos', [FrontendController::class, 'services'])->name('services');
-Route::get('/galeria',  [FrontendController::class, 'gallery'])->name('gallery');
-Route::get('/blog',     [FrontendController::class, 'blog'])->name('blog');
-Route::get('/contato',  [FrontendController::class, 'contact'])->name('contact');
-Route::post('/contato', [FrontendController::class, 'sendContact'])->name('contact.send');
+Route::get('/servicos',      [FrontendController::class, 'services'])->name('services');
+Route::get('/galeria',       [FrontendController::class, 'gallery'])->name('gallery');
+Route::get('/blog',          [FrontendController::class, 'blog'])->name('blog');
+Route::get('/blog/{slug}',   [FrontendController::class, 'blogPost'])->name('blog.post');
+Route::get('/contato',       [FrontendController::class, 'contact'])->name('contact');
+Route::post('/contato',      [FrontendController::class, 'sendContact'])->name('contact.send');

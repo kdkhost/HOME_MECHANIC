@@ -14,7 +14,36 @@ class FrontendController extends Controller
     public function home()     { return view('modules.frontend.home'); }
     public function services() { return view('modules.frontend.services'); }
     public function gallery()  { return view('modules.frontend.gallery'); }
-    public function blog()     { return view('modules.frontend.blog'); }
+
+    public function blog()
+    {
+        try {
+            $featured = \App\Modules\Blog\Models\Post::published()->featured()->latest('published_at')->first();
+            $posts    = \App\Modules\Blog\Models\Post::published()
+                ->when($featured, fn($q) => $q->where('id', '!=', $featured->id))
+                ->latest('published_at')->get();
+        } catch (\Exception $e) {
+            $featured = null;
+            $posts    = collect();
+        }
+        return view('modules.frontend.blog', compact('featured', 'posts'));
+    }
+
+    public function blogPost(string $slug)
+    {
+        try {
+            $post = \App\Modules\Blog\Models\Post::published()->where('slug', $slug)->firstOrFail();
+            $related = \App\Modules\Blog\Models\Post::published()
+                ->where('id', '!=', $post->id)
+                ->latest('published_at')->limit(3)->get();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404);
+        } catch (\Exception $e) {
+            abort(404);
+        }
+        return view('modules.frontend.blog-post', compact('post', 'related'));
+    }
+
     public function contact()  { return view('modules.frontend.contact'); }
 
     public function sendContact(Request $request)
