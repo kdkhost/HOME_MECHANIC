@@ -8,67 +8,95 @@
 @endsection
 
 @section('styles')
-{{-- Bootstrap 4 CSS necessário para o Summernote --}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs4.min.css">
+{{-- Summernote — usa versão lite sem dependência do Bootstrap --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css">
 <style>
-/* Reset conflito Bootstrap 4 vs 5 */
-.note-editor { z-index: 1; }
-.note-toolbar .btn { display: inline-flex !important; align-items: center !important; }
+/* ── Summernote lite overrides ─────────────────────────── */
+.note-editor.note-frame {
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 0 0 8px 8px !important;
+}
+.note-toolbar {
+    background: #f8fafc !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-bottom: none !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 6px 8px !important;
+}
+.note-toolbar .note-btn {
+    border-radius: 5px !important;
+    font-size: 0.8rem !important;
+    padding: 3px 7px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #fff !important;
+    color: #475569 !important;
+    transition: all 0.15s !important;
+}
+.note-toolbar .note-btn:hover,
+.note-toolbar .note-btn.active {
+    background: #FF6B00 !important;
+    color: #fff !important;
+    border-color: #FF6B00 !important;
+}
+.note-editable {
+    min-height: 260px !important;
+    font-family: 'Segoe UI', Arial, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.7 !important;
+    color: #374151 !important;
+    padding: 16px !important;
+}
+.note-statusbar { border-radius: 0 0 8px 8px !important; }
+.note-popover .popover-content { padding: 4px 8px !important; }
 
-/* Variáveis */
+/* ── Variáveis ─────────────────────────────────────────── */
 .var-chip {
     display: inline-flex; align-items: center; gap: 0.3rem;
-    background: rgba(255,107,0,0.1); color: #FF6B00;
-    border: 1px solid rgba(255,107,0,0.3);
-    padding: 0.25rem 0.7rem; border-radius: 20px;
-    font-size: 0.73rem; font-weight: 700; font-family: monospace;
-    cursor: pointer; transition: all 0.2s; user-select: none;
+    background: rgba(255,107,0,0.08); color: #FF6B00;
+    border: 1px solid rgba(255,107,0,0.25);
+    padding: 0.22rem 0.65rem; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700; font-family: monospace;
+    cursor: pointer; transition: all 0.18s; user-select: none;
     white-space: nowrap;
 }
-.var-chip:hover { background: #FF6B00; color: #fff; transform: translateY(-1px); }
+.var-chip:hover { background: #FF6B00; color: #fff; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(255,107,0,0.3); }
 
-/* Preview */
-#preview-frame {
-    width: 100%; height: 480px;
-    border: 1px solid #e2e8f0; border-radius: 8px;
-    background: #f8fafc;
-}
-.preview-subject-bar {
-    background: #f8fafc; border: 1px solid #e2e8f0;
-    border-radius: 8px; padding: 0.65rem 1rem;
-    font-size: 0.85rem; margin-bottom: 0.75rem;
-    display: flex; align-items: center; gap: 0.75rem;
-}
-.preview-subject-bar .label {
-    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: #94a3b8; flex-shrink: 0;
-}
-.preview-subject-bar .value { color: #1e293b; font-weight: 600; }
-
-/* Tabs modo */
-.mode-tabs { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 1rem; }
+/* ── Tabs ──────────────────────────────────────────────── */
+.mode-tabs { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 0; }
 .mode-tab {
     background: none; border: none; padding: 0.5rem 1rem;
     font-size: 0.82rem; font-weight: 600; color: #64748b;
     cursor: pointer; border-bottom: 2px solid transparent;
-    margin-bottom: -2px; transition: all 0.2s;
+    margin-bottom: -2px; transition: all 0.18s;
+    display: flex; align-items: center; gap: 0.35rem;
 }
 .mode-tab.active { color: #FF6B00; border-bottom-color: #FF6B00; }
-.mode-tab i { margin-right: 0.35rem; }
 
-/* Sticky preview */
+/* ── Preview ───────────────────────────────────────────── */
 .preview-sticky { position: sticky; top: 72px; }
-
-/* Summernote height */
-.note-editable { min-height: 260px !important; }
+#preview-frame {
+    width: 100%; height: 480px;
+    border: 1.5px solid #e2e8f0; border-radius: 8px;
+    background: #f8fafc; display: block;
+}
+.preview-subject-bar {
+    background: #f8fafc; border: 1.5px solid #e2e8f0;
+    border-radius: 8px; padding: 0.6rem 1rem;
+    font-size: 0.85rem; margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.75rem;
+}
+.preview-subject-bar .lbl {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #94a3b8; flex-shrink: 0;
+}
+.preview-subject-bar .val { color: #1e293b; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>
 @endsection
 
 @section('content')
 <div class="page-header">
     <h2 class="page-header-title">
-        <i class="fas fa-envelope-open-text me-2" style="color:#FF6B00;"></i>
+        <i class="{{ $meta['icon'] ?? 'fas fa-envelope' }} me-2" style="color:#FF6B00;"></i>
         {{ $meta['name'] }}
     </h2>
     <div class="page-header-actions">
@@ -81,12 +109,12 @@
 <div class="row g-4">
 
     {{-- ── EDITOR ─────────────────────────────────────── --}}
-    <div class="col-lg-6">
+    <div class="col-xl-6">
         <div class="card">
             <div class="card-header">
                 <span class="card-title"><i class="fas fa-edit"></i> Editor de Template</span>
                 <div class="card-tools">
-                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);">{{ $meta['name'] }}</span>
+                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);">{{ $meta['desc'] }}</span>
                 </div>
             </div>
             <form method="POST" action="{{ route('admin.settings.email.templates.update', $slug) }}" id="tplForm">
@@ -97,12 +125,12 @@
                     <div class="mb-3">
                         <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:0.5rem;">
                             Variáveis disponíveis
-                            <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;">(clique para inserir)</span>
+                            <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;"> — clique para inserir no editor</span>
                         </div>
                         <div class="d-flex flex-wrap gap-1">
                             @foreach($meta['vars'] as $var)
                                 <span class="var-chip" onclick="insertVariable({{ json_encode($var) }})">
-                                    <i class="fas fa-code" style="font-size:0.6rem;"></i>{{ $var }}
+                                    <i class="fas fa-code" style="font-size:0.55rem;"></i>{{ $var }}
                                 </span>
                             @endforeach
                         </div>
@@ -114,14 +142,14 @@
                         <input type="text" name="subject" id="subject" class="form-control"
                                value="{{ old('subject', $subject) }}" required
                                placeholder="Ex: Bem-vindo à @{{site_name}}!">
-                        <small class="form-text">Você pode usar variáveis como <code style="color:#FF6B00;">@{{site_name}}</code> no assunto.</small>
+                        <small class="form-text">Use variáveis como <code style="color:#FF6B00;background:rgba(255,107,0,0.08);padding:0 4px;border-radius:3px;">@{{site_name}}</code> no assunto.</small>
                     </div>
 
                     {{-- Corpo --}}
                     <div class="form-group mb-0">
                         <label>Corpo do E-mail <span class="text-danger">*</span></label>
 
-                        <div class="mode-tabs">
+                        <div class="mode-tabs mb-0">
                             <button type="button" class="mode-tab active" id="tabRich" onclick="switchMode('rich')">
                                 <i class="fas fa-paint-brush"></i> Editor Visual
                             </button>
@@ -130,15 +158,13 @@
                             </button>
                         </div>
 
-                        {{-- Summernote --}}
                         <div id="richEditorWrap">
                             <textarea id="summernote" name="body">{{ old('body', $body) }}</textarea>
                         </div>
 
-                        {{-- HTML textarea --}}
                         <div id="htmlEditorWrap" style="display:none;">
                             <textarea id="htmlBody" class="form-control"
-                                      style="font-family:monospace;font-size:0.82rem;min-height:260px;resize:vertical;"
+                                      style="font-family:'Courier New',monospace;font-size:0.82rem;min-height:260px;resize:vertical;border-radius:0 0 8px 8px;border-top:none;"
                                       placeholder="<p>Seu HTML aqui...</p>"></textarea>
                         </div>
                     </div>
@@ -160,10 +186,9 @@
     </div>
 
     {{-- ── PREVIEW ─────────────────────────────────────── --}}
-    <div class="col-lg-6">
+    <div class="col-xl-6">
         <div class="preview-sticky">
 
-            {{-- Preview do e-mail --}}
             <div class="card mb-3">
                 <div class="card-header">
                     <span class="card-title"><i class="fas fa-eye"></i> Preview em Tempo Real</span>
@@ -175,16 +200,16 @@
                 </div>
                 <div class="card-body p-3">
                     <div class="preview-subject-bar">
-                        <span class="label">Assunto:</span>
-                        <span class="value" id="preview-subject">{{ $subject }}</span>
+                        <span class="lbl">Assunto:</span>
+                        <span class="val" id="preview-subject">{{ $subject }}</span>
                     </div>
                     <iframe id="preview-frame"
-                            srcdoc="<div style='padding:2rem;color:#94a3b8;text-align:center;font-family:sans-serif;'><i style='font-size:2.5rem;display:block;margin-bottom:1rem;'>📧</i>O preview aparecerá aqui automaticamente.</div>">
+                            srcdoc="<div style='padding:2rem;color:#94a3b8;text-align:center;font-family:sans-serif;'><div style='font-size:2.5rem;margin-bottom:1rem;'>📧</div>O preview aparecerá aqui automaticamente.</div>">
                     </iframe>
                 </div>
             </div>
 
-            {{-- Tabela de variáveis de exemplo --}}
+            {{-- Variáveis de exemplo --}}
             <div class="card">
                 <div class="card-header">
                     <span class="card-title"><i class="fas fa-table"></i> Dados de Exemplo no Preview</span>
@@ -193,7 +218,7 @@
                     <table class="table table-sm table-hover mb-0" style="font-size:0.8rem;">
                         <thead>
                             <tr>
-                                <th style="width:45%;">Variável</th>
+                                <th style="width:42%;">Variável</th>
                                 <th>Valor de Exemplo</th>
                             </tr>
                         </thead>
@@ -219,9 +244,9 @@
                             @if(in_array($var, $meta['vars']))
                             <tr>
                                 <td>
-                                    <code style="color:#FF6B00;font-size:0.75rem;background:rgba(255,107,0,0.08);padding:0.1rem 0.4rem;border-radius:4px;">{{ $var }}</code>
+                                    <code style="color:#FF6B00;font-size:0.73rem;background:rgba(255,107,0,0.08);padding:0.1rem 0.4rem;border-radius:4px;">{{ $var }}</code>
                                 </td>
-                                <td style="color:#64748b;">{{ Str::limit($val, 45) }}</td>
+                                <td style="color:#64748b;">{{ Str::limit($val, 42) }}</td>
                             </tr>
                             @endif
                             @endforeach
@@ -237,8 +262,8 @@
 @endsection
 
 @section('scripts')
-{{-- Bootstrap 4 JS + Summernote (precisam do jQuery já carregado no layout) --}}
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs4.min.js"></script>
+{{-- Summernote Lite — sem dependência do Bootstrap --}}
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/lang/summernote-pt-BR.min.js"></script>
 
 <script>
@@ -248,31 +273,35 @@ var CSRF         = document.querySelector('meta[name="csrf-token"]').content;
 var currentMode  = 'rich';
 var previewTimer = null;
 
-// ── Inicializar Summernote ────────────────────────────────
 $(function() {
+    // ── Inicializar Summernote Lite ───────────────────────
     $('#summernote').summernote({
         lang: 'pt-BR',
         height: 260,
         toolbar: [
-            ['style',  ['style']],
-            ['font',   ['bold', 'italic', 'underline', 'clear']],
-            ['color',  ['color']],
-            ['para',   ['ul', 'ol', 'paragraph']],
-            ['table',  ['table']],
-            ['insert', ['link', 'hr']],
-            ['view',   ['codeview', 'fullscreen']],
+            ['style',   ['style']],
+            ['font',    ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+            ['fontsize',['fontsize']],
+            ['color',   ['color']],
+            ['para',    ['ul', 'ol', 'paragraph', 'height']],
+            ['table',   ['table']],
+            ['insert',  ['link', 'picture', 'hr']],
+            ['view',    ['codeview', 'fullscreen']],
         ],
+        fontSizes: ['12', '13', '14', '15', '16', '18', '20', '24'],
         callbacks: {
             onChange: function() { schedulePreview(); }
         },
         placeholder: 'Digite o conteúdo do e-mail aqui...',
+        disableDragAndDrop: false,
+        tabsize: 2,
     });
 
     // Assunto → preview ao digitar
     $('#subject').on('input', schedulePreview);
 
-    // Preview inicial após 500ms
-    setTimeout(refreshPreview, 500);
+    // Preview inicial
+    setTimeout(refreshPreview, 600);
 });
 
 // ── Alternar modo ─────────────────────────────────────────
@@ -282,8 +311,7 @@ function switchMode(mode) {
     $('#tabHtml').toggleClass('active', mode === 'html');
 
     if (mode === 'html') {
-        var html = $('#summernote').summernote('code');
-        $('#htmlBody').val(html);
+        $('#htmlBody').val($('#summernote').summernote('code'));
         $('#richEditorWrap').hide();
         $('#htmlEditorWrap').show();
         $('#htmlBody').off('input').on('input', schedulePreview);
@@ -297,8 +325,9 @@ function switchMode(mode) {
 
 // ── Obter corpo atual ─────────────────────────────────────
 function getBody() {
-    if (currentMode === 'html') return $('#htmlBody').val();
-    return $('#summernote').summernote('code');
+    return currentMode === 'html'
+        ? $('#htmlBody').val()
+        : $('#summernote').summernote('code');
 }
 
 // ── Inserir variável ──────────────────────────────────────
@@ -316,7 +345,7 @@ function insertVariable(varName) {
     schedulePreview();
 }
 
-// ── Preview com debounce ──────────────────────────────────
+// ── Preview ───────────────────────────────────────────────
 function schedulePreview() {
     clearTimeout(previewTimer);
     previewTimer = setTimeout(refreshPreview, 700);
@@ -325,8 +354,6 @@ function schedulePreview() {
 function refreshPreview() {
     var subject = $('#subject').val() || '';
     var body    = getBody() || '';
-
-    if (!subject && !body) return;
 
     $.ajax({
         url:         PREVIEW_URL,
@@ -361,7 +388,7 @@ function sendTestEmail() {
 
     Swal.fire({
         title: 'Enviar e-mail de teste',
-        html: '<input type="email" id="swalTestEmail" class="swal2-input" placeholder="seu@email.com" value="' + userEmail + '">',
+        html: '<p style="font-size:0.88rem;color:#64748b;margin-bottom:0.75rem;">O e-mail será enviado com o conteúdo atual do editor.</p><input type="email" id="swalTestEmail" class="swal2-input" placeholder="seu@email.com" value="' + userEmail + '">',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#FF6B00',
