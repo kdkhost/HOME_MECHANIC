@@ -74,6 +74,7 @@
     border-bottom: 1px solid rgba(255,107,0,0.1);
     padding: 1.5rem 0;
     overflow: hidden;
+    width: 100%;
 }
 .brands-track {
     display: flex; gap: 3rem; align-items: center;
@@ -188,6 +189,20 @@
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, 260px);
     gap: 8px;
+    width: 100%;
+    overflow: hidden;
+}
+@media (max-width: 767px) {
+    .gallery-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+    }
+    .gallery-grid .gallery-item:first-child {
+        grid-row: span 1;
+        grid-column: span 2;
+        height: 200px;
+    }
+    .gallery-grid .gallery-item { height: 160px; }
 }
 .gallery-item {
     overflow: hidden; border-radius: 4px;
