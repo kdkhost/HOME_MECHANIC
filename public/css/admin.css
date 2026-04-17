@@ -26,6 +26,28 @@
 }
 .sidebar-brand .brand-link:hover { background: rgba(0,0,0,0.35); }
 
+/* Sidebar collapse no desktop — AdminLTE 4 usa sidebar-mini para isso */
+body.sidebar-collapse .app-sidebar {
+    min-width: 4.6rem !important;
+    max-width: 4.6rem !important;
+}
+body.sidebar-collapse .app-sidebar .brand-text,
+body.sidebar-collapse .app-sidebar .sidebar-menu .nav-link p,
+body.sidebar-collapse .app-sidebar .nav-header,
+body.sidebar-collapse .app-sidebar .nav-arrow {
+    display: none !important;
+}
+body.sidebar-collapse .app-sidebar:hover {
+    min-width: var(--lte-sidebar-width) !important;
+    max-width: var(--lte-sidebar-width) !important;
+}
+body.sidebar-collapse .app-sidebar:hover .brand-text,
+body.sidebar-collapse .app-sidebar:hover .sidebar-menu .nav-link p,
+body.sidebar-collapse .app-sidebar:hover .nav-header,
+body.sidebar-collapse .app-sidebar:hover .nav-arrow {
+    display: block !important;
+}
+
 /* ── Nav links ────────────────────────────────────────────── */
 .sidebar-menu .nav-link {
     border-radius: 6px !important;

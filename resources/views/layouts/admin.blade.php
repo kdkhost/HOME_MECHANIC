@@ -23,7 +23,7 @@
 
     @yield('styles')
 </head>
-<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+<body class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary">
 
 <!--begin::App Wrapper-->
 <div class="app-wrapper">
@@ -33,7 +33,7 @@
         <div class="container-fluid">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
+                    <a class="nav-link" id="sidebarToggle" href="#" role="button">
                         <i class="bi bi-list"></i>
                     </a>
                 </li>
@@ -309,6 +309,33 @@
     if (typeof $ !== 'undefined') {
         $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
     }
+
+    // ── Sidebar toggle ──────────────────────────────────────
+    // Em desktop (≥992px): toggle sidebar-collapse no body
+    // Em mobile (<992px): toggle sidebar-open no body
+    document.getElementById('sidebarToggle').addEventListener('click', function(e) {
+        e.preventDefault();
+        const body = document.body;
+        const isDesktop = window.innerWidth >= 992;
+        if (isDesktop) {
+            body.classList.toggle('sidebar-collapse');
+            // Salvar estado
+            localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapse') ? '1' : '0');
+        } else {
+            body.classList.toggle('sidebar-open');
+        }
+    });
+
+    // Restaurar estado do sidebar no desktop
+    (function() {
+        if (window.innerWidth >= 992) {
+            const collapsed = localStorage.getItem('sidebarCollapsed');
+            if (collapsed === '1') {
+                document.body.classList.add('sidebar-collapse');
+            }
+            // Por padrão: aberto (não adiciona sidebar-collapse)
+        }
+    })();
 
     // Auto-hide alerts
     setTimeout(function() {
