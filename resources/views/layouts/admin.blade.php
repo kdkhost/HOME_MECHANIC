@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="{{ asset('css/adminlte4.min.css') }}">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Toastify -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Custom -->
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 
@@ -248,22 +250,16 @@
             <div class="container-fluid">
 
                 @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show">
-                        <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                    {{-- toast disparado via JS --}}
                 @endif
                 @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show">
-                        <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                    {{-- toast disparado via JS --}}
                 @endif
                 @if(session('warning'))
-                    <div class="alert alert-warning alert-dismissible fade show">
-                        <i class="bi bi-exclamation-triangle me-2"></i>{{ session('warning') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                    {{-- toast disparado via JS --}}
+                @endif
+                @if(session('info'))
+                    {{-- toast disparado via JS --}}
                 @endif
 
                 @yield('content')
@@ -293,8 +289,52 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/adminlte4.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/admin.js') }}"></script>
+
+<script>
+    // ── Toastify helper global ────────────────────────────────
+    function toast(message, type = 'success') {
+        const colors = {
+            success: 'linear-gradient(135deg, #28a745, #20c997)',
+            error:   'linear-gradient(135deg, #dc3545, #c82333)',
+            warning: 'linear-gradient(135deg, #ffc107, #e0a800)',
+            info:    'linear-gradient(135deg, #17a2b8, #138496)',
+        };
+        const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+        Toastify({
+            text: (icons[type] || '') + '  ' + message,
+            duration: 4000,
+            gravity: 'top',
+            position: 'right',
+            stopOnFocus: true,
+            style: {
+                background: colors[type] || colors.success,
+                borderRadius: '8px',
+                padding: '0.85rem 1.25rem',
+                fontSize: '0.88rem',
+                fontWeight: '500',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                minWidth: '280px',
+            },
+            onClick: function() {}
+        }).showToast();
+    }
+
+    // ── Flash messages → Toastify ─────────────────────────────
+    @if(session('success'))
+        toast(@json(session('success')), 'success');
+    @endif
+    @if(session('error'))
+        toast(@json(session('error')), 'error');
+    @endif
+    @if(session('warning'))
+        toast(@json(session('warning')), 'warning');
+    @endif
+    @if(session('info'))
+        toast(@json(session('info')), 'info');
+    @endif
 
 <script>
     // OverlayScrollbars (requerido pelo AdminLTE 4)

@@ -97,4 +97,68 @@ class SettingsController extends Controller
         return redirect()->back()
             ->with('success', 'Configurações atualizadas com sucesso!');
     }
+
+    /**
+     * Testar configuração SMTP
+     */
+    public function testEmail(Request $request)
+    {
+        $request->validate([
+            'test_email' => 'required|email',
+        ]);
+
+        try {
+            // Aplicar configurações temporariamente
+            $host       = $request->input('mail_host', config('mail.mailers.smtp.host'));
+            $port       = $request->input('mail_port', config('mail.mailers.smtp.port'));
+            $username   = $request->input('mail_username', config('mail.mailers.smtp.username'));
+            $password   = $request->input('mail_password', config('mail.mailers.smtp.password'));
+            $encryption = $request->input('mail_encryption', config('mail.mailers.smtp.encryption'));
+            $fromAddr   = $request->input('mail_from_address', config('mail.from.address'));
+            $fromName   = $request->input('mail_from_name', config('mail.from.name'));
+
+            // Configurar mailer dinamicamente
+            config([
+                'mail.mailers.smtp.host'       => $host,
+                'mail.mailers.smtp.port'       => $port,
+                'mail.mailers.smtp.username'   => $username,
+                'mail.mailers.smtp.password'   => $password,
+                'mail.mailers.smtp.encryption' => $encryption ?: null,
+                'mail.from.address'            => $fromAddr,
+                'mail.from.name'               => $fromName,
+                'mail.default'                 => 'smtp',
+            ]);
+
+            // Enviar e-mail de teste
+            \Illuminate\Support\Facades\Mail::raw(
+                "✅ Teste de configuração SMTP — HomeMechanic\n\n" .
+                "Se você recebeu este e-mail, as configurações SMTP estão corretas!\n\n" .
+                "Servidor: {$host}:{$port}\n" .
+                "Criptografia: " . ($encryption ?: 'Nenhuma') . "\n" .
+                "Remetente: {$fromName} <{$fromAddr}>\n\n" .
+                "Enviado em: " . now()->format('d/m/Y H:i:s'),
+                function ($message) use ($request, $fromAddr, $fromName) {
+                    $message->to($request->input('test_email'))
+                            ->from($fromAddr, $fromName)
+                            ->subject('✅ Teste SMTP — HomeMechanic');
+                }
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "E-mail de teste enviado para {$request->input('test_email')} com sucesso!",
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro no teste SMTP', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Falha ao enviar e-mail: ' . $e->getMessage(),
+            ], 422);
+        }
+    }
 }

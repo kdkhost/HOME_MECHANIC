@@ -11,5 +11,6 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         Route::get('/seo', [SettingsController::class, 'seo'])->name('seo');
         Route::get('/email', [SettingsController::class, 'email'])->name('email');
         Route::get('/backup', [SettingsController::class, 'backup'])->name('backup');
+        Route::post('/email/test', [SettingsController::class, 'testEmail'])->name('email.test');
     });
 });
