@@ -254,17 +254,17 @@
                     </a>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                         <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
+                        <a href="{{ route('admin.dashboard') }}" class="dropdown-item">
                             <i class="fas fa-user mr-2"></i> Meu Perfil
                         </a>
                         <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
+                        <a href="{{ route('admin.dashboard') }}" class="dropdown-item">
                             <i class="fas fa-cog mr-2"></i> Configurações
                         </a>
                         <div class="dropdown-divider"></div>
                         <form method="POST" action="{{ route('admin.logout') }}" class="dropdown-item p-0">
                             @csrf
-                            <button type="submit" class="btn btn-link dropdown-item text-danger">
+                            <button type="submit" class="btn btn-link dropdown-item text-danger" style="text-decoration: none;">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Sair
                             </button>
                         </form>
@@ -297,8 +297,8 @@
                         <i class="fas fa-user-circle fa-2x text-warning"></i>
                     </div>
                     <div class="info">
-                        <a href="#" class="d-block">{{ Auth::user()->name ?? 'Administrador' }}</a>
-                        <small class="text-muted">{{ Auth::user()->email ?? '' }}</small>
+                        <a href="{{ route('admin.dashboard') }}" class="d-block">{{ Auth::user()->name ?? 'Administrador' }}</a>
+                        <small class="text-muted d-block">{{ Auth::user()->email ?? '' }}</small>
                     </div>
                 </div>
 
@@ -354,7 +354,7 @@
 
                         <!-- Analytics -->
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ route('admin.dashboard') }}" class="nav-link">
                                 <i class="nav-icon fas fa-chart-line"></i>
                                 <p>Analytics</p>
                             </a>
@@ -372,8 +372,8 @@
                         </li>
 
                         <!-- Configurações -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
+                        <li class="nav-item {{ request()->routeIs('admin.settings.*') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-cog"></i>
                                 <p>
                                     Configurações
@@ -382,19 +382,19 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="{{ route('admin.dashboard') }}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Gerais</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="{{ route('admin.dashboard') }}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>E-mail (SMTP)</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="{{ route('admin.dashboard') }}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Manutenção</p>
                                     </a>
@@ -404,7 +404,7 @@
 
                         <!-- Usuários -->
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ route('admin.dashboard') }}" class="nav-link">
                                 <i class="nav-icon fas fa-users"></i>
                                 <p>Usuários</p>
                             </a>
@@ -412,7 +412,7 @@
 
                         <!-- Logs -->
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ route('admin.dashboard') }}" class="nav-link">
                                 <i class="nav-icon fas fa-history"></i>
                                 <p>Logs de Auditoria</p>
                             </a>
