@@ -24,40 +24,65 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SIDEBAR — forçar sempre expandido (250px) mesmo com sidebar-mini
+   SIDEBAR — sempre expandido com 250px e textos visíveis
    ═══════════════════════════════════════════════════════════ */
 
-/* Largura sempre 250px */
-.main-sidebar { width: 250px !important; }
+/* Sidebar sempre 250px */
+.main-sidebar {
+    width: 250px !important;
+    min-width: 250px !important;
+}
 
-/* Textos sempre visíveis — anula o ocultamento do sidebar-mini */
-.sidebar-mini:not(.sidebar-collapse) .main-sidebar .nav-sidebar .nav-link p,
-.sidebar-mini:not(.sidebar-collapse) .main-sidebar .brand-text,
-.sidebar-mini:not(.sidebar-collapse) .main-sidebar .user-panel .info,
-.sidebar-mini:not(.sidebar-collapse) .main-sidebar .nav-header,
-.sidebar-mini:not(.sidebar-collapse) .main-sidebar .nav-treeview {
+/* Conteúdo sempre com margem de 250px */
+.content-wrapper,
+.main-footer,
+.main-header.navbar {
+    margin-left: 250px !important;
+    transition: margin-left 0.3s ease-in-out !important;
+}
+
+/* Textos SEMPRE visíveis — sobrescreve qualquer estado do sidebar-mini */
+.main-sidebar .nav-sidebar .nav-link p,
+.main-sidebar .brand-text,
+.main-sidebar .user-panel .info,
+.main-sidebar .nav-header {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     width: auto !important;
     overflow: visible !important;
     margin-left: 0 !important;
-    white-space: normal !important;
+    transform: none !important;
+    transition: none !important;
 }
 
-/* Margem do conteúdo sempre 250px */
-.sidebar-mini:not(.sidebar-collapse).layout-fixed .content-wrapper,
-.sidebar-mini:not(.sidebar-collapse).layout-fixed .main-footer,
-.sidebar-mini:not(.sidebar-collapse).layout-fixed .main-header.navbar {
-    margin-left: 250px !important;
+/* Quando o usuário fecha manualmente */
+body.sidebar-collapse .main-sidebar {
+    width: 4.6rem !important;
+    min-width: 4.6rem !important;
 }
-
-/* Quando o usuário colapsa manualmente (clica no hambúrguer) */
-.sidebar-mini.sidebar-collapse .main-sidebar { width: 4.6rem !important; }
-.sidebar-mini.sidebar-collapse.layout-fixed .content-wrapper,
-.sidebar-mini.sidebar-collapse.layout-fixed .main-footer,
-.sidebar-mini.sidebar-collapse.layout-fixed .main-header.navbar {
+body.sidebar-collapse .content-wrapper,
+body.sidebar-collapse .main-footer,
+body.sidebar-collapse .main-header.navbar {
     margin-left: 4.6rem !important;
+}
+body.sidebar-collapse .main-sidebar .nav-sidebar .nav-link p,
+body.sidebar-collapse .main-sidebar .brand-text,
+body.sidebar-collapse .main-sidebar .user-panel .info,
+body.sidebar-collapse .main-sidebar .nav-header {
+    display: none !important;
+}
+/* Hover no sidebar colapsado mostra os textos */
+body.sidebar-collapse .main-sidebar:hover {
+    width: 250px !important;
+}
+body.sidebar-collapse .main-sidebar:hover .nav-sidebar .nav-link p,
+body.sidebar-collapse .main-sidebar:hover .brand-text,
+body.sidebar-collapse .main-sidebar:hover .user-panel .info,
+body.sidebar-collapse .main-sidebar:hover .nav-header {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Estilo do sidebar */

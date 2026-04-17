@@ -250,6 +250,12 @@
 <script src="{{ asset('js/admin.js') }}"></script>
 
 <script>
+    // Garantir sidebar aberto — remove sidebar-mini e força expansão
+    $(document).ready(function() {
+        $('body').removeClass('sidebar-mini');
+        $('body').addClass('sidebar-open');
+    });
+
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
     setTimeout(function() { $('.alert').fadeOut('slow'); }, 5000);
     $(document).on('click', '.btn-delete', function(e) {
