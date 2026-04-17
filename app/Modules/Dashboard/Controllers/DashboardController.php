@@ -138,6 +138,33 @@ class DashboardController extends Controller
     }
 
     /**
+     * Rodar migrations pendentes
+     */
+    public function runMigrations()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            $output = \Illuminate\Support\Facades\Artisan::output();
+
+            \Illuminate\Support\Facades\Log::info('Migrations rodadas pelo admin', [
+                'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                'output'  => $output,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Migrations executadas com sucesso!',
+                'output'  => trim($output) ?: 'Nenhuma migration pendente.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao rodar migrations: ' . $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
      * Obter dados completos do dashboard
      */
     private function getDashboardData(): array

@@ -12,4 +12,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/dashboard/quick-stats', [DashboardController::class, 'getQuickStats'])->name('dashboard.quick-stats');
     Route::post('/dashboard/clear-cache', [DashboardController::class, 'clearCache'])->name('dashboard.clear-cache');
     Route::post('/system/clear-all-cache', [DashboardController::class, 'clearAllCache'])->name('system.clear-cache');
+    Route::post('/system/migrate', [DashboardController::class, 'runMigrations'])->name('system.migrate');
 });

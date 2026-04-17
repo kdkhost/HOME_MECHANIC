@@ -53,6 +53,20 @@
             </div>
         </div>
 
+        <!-- Banco de Dados -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-database"></i> Banco de Dados</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Execute as migrations pendentes para atualizar a estrutura do banco de dados.</p>
+                <button type="button" class="btn btn-primary" id="btnMigrate" onclick="runMigrations()">
+                    <i class="fas fa-play-circle"></i> Rodar Migrations Pendentes
+                </button>
+                <div id="migrateResult" class="mt-3" style="display:none;"></div>
+            </div>
+        </div>
+
         <!-- Informações do Sistema -->
         <div class="card">
             <div class="card-header">
@@ -94,6 +108,56 @@
 
 @section('scripts')
 <script>
+// Rodar migrations
+function runMigrations() {
+    Swal.fire({
+        title: 'Rodar Migrations?',
+        html: '<div style="font-size:0.88rem;color:#64748b;">Isso executará todas as migrations pendentes no banco de dados.<br><strong>Recomendado após atualizar o sistema.</strong></div>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: 'var(--hm-primary)',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fas fa-play-circle me-1"></i> Executar',
+        cancelButtonText: 'Cancelar',
+    }).then(r => {
+        if (!r.isConfirmed) return;
+
+        const btn       = document.getElementById('btnMigrate');
+        const resultDiv = document.getElementById('migrateResult');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Executando...';
+        resultDiv.style.display = 'none';
+
+        $.ajax({
+            url: '{{ route("admin.system.migrate") }}',
+            method: 'POST',
+            contentType: 'application/json',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            data: JSON.stringify({}),
+            success(data) {
+                const output = data.output ? `<pre style="font-size:0.78rem;margin-top:0.5rem;background:#f8fafc;padding:0.75rem;border-radius:6px;max-height:200px;overflow-y:auto;">${data.output}</pre>` : '';
+                resultDiv.innerHTML = data.success
+                    ? `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>${data.message}</strong>${output}</div>`
+                    : `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${data.message}</div>`;
+                resultDiv.style.display = 'block';
+                if (data.success) HMToast.success(data.message);
+                else HMToast.error(data.message);
+            },
+            error(xhr) {
+                const msg = xhr.responseJSON?.message || 'Erro ao executar migrations.';
+                resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${msg}</div>`;
+                resultDiv.style.display = 'block';
+                HMToast.error(msg);
+            },
+            complete() {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play-circle me-1"></i> Rodar Migrations Pendentes';
+            }
+        });
+    });
+}
+
 // Sobrescrever clearCacheType para mostrar resultado inline nesta página
 window.clearCacheType = function(type) {
     const labels = { all:'Limpar TODOS os caches', config:'Configuração', view:'Views', route:'Rotas', app:'App Cache' };
