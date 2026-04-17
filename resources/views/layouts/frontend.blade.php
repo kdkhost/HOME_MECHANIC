@@ -639,9 +639,9 @@
     </div>
 
     <div class="drawer-social">
-        <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-        <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-        <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+        <a href="{{ $siteSettings['social_instagram'] ?? '#' }}" {{ !empty($siteSettings['social_instagram']) ? 'target="_blank"' : '' }} aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+        <a href="{{ $siteSettings['social_facebook'] ?? '#' }}" {{ !empty($siteSettings['social_facebook']) ? 'target="_blank"' : '' }} aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+        <a href="{{ $siteSettings['social_youtube'] ?? '#' }}" {{ !empty($siteSettings['social_youtube']) ? 'target="_blank"' : '' }} aria-label="YouTube"><i class="bi bi-youtube"></i></a>
         <a href="https://wa.me/{{ preg_replace('/\D/','',$siteSettings['whatsapp'] ?? '5511999999999') }}" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
     </div>
 </div>
@@ -719,13 +719,30 @@
                 <div class="footer-brand mb-3">{{ strtoupper($siteSettings['site_name'] ?? 'HOMEMECHANIC') }}</div>
                 <p class="footer-text mb-4">{{ $siteSettings['site_desc'] ?? 'Especialistas em tuning, performance e manutenção de carros de luxo.' }}</p>
                 <div class="social-links">
-                    <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                    <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                    @if(!empty($siteSettings['social_instagram']))
+                        <a href="{{ $siteSettings['social_instagram'] }}" target="_blank" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    @endif
+                    @if(!empty($siteSettings['social_facebook']))
+                        <a href="{{ $siteSettings['social_facebook'] }}" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    @endif
+                    @if(!empty($siteSettings['social_youtube']))
+                        <a href="{{ $siteSettings['social_youtube'] }}" target="_blank" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                    @endif
+                    @if(!empty($siteSettings['social_twitter']))
+                        <a href="{{ $siteSettings['social_twitter'] }}" target="_blank" aria-label="Twitter/X"><i class="bi bi-twitter-x"></i></a>
+                    @endif
+                    @if(!empty($siteSettings['social_tiktok']))
+                        <a href="{{ $siteSettings['social_tiktok'] }}" target="_blank" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+                    @endif
                     @if(!empty($siteSettings['whatsapp']))
-                    <a href="https://wa.me/{{ preg_replace('/\D/','',$siteSettings['whatsapp']) }}" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
-                    @else
-                    <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                        <a href="https://wa.me/{{ preg_replace('/\D/','',$siteSettings['whatsapp']) }}" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    @endif
+                    {{-- Fallback se nenhuma rede configurada --}}
+                    @if(empty($siteSettings['social_instagram']) && empty($siteSettings['social_facebook']) && empty($siteSettings['social_youtube']) && empty($siteSettings['whatsapp']))
+                        <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                        <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                     @endif
                 </div>
             </div>

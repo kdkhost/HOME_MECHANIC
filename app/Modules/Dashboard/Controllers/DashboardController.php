@@ -46,15 +46,16 @@ class DashboardController extends Controller
     public function getQuickStats(Request $request)
     {
         $stats = Cache::remember('quick_stats', 60, function () {
+            $visits = $this->getVisitStats();
             return [
-                'services_count' => $this->getServicesCount(),
+                'services_count'  => $this->getServicesCount(),
                 'posts_published' => $this->getPublishedPostsCount(),
-                'gallery_photos' => $this->getGalleryPhotosCount(),
+                'gallery_photos'  => $this->getGalleryPhotosCount(),
                 'unread_messages' => $this->getUnreadMessagesCount(),
-                'recent_activity' => $this->getRecentActivity()
+                'visits_today'    => $visits['today'],
+                'online_now'      => $visits['online'],
             ];
         });
-
         return response()->json($stats);
     }
 
@@ -172,37 +173,34 @@ class DashboardController extends Controller
         return [
             // Contadores principais
             'counters' => [
-                'services' => $this->getServicesCount(),
-                'posts_published' => $this->getPublishedPostsCount(),
-                'gallery_photos' => $this->getGalleryPhotosCount(),
-                'unread_messages' => $this->getUnreadMessagesCount()
+                'services'         => $this->getServicesCount(),
+                'posts_published'  => $this->getPublishedPostsCount(),
+                'gallery_photos'   => $this->getGalleryPhotosCount(),
+                'unread_messages'  => $this->getUnreadMessagesCount(),
             ],
-            
             // Estatísticas detalhadas
             'stats' => [
-                'posts_draft' => $this->getDraftPostsCount(),
-                'gallery_categories' => $this->getGalleryCategoriesCount(),
-                'total_messages' => $this->getTotalMessagesCount(),
-                'active_services' => $this->getActiveServicesCount()
+                'posts_draft'         => $this->getDraftPostsCount(),
+                'gallery_categories'  => $this->getGalleryCategoriesCount(),
+                'total_messages'      => $this->getTotalMessagesCount(),
+                'active_services'     => $this->getActiveServicesCount(),
             ],
-            
+            // Visitas (analytics)
+            'visits' => $this->getVisitStats(),
             // Atividade recente
             'recent_activity' => $this->getRecentActivity(),
-            
             // Posts recentes
-            'recent_posts' => $this->getRecentPosts(),
-            
+            'recent_posts'    => $this->getRecentPosts(),
             // Mensagens recentes
             'recent_messages' => $this->getRecentMessages(),
-            
             // Informações do sistema
-            'system_info' => $this->getSystemInfo(),
-            
-            // Gráficos e métricas
+            'system_info'     => $this->getSystemInfo(),
+            // Gráficos
             'charts' => [
-                'posts_by_month' => $this->getPostsByMonth(),
-                'messages_by_day' => $this->getMessagesByDay()
-            ]
+                'posts_by_month'  => $this->getPostsByMonth(),
+                'messages_by_day' => $this->getMessagesByDay(),
+                'visits_by_day'   => $this->getVisitsByDay(),
+            ],
         ];
     }
 
@@ -469,6 +467,48 @@ class DashboardController extends Controller
             return $maintenance === '1' || $maintenance === 'true';
         } catch (\Exception $e) {
             return false;
+        }
+    }
+
+    /**
+     * Estatísticas de visitas (analytics)
+     */
+    private function getVisitStats(): array
+    {
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('analytics')) {
+                return ['today' => 0, 'month' => 0, 'online' => 0, 'total' => 0];
+            }
+            return [
+                'today'  => DB::table('analytics')->where('is_bot', false)->whereDate('created_at', today())->count(),
+                'month'  => DB::table('analytics')->where('is_bot', false)->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+                'online' => DB::table('analytics')->where('is_bot', false)->where('created_at', '>=', now()->subMinutes(5))->distinct('session_id')->count(),
+                'total'  => DB::table('analytics')->where('is_bot', false)->count(),
+            ];
+        } catch (\Exception $e) {
+            return ['today' => 0, 'month' => 0, 'online' => 0, 'total' => 0];
+        }
+    }
+
+    /**
+     * Gráfico de visitas por dia (últimos 7 dias)
+     */
+    private function getVisitsByDay(): array
+    {
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('analytics')) {
+                return ['labels' => [], 'total' => [], 'unique' => []];
+            }
+            $labels = $total = $unique = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = now()->subDays($i);
+                $labels[] = $date->format('d/m');
+                $total[]  = DB::table('analytics')->where('is_bot', false)->whereDate('created_at', $date->toDateString())->count();
+                $unique[] = DB::table('analytics')->where('is_bot', false)->where('is_unique', true)->whereDate('created_at', $date->toDateString())->count();
+            }
+            return compact('labels', 'total', 'unique');
+        } catch (\Exception $e) {
+            return ['labels' => [], 'total' => [], 'unique' => []];
         }
     }
 

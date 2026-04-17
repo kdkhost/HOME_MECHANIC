@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
@@ -464,25 +464,13 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        Toastify({
-                            text: data.message,
-                            duration: 3000,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#28a745"
-                        }).showToast();
+                        HMToast.success(data.message);
                         
                         setTimeout(() => {
                             window.location.href = data.redirect;
                         }, 1500);
                     } else {
-                        Toastify({
-                            text: data.message,
-                            duration: 5000,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#dc3545"
-                        }).showToast();
+                        HMToast.error(data.message);
                         
                         // Atualizar informações de rate limit
                         checkRateLimit();
@@ -494,13 +482,7 @@
                     }
                 })
                 .catch(error => {
-                    Toastify({
-                        text: 'Erro de conexão. Tente novamente.',
-                        duration: 5000,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#dc3545"
-                    }).showToast();
+                    HMToast.error('Erro de conexão. Tente novamente.');
                 })
                 .finally(() => {
                     loading.classList.remove('show');
@@ -620,13 +602,7 @@
             .then(data => {
                 if (data.success) {
                     document.getElementById('sessionWarning').style.display = 'none';
-                    Toastify({
-                        text: data.message,
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#28a745"
-                    }).showToast();
+                    HMToast.success(data.message);
                 }
             })
             .catch(error => {

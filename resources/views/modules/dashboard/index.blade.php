@@ -1,10 +1,542 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
-@section('title', 'Dashboard - HomeMechanic')
+@section('title', 'Dashboard — HomeMechanic')
 @section('page-title', 'Dashboard')
-
 @section('breadcrumb')
 <li class="breadcrumb-item active">Dashboard</li>
+@endsection
+
+@section('styles')
+<style>
+/* ── Welcome ──────────────────────────────────────────── */
+.dash-welcome {
+    background: linear-gradient(135deg, var(--hm-primary), var(--hm-primary-dark));
+    border-radius: var(--hm-radius-lg);
+    padding: 1.75rem 2rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.dash-welcome::after {
+    content: '';
+    position: absolute; right: -40px; top: -40px;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50%;
+}
+.dash-welcome h4 { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.25rem; }
+.dash-welcome p  { font-size: 0.85rem; opacity: 0.85; margin: 0; }
+
+/* ── Stat cards ───────────────────────────────────────── */
+.kpi-card {
+    border-radius: var(--hm-radius-lg) !important;
+    border: none !important;
+    color: #fff !important;
+    padding: 1.25rem !important;
+    position: relative; overflow: hidden;
+    transition: var(--hm-transition);
+    box-shadow: var(--hm-shadow-md) !important;
+}
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--hm-shadow-hover) !important; }
+.kpi-card::after {
+    content: '';
+    position: absolute; right: -20px; bottom: -20px;
+    width: 90px; height: 90px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+.kpi-num  { font-size: 2rem; font-weight: 700; line-height: 1; }
+.kpi-lbl  { font-size: 0.78rem; opacity: 0.85; margin-top: 0.2rem; }
+.kpi-icon { font-size: 2rem; opacity: 0.7; }
+.kpi-trend {
+    font-size: 0.72rem; margin-top: 0.5rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    opacity: 0.9;
+}
+
+/* ── Mini stat ────────────────────────────────────────── */
+.mini-stat {
+    background: var(--hm-card);
+    border: 1px solid var(--hm-border) !important;
+    border-radius: var(--hm-radius) !important;
+    padding: 1rem !important;
+    text-align: center;
+    transition: var(--hm-transition);
+}
+.mini-stat:hover { border-color: var(--hm-primary) !important; }
+.mini-stat-num { font-size: 1.5rem; font-weight: 700; color: var(--hm-primary); line-height: 1; }
+.mini-stat-lbl { font-size: 0.75rem; color: var(--hm-text-muted); margin-top: 0.2rem; }
+
+/* ── Activity ─────────────────────────────────────────── */
+.activity-item {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--hm-border);
+    font-size: 0.84rem;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--hm-primary); flex-shrink: 0; margin-top: 5px;
+}
+.activity-action { font-weight: 600; color: var(--hm-text); }
+.activity-meta   { font-size: 0.75rem; color: var(--hm-text-muted); }
+
+/* ── Quick actions ────────────────────────────────────── */
+.qa-btn {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.5rem; padding: 1rem 0.5rem;
+    border-radius: var(--hm-radius) !important;
+    background: var(--hm-primary-light) !important;
+    border: 1px solid rgba(255,107,0,0.2) !important;
+    color: var(--hm-primary) !important;
+    font-size: 0.78rem; font-weight: 600;
+    text-decoration: none !important;
+    transition: var(--hm-transition);
+}
+.qa-btn i { font-size: 1.4rem; }
+.qa-btn:hover {
+    background: var(--hm-primary) !important;
+    color: #fff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255,107,0,0.3);
+}
+
+/* ── Chart container ──────────────────────────────────── */
+.chart-wrap { position: relative; height: 220px; }
+
+/* ── Message row ──────────────────────────────────────── */
+.msg-row {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.65rem 0; border-bottom: 1px solid var(--hm-border);
+    font-size: 0.84rem;
+}
+.msg-row:last-child { border-bottom: none; }
+.msg-avatar {
+    width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+    background: var(--hm-primary-light);
+    color: var(--hm-primary); font-weight: 700; font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+}
+.msg-subject { font-weight: 600; color: var(--hm-text); }
+.msg-from    { font-size: 0.75rem; color: var(--hm-text-muted); }
+
+/* ── System info ──────────────────────────────────────── */
+.sys-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 0; border-bottom: 1px solid var(--hm-border);
+    font-size: 0.84rem;
+}
+.sys-row:last-child { border-bottom: none; }
+.sys-key { color: var(--hm-text-muted); font-size: 0.78rem; }
+</style>
+@endsection
+
+@section('content')
+
+{{-- Welcome --}}
+<div class="dash-welcome">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <h4><i class="fas fa-tachometer-alt me-2"></i>Bem-vindo, {{ $user->name }}!</h4>
+            <p>{{ now()->format('l, d \d\e F \d\e Y') }} — Painel HomeMechanic</p>
+        </div>
+        <button class="btn btn-light btn-sm" onclick="refreshDashboard()" id="btnRefresh">
+            <i class="fas fa-sync-alt me-1" id="refreshIcon"></i> Atualizar
+        </button>
+    </div>
+</div>
+
+{{-- KPI Cards --}}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card kpi-card" style="background:linear-gradient(135deg,#FF6B00,#E55A00);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-num" id="kpi-services">{{ $data['counters']['services'] }}</div>
+                    <div class="kpi-lbl">Serviços Ativos</div>
+                </div>
+                <i class="fas fa-tools kpi-icon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card kpi-card" style="background:linear-gradient(135deg,#16a34a,#15803d);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-num" id="kpi-posts">{{ $data['counters']['posts_published'] }}</div>
+                    <div class="kpi-lbl">Posts Publicados</div>
+                </div>
+                <i class="fas fa-newspaper kpi-icon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card kpi-card" style="background:linear-gradient(135deg,#0891b2,#0e7490);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-num" id="kpi-photos">{{ $data['counters']['gallery_photos'] }}</div>
+                    <div class="kpi-lbl">Fotos na Galeria</div>
+                </div>
+                <i class="fas fa-images kpi-icon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card kpi-card" style="background:linear-gradient(135deg,#d97706,#b45309);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-num" id="kpi-messages">{{ $data['counters']['unread_messages'] }}</div>
+                    <div class="kpi-lbl">Mensagens Não Lidas</div>
+                </div>
+                <i class="fas fa-envelope kpi-icon"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Visitas + Mini stats --}}
+<div class="row g-3 mb-4">
+    {{-- Visitas hoje --}}
+    <div class="col-6 col-md-3">
+        <div class="card mini-stat">
+            <div class="mini-stat-num" id="kpi-visits-today">{{ $data['visits']['today'] ?? 0 }}</div>
+            <div class="mini-stat-lbl"><i class="fas fa-eye me-1" style="color:var(--hm-primary);"></i>Visitas Hoje</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card mini-stat">
+            <div class="mini-stat-num" id="kpi-visits-month">{{ $data['visits']['month'] ?? 0 }}</div>
+            <div class="mini-stat-lbl"><i class="fas fa-calendar me-1" style="color:var(--hm-primary);"></i>Visitas no Mês</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card mini-stat">
+            <div class="mini-stat-num" id="kpi-online">{{ $data['visits']['online'] ?? 0 }}</div>
+            <div class="mini-stat-lbl"><i class="fas fa-circle me-1" style="color:#16a34a;font-size:0.6rem;"></i>Online Agora</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card mini-stat">
+            <div class="mini-stat-num">{{ $data['stats']['total_messages'] }}</div>
+            <div class="mini-stat-lbl"><i class="fas fa-inbox me-1" style="color:var(--hm-primary);"></i>Total Mensagens</div>
+        </div>
+    </div>
+</div>
+
+{{-- Gráficos + Atividade --}}
+<div class="row g-3 mb-4">
+    {{-- Gráfico visitas --}}
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-chart-area"></i> Visitas — Últimos 7 dias</span>
+                <div class="card-tools">
+                    <span style="font-size:0.72rem;color:rgba(255,255,255,0.75);">Visitantes únicos e totais</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrap">
+                    <canvas id="visitsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Atividade recente --}}
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-history"></i> Atividade Recente</span>
+            </div>
+            <div class="card-body" style="max-height:280px;overflow-y:auto;padding-top:0.5rem!important;">
+                @forelse($data['recent_activity'] as $act)
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div>
+                        <div class="activity-action">{{ $act['action'] }} <span style="font-weight:400;color:var(--hm-text-muted);">em {{ $act['model'] }}</span></div>
+                        <div class="activity-meta">{{ $act['user'] }} · {{ $act['formatted_time'] }}</div>
+                    </div>
+                </div>
+                @empty
+                <div class="empty-state" style="padding:1.5rem 0;">
+                    <i class="fas fa-history"></i>
+                    <p>Nenhuma atividade registrada</p>
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Posts + Mensagens --}}
+<div class="row g-3 mb-4">
+    {{-- Posts recentes --}}
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-newspaper"></i> Posts Recentes</span>
+                <div class="card-tools">
+                    <a href="{{ route('admin.blog.index') }}" class="btn btn-sm">Ver todos</a>
+                </div>
+            </div>
+            <div class="card-body" style="padding-top:0.5rem!important;">
+                @forelse($data['recent_posts'] as $post)
+                <div class="msg-row">
+                    <div class="msg-avatar">{{ strtoupper(substr($post->title ?? 'P', 0, 1)) }}</div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="msg-subject">{{ \Illuminate\Support\Str::limit($post->title ?? '', 38) }}</div>
+                        <div class="msg-from">{{ $post->author_name ?? 'Autor' }} @if($post->category_name)· {{ $post->category_name }}@endif</div>
+                    </div>
+                    <span class="badge {{ $post->status === 'published' ? 'badge-success' : 'badge-warning' }}">
+                        {{ $post->status === 'published' ? 'Publicado' : 'Rascunho' }}
+                    </span>
+                </div>
+                @empty
+                <div class="empty-state" style="padding:1.5rem 0;">
+                    <i class="fas fa-file-alt"></i>
+                    <p>Nenhum post encontrado</p>
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    {{-- Mensagens recentes --}}
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-envelope"></i> Mensagens Recentes</span>
+                <div class="card-tools">
+                    <a href="{{ route('admin.contact.index') }}" class="btn btn-sm">Ver todas</a>
+                </div>
+            </div>
+            <div class="card-body" style="padding-top:0.5rem!important;">
+                @forelse($data['recent_messages'] as $msg)
+                <div class="msg-row">
+                    <div class="msg-avatar">{{ strtoupper(substr($msg->name ?? 'M', 0, 1)) }}</div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="msg-subject {{ !$msg->read ? 'fw-bold' : '' }}">
+                            {{ \Illuminate\Support\Str::limit($msg->subject ?? '', 32) }}
+                            @if(!$msg->read)<span class="badge badge-danger ms-1" style="font-size:0.6rem;">Nova</span>@endif
+                        </div>
+                        <div class="msg-from">{{ $msg->name }} · {{ \Carbon\Carbon::parse($msg->created_at)->diffForHumans() }}</div>
+                    </div>
+                    <a href="{{ route('admin.contact.show', $msg->id) }}" class="btn btn-warning btn-sm"><i class="fas fa-eye"></i></a>
+                </div>
+                @empty
+                <div class="empty-state" style="padding:1.5rem 0;">
+                    <i class="fas fa-inbox"></i>
+                    <p>Nenhuma mensagem</p>
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Ações rápidas + Sistema --}}
+<div class="row g-3">
+    {{-- Ações rápidas --}}
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-bolt"></i> Ações Rápidas</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.services.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-tools"></i> Serviços
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.blog.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-newspaper"></i> Blog
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.gallery.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-images"></i> Galeria
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.contact.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-envelope"></i> Mensagens
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.users.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-users"></i> Usuários
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.settings.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-cog"></i> Config.
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.analytics.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('home') }}" target="_blank" class="qa-btn w-100">
+                            <i class="fas fa-external-link-alt"></i> Ver Site
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Sistema --}}
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-server"></i> Sistema</span>
+            </div>
+            <div class="card-body" style="padding-top:0.5rem!important;">
+                <div class="sys-row">
+                    <span class="sys-key">PHP</span>
+                    <span style="font-weight:600;">{{ $data['system_info']['php_version'] }}</span>
+                </div>
+                <div class="sys-row">
+                    <span class="sys-key">Laravel</span>
+                    <span style="font-weight:600;">{{ $data['system_info']['laravel_version'] }}</span>
+                </div>
+                <div class="sys-row">
+                    <span class="sys-key">Ambiente</span>
+                    <span class="badge {{ $data['system_info']['environment'] === 'production' ? 'badge-success' : 'badge-warning' }}">
+                        {{ ucfirst($data['system_info']['environment']) }}
+                    </span>
+                </div>
+                <div class="sys-row">
+                    <span class="sys-key">Debug</span>
+                    <span class="badge {{ $data['system_info']['debug_mode'] ? 'badge-warning' : 'badge-success' }}">
+                        {{ $data['system_info']['debug_mode'] ? 'Ativo' : 'Desativado' }}
+                    </span>
+                </div>
+                <div class="sys-row">
+                    <span class="sys-key">Manutenção</span>
+                    <span class="badge {{ $data['system_info']['maintenance_mode'] ? 'badge-danger' : 'badge-success' }}">
+                        {{ $data['system_info']['maintenance_mode'] ? 'Ativo' : 'Inativo' }}
+                    </span>
+                </div>
+                <div class="sys-row">
+                    <span class="sys-key">Servidor</span>
+                    <span style="font-size:0.75rem;color:var(--hm-text-muted);" id="serverTime">{{ $data['system_info']['server_time'] }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+$(function() {
+    initVisitsChart();
+    // Auto-refresh contadores a cada 2 min
+    setInterval(refreshQuickStats, 120000);
+});
+
+// ── Gráfico de visitas ────────────────────────────────────
+function initVisitsChart() {
+    var ctx = document.getElementById('visitsChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @json($data['charts']['visits_by_day']['labels'] ?? []),
+            datasets: [
+                {
+                    label: 'Visitas Totais',
+                    data: @json($data['charts']['visits_by_day']['total'] ?? []),
+                    borderColor: '#FF6B00',
+                    backgroundColor: 'rgba(255,107,0,0.08)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#FF6B00',
+                    pointRadius: 4,
+                },
+                {
+                    label: 'Visitas Únicas',
+                    data: @json($data['charts']['visits_by_day']['unique'] ?? []),
+                    borderColor: '#0891b2',
+                    backgroundColor: 'rgba(8,145,178,0.06)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#0891b2',
+                    pointRadius: 3,
+                    borderDash: [4, 3],
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+            }
+        }
+    });
+}
+
+// ── Refresh dashboard ─────────────────────────────────────
+function refreshDashboard() {
+    var icon = document.getElementById('refreshIcon');
+    var btn  = document.getElementById('btnRefresh');
+    if (icon) icon.className = 'fas fa-spinner fa-spin me-1';
+    if (btn)  btn.disabled = true;
+
+    $.ajax({
+        url: '{{ route("admin.dashboard.data") }}',
+        method: 'GET',
+        success: function(res) {
+            if (res.success) {
+                var c = res.data.counters;
+                $('#kpi-services').text(c.services);
+                $('#kpi-posts').text(c.posts_published);
+                $('#kpi-photos').text(c.gallery_photos);
+                $('#kpi-messages').text(c.unread_messages);
+                HMToast.success('Dashboard atualizado!', 2500);
+            }
+        },
+        error: function() { HMToast.error('Erro ao atualizar dashboard.'); },
+        complete: function() {
+            if (icon) icon.className = 'fas fa-sync-alt me-1';
+            if (btn)  btn.disabled = false;
+        }
+    });
+}
+
+// ── Refresh rápido (silencioso) ───────────────────────────
+function refreshQuickStats() {
+    $.ajax({
+        url: '{{ route("admin.dashboard.quick-stats") }}',
+        method: 'GET',
+        success: function(res) {
+            $('#kpi-services').text(res.services_count || 0);
+            $('#kpi-posts').text(res.posts_published || 0);
+            $('#kpi-photos').text(res.gallery_photos || 0);
+            $('#kpi-messages').text(res.unread_messages || 0);
+            if (res.visits_today !== undefined) $('#kpi-visits-today').text(res.visits_today);
+            if (res.online_now   !== undefined) $('#kpi-online').text(res.online_now);
+        }
+    });
+}
+</script>
 @endsection
 
 @section('styles')
@@ -523,23 +1055,11 @@ function refreshDashboard() {
                 updateCounters(response.data.counters);
                 updateLastUpdate(response.last_updated);
                 
-                Toastify({
-                    text: "Dashboard atualizado com sucesso!",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#28a745"
-                }).showToast();
+                HMToast.success("Dashboard atualizado com sucesso!");
             }
         },
         error: function() {
-            Toastify({
-                text: "Erro ao atualizar dashboard",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#dc3545"
-            }).showToast();
+            HMToast.error("Erro ao atualizar dashboard");
         },
         complete: function() {
             hideLoading();
@@ -606,13 +1126,7 @@ function clearCache() {
         },
         success: function(response) {
             if (response.success) {
-                Toastify({
-                    text: response.message,
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#28a745"
-                }).showToast();
+                HMToast.success(response.message);
                 
                 setTimeout(() => location.reload(), 1000);
             }

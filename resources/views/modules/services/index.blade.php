@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Serviços - HomeMechanic')
 @section('page-title', 'Serviços')
@@ -560,23 +560,11 @@ class ServicesManager {
     }
 
     showSuccess(message) {
-        Toastify({
-            text: message,
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "#28a745"
-        }).showToast();
+        HMToast.success(message);
     }
 
     showError(message) {
-        Toastify({
-            text: message,
-            duration: 5000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "#dc3545"
-        }).showToast();
+        HMToast.error(message);
     }
 }
 

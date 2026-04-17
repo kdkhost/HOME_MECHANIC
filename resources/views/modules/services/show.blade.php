@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', $service->title . ' - HomeMechanic')
 @section('page-title', $service->title)
@@ -156,33 +156,15 @@ async function toggleActive(id) {
         const data = await response.json();
         
         if (data.success) {
-            Toastify({
-                text: data.message,
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#28a745"
-            }).showToast();
+            HMToast.success(data.message);
             
             setTimeout(() => location.reload(), 1500);
         } else {
-            Toastify({
-                text: 'Erro ao alterar status',
-                duration: 5000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#dc3545"
-            }).showToast();
+            HMToast.error('Erro ao alterar status');
         }
     } catch (error) {
         console.error('Erro:', error);
-        Toastify({
-            text: 'Erro de conexão',
-            duration: 5000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "#dc3545"
-        }).showToast();
+        HMToast.error('Erro de conexão');
     }
 }
 
@@ -199,33 +181,15 @@ async function toggleFeatured(id) {
         const data = await response.json();
         
         if (data.success) {
-            Toastify({
-                text: data.message,
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#28a745"
-            }).showToast();
+            HMToast.success(data.message);
             
             setTimeout(() => location.reload(), 1500);
         } else {
-            Toastify({
-                text: 'Erro ao alterar destaque',
-                duration: 5000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#dc3545"
-            }).showToast();
+            HMToast.error('Erro ao alterar destaque');
         }
     } catch (error) {
         console.error('Erro:', error);
-        Toastify({
-            text: 'Erro de conexão',
-            duration: 5000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "#dc3545"
-        }).showToast();
+        HMToast.error('Erro de conexão');
     }
 }
 
@@ -255,35 +219,17 @@ async function deleteService(id) {
         const data = await response.json();
         
         if (data.success) {
-            Toastify({
-                text: data.message,
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#28a745"
-            }).showToast();
+            HMToast.success(data.message);
             
             setTimeout(() => {
                 window.location.href = '{{ route("admin.services.index") }}';
             }, 1500);
         } else {
-            Toastify({
-                text: 'Erro ao excluir serviço',
-                duration: 5000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#dc3545"
-            }).showToast();
+            HMToast.error('Erro ao excluir serviço');
         }
     } catch (error) {
         console.error('Erro:', error);
-        Toastify({
-            text: 'Erro de conexão',
-            duration: 5000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "#dc3545"
-        }).showToast();
+        HMToast.error('Erro de conexão');
     }
 }
 </script>

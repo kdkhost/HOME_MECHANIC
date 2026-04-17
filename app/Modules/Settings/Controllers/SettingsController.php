@@ -17,6 +17,13 @@ class SettingsController extends Controller
         'contact_email'    => 'contato@homemechanic.com.br',
         'contact_phone'    => '(11) 99999-9999',
         'whatsapp'         => '',
+        // Redes sociais
+        'social_instagram' => '',
+        'social_facebook'  => '',
+        'social_youtube'   => '',
+        'social_twitter'   => '',
+        'social_tiktok'    => '',
+        'social_linkedin'  => '',
         // Endereço separado
         'address_cep'      => '',
         'address_street'   => '',
@@ -164,6 +171,13 @@ class SettingsController extends Controller
             'contact_email'      => $request->input('contact_email'),
             'contact_phone'      => $request->input('contact_phone'),
             'whatsapp'           => $request->input('whatsapp'),
+            // Redes sociais
+            'social_instagram'   => $request->input('social_instagram', ''),
+            'social_facebook'    => $request->input('social_facebook', ''),
+            'social_youtube'     => $request->input('social_youtube', ''),
+            'social_twitter'     => $request->input('social_twitter', ''),
+            'social_tiktok'      => $request->input('social_tiktok', ''),
+            'social_linkedin'    => $request->input('social_linkedin', ''),
             'address_cep'        => preg_replace('/\D/', '', $request->input('address_cep', '')),
             'address_street'     => $request->input('address_street'),
             'address_number'     => $request->input('address_number'),

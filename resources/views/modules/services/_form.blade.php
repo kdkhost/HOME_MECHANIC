@@ -1,4 +1,4 @@
-<div class="row">
+﻿<div class="row">
     <div class="col-md-8">
         <!-- Título -->
         <div class="form-group">
@@ -202,13 +202,7 @@ $('#uploadModal').on('shown.bs.modal', function() {
             },
             error: function(file, errorMessage) {
                 console.error('Erro no upload:', errorMessage);
-                Toastify({
-                    text: typeof errorMessage === 'string' ? errorMessage : 'Erro no upload',
-                    duration: 5000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#dc3545"
-                }).showToast();
+                HMToast.error(typeof errorMessage === 'string' ? errorMessage : 'Erro no upload');
             }
         });
     }

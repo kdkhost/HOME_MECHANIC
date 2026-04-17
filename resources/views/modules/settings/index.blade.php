@@ -118,6 +118,77 @@
                         </div>
                     </div>
 
+                    {{-- ── Redes Sociais ────────────────── --}}
+                    <div class="section-divider"><i class="fas fa-share-alt"></i> Redes Sociais</div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Instagram</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background:#E1306C;border-color:#E1306C;color:#fff;"><i class="fab fa-instagram"></i></span>
+                                    <input type="url" class="form-control" name="social_instagram"
+                                           value="{{ old('social_instagram', $settings['social_instagram'] ?? '') }}"
+                                           placeholder="https://instagram.com/suapagina">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Facebook</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background:#1877F2;border-color:#1877F2;color:#fff;"><i class="fab fa-facebook-f"></i></span>
+                                    <input type="url" class="form-control" name="social_facebook"
+                                           value="{{ old('social_facebook', $settings['social_facebook'] ?? '') }}"
+                                           placeholder="https://facebook.com/suapagina">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>YouTube</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background:#FF0000;border-color:#FF0000;color:#fff;"><i class="fab fa-youtube"></i></span>
+                                    <input type="url" class="form-control" name="social_youtube"
+                                           value="{{ old('social_youtube', $settings['social_youtube'] ?? '') }}"
+                                           placeholder="https://youtube.com/@seucanal">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Twitter / X</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background:#000;border-color:#000;color:#fff;"><i class="fab fa-x-twitter"></i></span>
+                                    <input type="url" class="form-control" name="social_twitter"
+                                           value="{{ old('social_twitter', $settings['social_twitter'] ?? '') }}"
+                                           placeholder="https://x.com/suaconta">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>TikTok</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background:#010101;border-color:#010101;color:#fff;"><i class="fab fa-tiktok"></i></span>
+                                    <input type="url" class="form-control" name="social_tiktok"
+                                           value="{{ old('social_tiktok', $settings['social_tiktok'] ?? '') }}"
+                                           placeholder="https://tiktok.com/@suaconta">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>LinkedIn</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background:#0A66C2;border-color:#0A66C2;color:#fff;"><i class="fab fa-linkedin-in"></i></span>
+                                    <input type="url" class="form-control" name="social_linkedin"
+                                           value="{{ old('social_linkedin', $settings['social_linkedin'] ?? '') }}"
+                                           placeholder="https://linkedin.com/company/suaempresa">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- ── Endereço ─────────────────────── --}}
                     <div class="section-divider"><i class="fas fa-map-marker-alt"></i> Endereço</div>
 

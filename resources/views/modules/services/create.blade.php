@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Novo Serviço - HomeMechanic')
 @section('page-title', 'Novo Serviço')
@@ -73,36 +73,18 @@ $(document).ready(function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                Toastify({
-                    text: data.message,
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#28a745"
-                }).showToast();
+                HMToast.success(data.message);
                 
                 setTimeout(() => {
                     window.location.href = '{{ route("admin.services.index") }}';
                 }, 1500);
             } else {
-                Toastify({
-                    text: data.message || 'Erro ao criar serviço',
-                    duration: 5000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#dc3545"
-                }).showToast();
+                HMToast.error(data.message || 'Erro ao criar serviço');
             }
         })
         .catch(error => {
             console.error('Erro:', error);
-            Toastify({
-                text: 'Erro de conexão',
-                duration: 5000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#dc3545"
-            }).showToast();
+            HMToast.error('Erro de conexão');
         });
     });
 });
