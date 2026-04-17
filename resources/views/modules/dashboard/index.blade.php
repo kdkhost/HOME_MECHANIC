@@ -28,16 +28,17 @@
 .dash-welcome h4 { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.25rem; }
 .dash-welcome p  { font-size: 0.85rem; opacity: 0.85; margin: 0; }
 
-/* ── Stat cards ───────────────────────────────────────── */
+/* ── KPI cards ────────────────────────────────────────── */
 .kpi-card {
     border-radius: var(--hm-radius-lg) !important;
     border: none !important;
-    color: #fff !important;
     padding: 1.25rem !important;
     position: relative; overflow: hidden;
     transition: var(--hm-transition);
     box-shadow: var(--hm-shadow-md) !important;
+    background: var(--bs-primary); /* fallback */
 }
+.kpi-card * { color: #fff !important; }
 .kpi-card:hover { transform: translateY(-3px); box-shadow: var(--hm-shadow-hover) !important; }
 .kpi-card::after {
     content: '';
@@ -45,10 +46,11 @@
     width: 90px; height: 90px;
     background: rgba(255,255,255,0.1);
     border-radius: 50%;
+    pointer-events: none;
 }
-.kpi-num  { font-size: 2rem; font-weight: 700; line-height: 1; }
-.kpi-lbl  { font-size: 0.78rem; opacity: 0.85; margin-top: 0.2rem; }
-.kpi-icon { font-size: 2rem; opacity: 0.7; }
+.kpi-num  { font-size: 2rem; font-weight: 700; line-height: 1; color: #fff !important; }
+.kpi-lbl  { font-size: 0.78rem; opacity: 0.9; margin-top: 0.2rem; color: #fff !important; }
+.kpi-icon { font-size: 2rem; opacity: 0.7; color: #fff !important; }
 .kpi-trend {
     font-size: 0.72rem; margin-top: 0.5rem;
     display: flex; align-items: center; gap: 0.3rem;
@@ -151,46 +153,46 @@
 {{-- KPI Cards --}}
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
-        <div class="card kpi-card" style="background:linear-gradient(135deg,#FF6B00,#E55A00);">
+        <div class="card kpi-card" style="background:linear-gradient(135deg,#FF6B00,#E55A00) !important;color:#fff !important;">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-num" id="kpi-services">{{ $data['counters']['services'] }}</div>
-                    <div class="kpi-lbl">Serviços Ativos</div>
+                    <div class="kpi-num" id="kpi-services" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['services'] }}</div>
+                    <div class="kpi-lbl" style="color:rgba(255,255,255,0.9)!important;font-size:0.78rem;">Serviços Ativos</div>
                 </div>
-                <i class="fas fa-tools kpi-icon"></i>
+                <i class="fas fa-tools" style="font-size:2rem;opacity:0.7;color:#fff!important;"></i>
             </div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card kpi-card" style="background:linear-gradient(135deg,#16a34a,#15803d);">
+        <div class="card kpi-card" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-num" id="kpi-posts">{{ $data['counters']['posts_published'] }}</div>
-                    <div class="kpi-lbl">Posts Publicados</div>
+                    <div class="kpi-num" id="kpi-posts" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['posts_published'] }}</div>
+                    <div class="kpi-lbl" style="color:rgba(255,255,255,0.9)!important;font-size:0.78rem;">Posts Publicados</div>
                 </div>
-                <i class="fas fa-newspaper kpi-icon"></i>
+                <i class="fas fa-newspaper" style="font-size:2rem;opacity:0.7;color:#fff!important;"></i>
             </div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card kpi-card" style="background:linear-gradient(135deg,#0891b2,#0e7490);">
+        <div class="card kpi-card" style="background:linear-gradient(135deg,#0891b2,#0e7490) !important;color:#fff !important;">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-num" id="kpi-photos">{{ $data['counters']['gallery_photos'] }}</div>
-                    <div class="kpi-lbl">Fotos na Galeria</div>
+                    <div class="kpi-num" id="kpi-photos" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['gallery_photos'] }}</div>
+                    <div class="kpi-lbl" style="color:rgba(255,255,255,0.9)!important;font-size:0.78rem;">Fotos na Galeria</div>
                 </div>
-                <i class="fas fa-images kpi-icon"></i>
+                <i class="fas fa-images" style="font-size:2rem;opacity:0.7;color:#fff!important;"></i>
             </div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card kpi-card" style="background:linear-gradient(135deg,#d97706,#b45309);">
+        <div class="card kpi-card" style="background:linear-gradient(135deg,#d97706,#b45309) !important;color:#fff !important;">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-num" id="kpi-messages">{{ $data['counters']['unread_messages'] }}</div>
-                    <div class="kpi-lbl">Mensagens Não Lidas</div>
+                    <div class="kpi-num" id="kpi-messages" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['unread_messages'] }}</div>
+                    <div class="kpi-lbl" style="color:rgba(255,255,255,0.9)!important;font-size:0.78rem;">Mensagens Não Lidas</div>
                 </div>
-                <i class="fas fa-envelope kpi-icon"></i>
+                <i class="fas fa-envelope" style="font-size:2rem;opacity:0.7;color:#fff!important;"></i>
             </div>
         </div>
     </div>

@@ -389,11 +389,17 @@ textarea.form-control { resize: vertical; min-height: 80px; }
     transition: var(--hm-transition) !important; position: relative; overflow: hidden;
     border: none !important;
 }
+.stat-card * { color: #fff !important; }
 .stat-card::after { content:''; position:absolute; top:-30%; right:-10%; width:100px; height:100px; background:rgba(255,255,255,0.08); border-radius:50%; }
 .stat-card:hover { transform: translateY(-3px); box-shadow: var(--hm-shadow-hover) !important; }
-.stat-card .stat-icon { font-size: 2rem; opacity: 0.8; }
-.stat-card .stat-number { font-size: 1.9rem; font-weight: 700; line-height: 1; }
-.stat-card .stat-label { font-size: 0.8rem; opacity: 0.85; margin-top: 0.2rem; }
+.stat-card .stat-icon { font-size: 2rem; opacity: 0.8; color: #fff !important; }
+.stat-card .stat-number { font-size: 1.9rem; font-weight: 700; line-height: 1; color: #fff !important; }
+.stat-card .stat-label { font-size: 0.8rem; opacity: 0.85; margin-top: 0.2rem; color: #fff !important; }
+
+/* KPI cards do dashboard — forçar texto branco */
+.kpi-card, .kpi-card * { color: #fff !important; }
+.kpi-card .kpi-num { font-size: 2rem !important; font-weight: 700 !important; }
+.kpi-card .kpi-lbl { font-size: 0.78rem !important; opacity: 0.9; }
 
 /* ── Empty state ──────────────────────────────────────────── */
 .empty-state { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
