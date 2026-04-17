@@ -354,7 +354,7 @@
 
                         <!-- Analytics -->
                         <li class="nav-item">
-                            <a href="{{ route('admin.dashboard') }}" class="nav-link">
+                            <a href="{{ route('admin.analytics.index') }}" class="nav-link {{ request()->routeIs('admin.analytics.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-chart-line"></i>
                                 <p>Analytics</p>
                             </a>

@@ -24,7 +24,13 @@ class AnalyticsController extends Controller
     public function index(Request $request)
     {
         try {
-            $stats = $this->analyticsService->getDashboardStats();
+            // Dados básicos para a view
+            $stats = [
+                'total_visits' => DB::table('analytics')->where('is_bot', false)->count(),
+                'unique_visits' => DB::table('analytics')->where('is_bot', false)->where('is_unique', true)->count(),
+                'online_now' => DB::table('analytics')->where('created_at', '>=', now()->subMinutes(5))->where('is_bot', false)->distinct('session_id')->count(),
+                'avg_time' => DB::table('analytics')->where('is_bot', false)->avg('time_on_page') ?? 0
+            ];
             
             if ($request->wantsJson()) {
                 return response()->json([
@@ -49,6 +55,85 @@ class AnalyticsController extends Controller
             }
 
             return back()->with('error', 'Erro ao carregar estatísticas.');
+        }
+    }
+
+    /**
+     * Obter dados via AJAX
+     */
+    public function getData(Request $request)
+    {
+        try {
+            $period = $request->input('period', 30);
+            
+            $data = [
+                'visits' => $this->getVisitsChartData($period),
+                'devices' => $this->getDevicesChartData($period),
+                'browsers' => $this->getBrowsersChartData($period),
+                'countries' => $this->getCountriesChartData($period),
+                'pages' => $this->getPagesChartData($period),
+            ];
+            
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar dados'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obter visitantes
+     */
+    public function getVisitors(Request $request)
+    {
+        try {
+            $visitors = DB::table('analytics')
+                ->select('ip_address', 'country', 'city', 'device_type', 'browser', 'created_at')
+                ->where('is_bot', false)
+                ->orderBy('created_at', 'desc')
+                ->limit(100)
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $visitors
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar visitantes'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obter páginas mais visitadas
+     */
+    public function getPages(Request $request)
+    {
+        try {
+            $pages = DB::table('analytics')
+                ->select('url', DB::raw('COUNT(*) as visits'))
+                ->where('is_bot', false)
+                ->groupBy('url')
+                ->orderByDesc('visits')
+                ->limit(20)
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $pages
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar páginas'
+            ], 500);
         }
     }
 
