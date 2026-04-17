@@ -15,9 +15,9 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         Route::post('/email/test', [SettingsController::class, 'testEmail'])->name('email.test');
 
         // Templates de e-mail
-        Route::get('/email/templates',          [EmailTemplateController::class, 'index'])->name('email.templates');
-        Route::get('/email/templates/{slug}',   [EmailTemplateController::class, 'edit'])->name('email.templates.edit');
-        Route::post('/email/templates/{slug}',  [EmailTemplateController::class, 'update'])->name('email.templates.update');
-        Route::post('/email/templates/preview', [EmailTemplateController::class, 'preview'])->name('email.templates.preview');
+        Route::get('/email/templates',           [EmailTemplateController::class, 'index'])->name('email.templates');
+        Route::post('/email/templates/preview',  [EmailTemplateController::class, 'preview'])->name('email.templates.preview');
+        Route::get('/email/templates/{slug}',    [EmailTemplateController::class, 'edit'])->name('email.templates.edit');
+        Route::post('/email/templates/{slug}',   [EmailTemplateController::class, 'update'])->name('email.templates.update');
     });
 });
