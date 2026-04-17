@@ -26,23 +26,46 @@ body {
 /* ── Sidebar ──────────────────────────────────────────────── */
 .main-sidebar {
     background-color: var(--hm-sidebar-bg) !important;
+    width: 250px !important;
+    overflow-x: hidden !important;
 }
 
-/* Forçar content-wrapper com margem do sidebar aberto */
-.content-wrapper,
-.main-footer,
-.main-header.navbar {
+/* Sidebar sempre expandido — anula o colapso do sidebar-mini */
+.sidebar-mini .main-sidebar,
+.sidebar-mini .main-sidebar:hover {
+    width: 250px !important;
+}
+
+.sidebar-mini.layout-fixed .content-wrapper,
+.sidebar-mini.layout-fixed .main-footer,
+.sidebar-mini.layout-fixed .main-header.navbar {
     margin-left: 250px !important;
 }
 
-/* Quando o usuário fecha pelo hambúrguer */
-body.sidebar-collapse .content-wrapper,
-body.sidebar-collapse .main-footer,
-body.sidebar-collapse .main-header.navbar {
+/* Textos sempre visíveis */
+.sidebar-mini .nav-sidebar .nav-link p,
+.sidebar-mini .brand-text,
+.sidebar-mini .user-panel .info,
+.sidebar-mini .nav-header {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
     margin-left: 0 !important;
+    overflow: visible !important;
 }
-body.sidebar-collapse .main-sidebar {
-    margin-left: -250px !important;
+
+/* Hambúrguer fecha o sidebar */
+.sidebar-mini.sidebar-collapse .main-sidebar {
+    width: 4.6rem !important;
+}
+.sidebar-mini.sidebar-collapse .main-sidebar:hover {
+    width: 250px !important;
+}
+.sidebar-mini.sidebar-collapse.layout-fixed .content-wrapper,
+.sidebar-mini.sidebar-collapse.layout-fixed .main-footer,
+.sidebar-mini.sidebar-collapse.layout-fixed .main-header.navbar {
+    margin-left: 4.6rem !important;
 }
 
 .brand-link {

@@ -14,7 +14,7 @@
 
     @yield('styles')
 </head>
-<body class="hold-transition layout-fixed sidebar-open">
+<body class="hold-transition sidebar-mini layout-fixed">
 
 <div class="wrapper">
 
