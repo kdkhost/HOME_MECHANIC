@@ -294,46 +294,18 @@
 <script src="{{ asset('js/admin.js') }}"></script>
 
 <script>
-    // ── Toastify helper global ────────────────────────────────
-    function toast(message, type = 'success') {
-        const colors = {
-            success: 'linear-gradient(135deg, #28a745, #20c997)',
-            error:   'linear-gradient(135deg, #dc3545, #c82333)',
-            warning: 'linear-gradient(135deg, #ffc107, #e0a800)',
-            info:    'linear-gradient(135deg, #17a2b8, #138496)',
-        };
-        const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-        Toastify({
-            text: (icons[type] || '') + '  ' + message,
-            duration: 4000,
-            gravity: 'top',
-            position: 'right',
-            stopOnFocus: true,
-            style: {
-                background: colors[type] || colors.success,
-                borderRadius: '8px',
-                padding: '0.85rem 1.25rem',
-                fontSize: '0.88rem',
-                fontWeight: '500',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-                minWidth: '280px',
-            },
-            onClick: function() {}
-        }).showToast();
-    }
-
-    // ── Flash messages → Toastify ─────────────────────────────
+    // ── Flash messages → HMToast ─────────────────────────────
     @if(session('success'))
-        toast(@json(session('success')), 'success');
+        document.addEventListener('DOMContentLoaded', () => HMToast.success(@json(session('success'))));
     @endif
     @if(session('error'))
-        toast(@json(session('error')), 'error');
+        document.addEventListener('DOMContentLoaded', () => HMToast.error(@json(session('error'))));
     @endif
     @if(session('warning'))
-        toast(@json(session('warning')), 'warning');
+        document.addEventListener('DOMContentLoaded', () => HMToast.warning(@json(session('warning'))));
     @endif
     @if(session('info'))
-        toast(@json(session('info')), 'info');
+        document.addEventListener('DOMContentLoaded', () => HMToast.info(@json(session('info'))));
     @endif
 
 <script>
