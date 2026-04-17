@@ -208,6 +208,10 @@ class SettingsController extends Controller
             $fromAddr   = $request->input('mail_from_address', Setting::get('mail_from_address', 'noreply@homemechanic.com.br'));
             $fromName   = $request->input('mail_from_name',    Setting::get('mail_from_name',    'HomeMechanic'));
 
+            // Suporte a subject/body customizados (enviado da página de templates)
+            $customSubject = $request->input('mail_subject');
+            $customBody    = $request->input('mail_body');
+
             config([
                 'mail.default'                 => 'smtp',
                 'mail.mailers.smtp.host'       => $host,
@@ -219,17 +223,32 @@ class SettingsController extends Controller
                 'mail.from.name'               => $fromName,
             ]);
 
-            \Illuminate\Support\Facades\Mail::raw(
-                "✅ Teste de configuração SMTP — HomeMechanic\n\n" .
-                "Se você recebeu este e-mail, as configurações SMTP estão corretas!\n\n" .
-                "Servidor: {$host}:{$port}\n" .
-                "Criptografia: " . ($encryption ?: 'Nenhuma') . "\n" .
-                "Remetente: {$fromName} <{$fromAddr}>\n\n" .
-                "Enviado em: " . now()->format('d/m/Y H:i:s'),
-                fn($m) => $m->to($request->input('test_email'))
-                            ->from($fromAddr, $fromName)
-                            ->subject('✅ Teste SMTP — HomeMechanic')
-            );
+            $subject = $customSubject ?: '✅ Teste SMTP — HomeMechanic';
+            $isHtml  = $customBody && strip_tags($customBody) !== $customBody;
+
+            if ($isHtml && $customBody) {
+                \Illuminate\Support\Facades\Mail::html(
+                    $customBody,
+                    fn($m) => $m->to($request->input('test_email'))
+                                ->from($fromAddr, $fromName)
+                                ->subject($subject)
+                );
+            } else {
+                $text = $customBody ?: (
+                    "✅ Teste de configuração SMTP — HomeMechanic\n\n" .
+                    "Se você recebeu este e-mail, as configurações SMTP estão corretas!\n\n" .
+                    "Servidor: {$host}:{$port}\n" .
+                    "Criptografia: " . ($encryption ?: 'Nenhuma') . "\n" .
+                    "Remetente: {$fromName} <{$fromAddr}>\n\n" .
+                    "Enviado em: " . now()->format('d/m/Y H:i:s')
+                );
+                \Illuminate\Support\Facades\Mail::raw(
+                    $text,
+                    fn($m) => $m->to($request->input('test_email'))
+                                ->from($fromAddr, $fromName)
+                                ->subject($subject)
+                );
+            }
 
             return response()->json([
                 'success' => true,

@@ -74,7 +74,7 @@ class EmailTemplateController extends Controller
         Setting::set("email_tpl_{$slug}_subject", $request->input('subject'), 'email_templates');
         Setting::set("email_tpl_{$slug}_body",    $request->input('body'),    'email_templates');
 
-        return back()->with('success', 'Template salvo com sucesso!');
+        return back()->with('success', 'Template "' . $this->templates[$slug]['name'] . '" salvo com sucesso!');
     }
 
     public function preview(Request $request)
@@ -84,7 +84,6 @@ class EmailTemplateController extends Controller
         $siteName = Setting::get('site_name', 'HomeMechanic');
         $primary  = '#FF6B00';
 
-        // Substituir variáveis de exemplo
         $vars = [
             '{{nome}}'              => 'João Silva',
             '{{email}}'             => 'joao@email.com',
@@ -103,7 +102,10 @@ class EmailTemplateController extends Controller
 
         $subjectParsed = str_replace(array_keys($vars), array_values($vars), $subject);
         $bodyParsed    = str_replace(array_keys($vars), array_values($vars), $body);
-        $bodyHtml      = nl2br(e($bodyParsed));
+
+        // Detectar se é HTML ou texto simples
+        $isHtml = strip_tags($bodyParsed) !== $bodyParsed;
+        $bodyContent = $isHtml ? $bodyParsed : nl2br(e($bodyParsed));
 
         $html = <<<HTML
 <!DOCTYPE html>
@@ -113,13 +115,18 @@ class EmailTemplateController extends Controller
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{$subjectParsed}</title>
 <style>
+  *{box-sizing:border-box;}
   body{margin:0;padding:0;background:#f0f2f5;font-family:'Segoe UI',Arial,sans-serif;}
   .wrap{max-width:600px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);}
-  .header{background:{$primary};padding:28px 32px;text-align:center;}
-  .header h1{color:#fff;margin:0;font-size:1.4rem;font-weight:700;letter-spacing:0.5px;}
-  .body{padding:32px;}
-  .body p{color:#374151;font-size:0.95rem;line-height:1.7;margin:0 0 1rem;}
-  .footer{background:#f8fafc;padding:20px 32px;text-align:center;border-top:1px solid #e2e8f0;}
+  .header{background:{$primary};padding:24px 32px;text-align:center;}
+  .header h1{color:#fff;margin:0;font-size:1.3rem;font-weight:700;letter-spacing:0.5px;}
+  .body{padding:28px 32px;}
+  .body p{color:#374151;font-size:0.93rem;line-height:1.7;margin:0 0 1rem;}
+  .body a{color:{$primary};}
+  .body img{max-width:100%;height:auto;}
+  .body table{width:100%;border-collapse:collapse;}
+  .body td,.body th{padding:8px;border:1px solid #e2e8f0;}
+  .footer{background:#f8fafc;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;}
   .footer p{color:#94a3b8;font-size:0.78rem;margin:0;}
   .footer a{color:{$primary};text-decoration:none;}
 </style>
@@ -127,7 +134,7 @@ class EmailTemplateController extends Controller
 <body>
 <div class="wrap">
   <div class="header"><h1>{$siteName}</h1></div>
-  <div class="body"><p>{$bodyHtml}</p></div>
+  <div class="body">{$bodyContent}</div>
   <div class="footer">
     <p>&copy; {$siteName} &mdash; <a href="#">Cancelar inscrição</a></p>
   </div>
