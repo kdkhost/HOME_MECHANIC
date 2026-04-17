@@ -135,7 +135,7 @@ class DashboardController extends Controller
             'message' => $message,
             'details' => $results,
         ]);
-    }    }
+    }
 
     /**
      * Obter dados completos do dashboard
