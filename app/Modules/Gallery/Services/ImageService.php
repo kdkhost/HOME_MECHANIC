@@ -54,70 +54,40 @@ class ImageService
         }
     }
 
-    /**
-     * Criar thumbnail personalizado para galeria
-     */
     private function createGalleryThumbnail(Upload $upload): ?Upload
     {
         try {
-            if (!$upload->is_image || !$upload->exists()) {
-                return null;
-            }
+            if (!$upload->is_image) return null;
 
-            // Se já tem thumbnail do UploadService, usar ele
-            if ($upload->thumbnail_path) {
-                return $upload;
-            }
+            if ($upload->thumbnail_path) return $upload;
 
-            // Criar thumbnail personalizado 300x300 (quadrado)
-            $originalPath = $upload->getFullPath();
-            $thumbnailUuid = \Illuminate\Support\Str::uuid()->toString();
-            $extension = pathinfo($upload->filename, PATHINFO_EXTENSION);
+            $thumbnailUuid     = \Illuminate\Support\Str::uuid()->toString();
+            $extension         = pathinfo($upload->filename, PATHINFO_EXTENSION);
             $thumbnailFilename = $thumbnailUuid . '_gallery_thumb.' . $extension;
-            $thumbnailPath = 'uploads/gallery/thumbnails/' . $thumbnailFilename;
-            $fullThumbnailPath = storage_path('app/public/' . $thumbnailPath);
+            $thumbnailSubdir   = 'uploads/gallery/thumbnails';
+            $thumbnailPath     = $thumbnailSubdir . '/' . $thumbnailFilename;
+            $thumbnailDir      = public_path($thumbnailSubdir);
 
-            // Criar diretório se não existir
-            $thumbnailDir = dirname($fullThumbnailPath);
-            if (!is_dir($thumbnailDir)) {
-                mkdir($thumbnailDir, 0755, true);
-            }
+            if (!is_dir($thumbnailDir)) mkdir($thumbnailDir, 0755, true);
 
-            // Carregar e processar imagem
-            $image = $this->imageManager->read($originalPath);
-
-            // Redimensionar para 300x300 (crop centralizado)
+            $image = $this->imageManager->read(public_path($upload->path));
             $image->cover(300, 300);
+            $image->save(public_path($thumbnailPath), quality: 85);
 
-            // Salvar thumbnail
-            $image->save($fullThumbnailPath, quality: 85);
-
-            // Criar registro do thumbnail no banco
-            $thumbnailUpload = Upload::create([
-                'user_id' => $upload->user_id,
-                'uuid' => $thumbnailUuid,
-                'original_name' => 'thumb_' . $upload->original_name,
-                'filename' => $thumbnailFilename,
-                'mime_type' => $upload->mime_type,
-                'size' => filesize($fullThumbnailPath),
-                'disk' => 'public',
-                'path' => $thumbnailPath,
-                'thumbnail_path' => null // Thumbnail não precisa de thumbnail
+            return Upload::create([
+                'user_id'        => $upload->user_id,
+                'uuid'           => $thumbnailUuid,
+                'original_name'  => 'thumb_' . $upload->original_name,
+                'filename'       => $thumbnailFilename,
+                'mime_type'      => $upload->mime_type,
+                'size'           => filesize(public_path($thumbnailPath)),
+                'disk'           => 'public_direct',
+                'path'           => $thumbnailPath,
+                'thumbnail_path' => null,
             ]);
-
-            Log::info('Thumbnail da galeria criado com sucesso', [
-                'original_uuid' => $upload->uuid,
-                'thumbnail_uuid' => $thumbnailUuid
-            ]);
-
-            return $thumbnailUpload;
 
         } catch (\Exception $e) {
-            Log::warning('Erro ao criar thumbnail da galeria', [
-                'error' => $e->getMessage(),
-                'upload_uuid' => $upload->uuid
-            ]);
-
+            Log::warning('Erro ao criar thumbnail da galeria', ['error' => $e->getMessage()]);
             return null;
         }
     }

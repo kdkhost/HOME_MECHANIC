@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\FileUploadHelper;
 
 class UsersController extends Controller
 {
@@ -59,7 +60,7 @@ class UsersController extends Controller
             }
 
             if ($request->hasFile('avatar')) {
-                $data['avatar'] = $this->uploadAvatar($request->file('avatar'));
+                $data['avatar'] = FileUploadHelper::save($request->file('avatar'), 'uploads/avatars');
             }
 
             User::create($data);
@@ -130,15 +131,15 @@ class UsersController extends Controller
 
             if ($request->hasFile('avatar')) {
                 if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
-                    $data['avatar'] = $this->uploadAvatar($request->file('avatar'));
+                    // Remover avatar antigo
+                    FileUploadHelper::delete($user->avatar);
+                    $data['avatar'] = FileUploadHelper::save($request->file('avatar'), 'uploads/avatars');
                 }
             }
 
             // Remover avatar
             if ($request->input('remove_avatar') === '1' && \Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
-                if ($user->avatar) {
-                    Storage::disk('public')->delete($user->avatar);
-                }
+                FileUploadHelper::delete($user->avatar);
                 $data['avatar'] = null;
             }
 
@@ -165,7 +166,7 @@ class UsersController extends Controller
 
             // Remover avatar do storage
             if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
+                FileUploadHelper::delete($user->avatar);
             }
 
             $user->delete();
@@ -179,10 +180,5 @@ class UsersController extends Controller
     }
 
     // ── Helper ────────────────────────────────────────────────
-    private function uploadAvatar($file): string
-    {
-        $filename = 'avatars/' . uniqid('avatar_') . '.' . $file->getClientOriginalExtension();
-        Storage::disk('public')->put($filename, file_get_contents($file));
-        return $filename;
-    }
+    // Upload gerenciado pelo FileUploadHelper
 }

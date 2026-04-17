@@ -27,12 +27,13 @@ class User extends Authenticatable
     ];
 
     /**
-     * URL do avatar (foto ou inicial gerada)
+     * URL do avatar — compatível com CloudLinux/CageFS (sem symlink)
+     * O avatar é salvo diretamente em public/uploads/avatars/
      */
     public function getAvatarUrlAttribute(): ?string
     {
-        if ($this->avatar && file_exists(public_path('storage/' . $this->avatar))) {
-            return asset('storage/' . $this->avatar);
+        if ($this->avatar && file_exists(public_path($this->avatar))) {
+            return asset($this->avatar);
         }
         return null;
     }

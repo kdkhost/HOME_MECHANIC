@@ -22,28 +22,25 @@ class UploadService
 
     /**
      * Armazenar arquivo enviado
+     * Salva diretamente em public/uploads/ — compatível com CloudLinux/CageFS
      */
     public function store(UploadedFile $file, ?User $user = null): Upload
     {
         try {
-            // Gerar UUID único para o arquivo
-            $uuid = Str::uuid()->toString();
-            $extension = strtolower($file->getClientOriginalExtension());
-            $filename = $uuid . '.' . $extension;
-            
-            // Determinar diretório baseado no tipo
-            $mimeType = $file->getMimeType();
-            $directory = $this->getDirectoryForMimeType($mimeType);
-            
-            // Caminho completo
-            $path = $directory . '/' . $filename;
-            
-            // Armazenar arquivo
-            $storedPath = $file->storeAs($directory, $filename, 'public');
-            
-            if (!$storedPath) {
-                throw new \Exception('Falha ao armazenar arquivo no disco');
+            $uuid      = Str::uuid()->toString();
+            $extension = strtolower($file->getClientOriginalExtension()) ?: 'bin';
+            $filename  = $uuid . '.' . $extension;
+            $mimeType  = $file->getMimeType();
+            $subdir    = 'uploads/' . $this->getSubdirForMimeType($mimeType);
+            $dir       = public_path($subdir);
+
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
             }
+
+            // Mover arquivo diretamente para public/uploads/...
+            $file->move($dir, $filename);
+            $storedPath = $subdir . '/' . $filename; // relativo a public/
 
             // Criar thumbnail se for imagem
             $thumbnailPath = null;
@@ -51,88 +48,73 @@ class UploadService
                 $thumbnailPath = $this->createThumbnail($storedPath, $uuid, $extension);
             }
 
-            // Registrar no banco de dados
             $upload = Upload::create([
-                'user_id' => $user?->id,
-                'uuid' => $uuid,
-                'original_name' => $file->getClientOriginalName(),
-                'filename' => $filename,
-                'mime_type' => $mimeType,
-                'size' => $file->getSize(),
-                'disk' => 'public',
-                'path' => $storedPath,
-                'thumbnail_path' => $thumbnailPath
+                'user_id'        => $user?->id,
+                'uuid'           => $uuid,
+                'original_name'  => $file->getClientOriginalName(),
+                'filename'       => $filename,
+                'mime_type'      => $mimeType,
+                'size'           => filesize(public_path($storedPath)),
+                'disk'           => 'public_direct',
+                'path'           => $storedPath,
+                'thumbnail_path' => $thumbnailPath,
             ]);
 
             Log::info('Arquivo enviado com sucesso', [
-                'uuid' => $uuid,
-                'original_name' => $file->getClientOriginalName(),
-                'size' => $file->getSize(),
-                'user_id' => $user?->id
+                'uuid' => $uuid, 'original_name' => $file->getClientOriginalName(),
+                'path' => $storedPath, 'user_id' => $user?->id,
             ]);
 
             return $upload;
 
         } catch (\Exception $e) {
             Log::error('Erro ao armazenar arquivo', [
-                'error' => $e->getMessage(),
-                'file' => $file->getClientOriginalName(),
-                'user_id' => $user?->id
+                'error' => $e->getMessage(), 'file' => $file->getClientOriginalName(),
             ]);
-
             throw $e;
         }
     }
 
     /**
-     * Criar thumbnail para imagem
+     * Criar thumbnail — salvo em public/uploads/thumbnails/
      */
-    private function createThumbnail(string $originalPath, string $uuid, string $extension): ?string
+    private function createThumbnail(string $storedPath, string $uuid, string $extension): ?string
     {
         try {
             $thumbnailFilename = $uuid . '_thumb.' . $extension;
-            $thumbnailPath = 'uploads/thumbnails/' . $thumbnailFilename;
-            $fullThumbnailPath = storage_path('app/public/' . $thumbnailPath);
+            $thumbnailSubdir   = 'uploads/thumbnails';
+            $thumbnailDir      = public_path($thumbnailSubdir);
+            $thumbnailPath     = $thumbnailSubdir . '/' . $thumbnailFilename;
 
-            // Criar diretório se não existir
-            $thumbnailDir = dirname($fullThumbnailPath);
             if (!is_dir($thumbnailDir)) {
                 mkdir($thumbnailDir, 0755, true);
             }
 
-            // Carregar imagem original
-            $originalFullPath = storage_path('app/public/' . $originalPath);
+            $originalFullPath  = public_path($storedPath);
+            $thumbnailFullPath = public_path($thumbnailPath);
+
             $image = $this->imageManager->read($originalFullPath);
-
-            // Redimensionar mantendo proporção (400x300 máximo)
             $image->scaleDown(width: 400, height: 300);
-
-            // Salvar thumbnail
-            $image->save($fullThumbnailPath, quality: 85);
+            $image->save($thumbnailFullPath, quality: 85);
 
             return $thumbnailPath;
 
         } catch (\Exception $e) {
-            Log::warning('Erro ao criar thumbnail', [
-                'error' => $e->getMessage(),
-                'original_path' => $originalPath,
-                'uuid' => $uuid
-            ]);
-
+            Log::warning('Erro ao criar thumbnail', ['error' => $e->getMessage()]);
             return null;
         }
     }
 
     /**
-     * Obter diretório baseado no tipo MIME
+     * Subdiretório baseado no tipo MIME
      */
-    private function getDirectoryForMimeType(string $mimeType): string
+    private function getSubdirForMimeType(string $mimeType): string
     {
         return match (true) {
-            str_starts_with($mimeType, 'image/') => 'uploads/images',
-            str_starts_with($mimeType, 'video/') => 'uploads/videos',
-            str_starts_with($mimeType, 'application/pdf') => 'uploads/documents',
-            default => 'uploads/others'
+            str_starts_with($mimeType, 'image/') => 'images',
+            str_starts_with($mimeType, 'video/') => 'videos',
+            str_starts_with($mimeType, 'application/pdf') => 'documents',
+            default => 'others',
         };
     }
 
@@ -149,7 +131,7 @@ class UploadService
      */
     public function getPublicUrl(Upload $upload): string
     {
-        return Storage::disk('public')->url($upload->path);
+        return asset($upload->path);
     }
 
     /**
@@ -157,45 +139,26 @@ class UploadService
      */
     public function getThumbnailUrl(Upload $upload): ?string
     {
-        if (!$upload->thumbnail_path) {
-            return null;
-        }
-
-        return Storage::disk('public')->url($upload->thumbnail_path);
+        if (!$upload->thumbnail_path) return null;
+        return asset($upload->thumbnail_path);
     }
 
-    /**
-     * Excluir arquivo
-     */
     public function delete(Upload $upload): bool
     {
         try {
-            // Excluir arquivo principal
-            if (Storage::disk('public')->exists($upload->path)) {
-                Storage::disk('public')->delete($upload->path);
+            $main = public_path($upload->path);
+            if (file_exists($main)) @unlink($main);
+
+            if ($upload->thumbnail_path) {
+                $thumb = public_path($upload->thumbnail_path);
+                if (file_exists($thumb)) @unlink($thumb);
             }
 
-            // Excluir thumbnail se existir
-            if ($upload->thumbnail_path && Storage::disk('public')->exists($upload->thumbnail_path)) {
-                Storage::disk('public')->delete($upload->thumbnail_path);
-            }
-
-            // Remover registro do banco
             $upload->delete();
-
-            Log::info('Arquivo excluído com sucesso', [
-                'uuid' => $upload->uuid,
-                'filename' => $upload->filename
-            ]);
-
             return true;
 
         } catch (\Exception $e) {
-            Log::error('Erro ao excluir arquivo', [
-                'error' => $e->getMessage(),
-                'uuid' => $upload->uuid
-            ]);
-
+            Log::error('Erro ao excluir arquivo', ['error' => $e->getMessage(), 'uuid' => $upload->uuid]);
             return false;
         }
     }

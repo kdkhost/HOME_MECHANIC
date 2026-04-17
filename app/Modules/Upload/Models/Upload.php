@@ -51,10 +51,14 @@ class Upload extends Model
 
     /**
      * Obter URL pública do arquivo
+     * Suporta disk=public_direct (salvo em public/) e disk=public (storage symlink)
      */
     public function getUrlAttribute(): string
     {
-        return Storage::disk($this->disk)->url($this->path);
+        if ($this->disk === 'public_direct') {
+            return asset($this->path);
+        }
+        return Storage::disk($this->disk ?: 'public')->url($this->path);
     }
 
     /**
@@ -62,11 +66,12 @@ class Upload extends Model
      */
     public function getThumbnailUrlAttribute(): ?string
     {
-        if (!$this->thumbnail_path) {
-            return null;
-        }
+        if (!$this->thumbnail_path) return null;
 
-        return Storage::disk($this->disk)->url($this->thumbnail_path);
+        if ($this->disk === 'public_direct') {
+            return asset($this->thumbnail_path);
+        }
+        return Storage::disk($this->disk ?: 'public')->url($this->thumbnail_path);
     }
 
     /**
@@ -143,7 +148,10 @@ class Upload extends Model
      */
     public function exists(): bool
     {
-        return Storage::disk($this->disk)->exists($this->path);
+        if ($this->disk === 'public_direct') {
+            return file_exists(public_path($this->path));
+        }
+        return Storage::disk($this->disk ?: 'public')->exists($this->path);
     }
 
     /**
@@ -151,7 +159,10 @@ class Upload extends Model
      */
     public function getFullPath(): string
     {
-        return Storage::disk($this->disk)->path($this->path);
+        if ($this->disk === 'public_direct') {
+            return public_path($this->path);
+        }
+        return Storage::disk($this->disk ?: 'public')->path($this->path);
     }
 
     /**
@@ -225,23 +236,22 @@ class Upload extends Model
     {
         parent::boot();
 
-        // Ao excluir upload, remover arquivos do disco
         static::deleting(function ($upload) {
             try {
-                // Excluir arquivo principal
-                if ($upload->exists()) {
-                    Storage::disk($upload->disk)->delete($upload->path);
-                }
-
-                // Excluir thumbnail se existir
-                if ($upload->thumbnail_path && Storage::disk($upload->disk)->exists($upload->thumbnail_path)) {
-                    Storage::disk($upload->disk)->delete($upload->thumbnail_path);
+                if ($upload->disk === 'public_direct') {
+                    if (file_exists(public_path($upload->path))) @unlink(public_path($upload->path));
+                    if ($upload->thumbnail_path && file_exists(public_path($upload->thumbnail_path))) {
+                        @unlink(public_path($upload->thumbnail_path));
+                    }
+                } else {
+                    $disk = $upload->disk ?: 'public';
+                    if (Storage::disk($disk)->exists($upload->path)) Storage::disk($disk)->delete($upload->path);
+                    if ($upload->thumbnail_path && Storage::disk($disk)->exists($upload->thumbnail_path)) {
+                        Storage::disk($disk)->delete($upload->thumbnail_path);
+                    }
                 }
             } catch (\Exception $e) {
-                \Log::error('Erro ao excluir arquivos do upload', [
-                    'upload_id' => $upload->id,
-                    'error' => $e->getMessage()
-                ]);
+                \Log::error('Erro ao excluir arquivos do upload', ['upload_id' => $upload->id, 'error' => $e->getMessage()]);
             }
         });
     }

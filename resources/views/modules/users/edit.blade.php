@@ -81,8 +81,8 @@
         <div class="card text-center mb-3">
             <div class="card-body py-4">
                 <div class="user-avatar-wrap mb-3 mx-auto" onclick="document.getElementById('avatarInput').click()" title="Clique para alterar foto">
-                    @if($user->avatar && file_exists(public_path('storage/' . $user->avatar)))
-                        <img src="{{ asset('storage/' . $user->avatar) }}" class="user-avatar-img mx-auto d-block" id="avatarPreview" alt="Avatar">
+                    @if($user->avatar_url)
+                        <img src="{{ $user->avatar_url }}" class="user-avatar-img mx-auto d-block" id="avatarPreview" alt="Avatar">
                     @else
                         <div class="user-avatar mx-auto" id="avatarInitials">
                             {{ strtoupper(substr($user->name, 0, 1)) }}
