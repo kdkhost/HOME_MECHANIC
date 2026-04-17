@@ -9,7 +9,15 @@
 @section('styles')
 <style>
 /* Avatar */
-.user-avatar-wrap { position: relative; display: inline-block; }
+.user-avatar-wrap { position: relative; display: inline-block; cursor: pointer; }
+.user-avatar-wrap:hover .avatar-overlay { opacity: 1; }
+.avatar-overlay {
+    position: absolute; inset: 0; border-radius: 16px;
+    background: rgba(0,0,0,0.45); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px;
+    opacity: 0; transition: opacity 0.2s; color: #fff; font-size: 0.72rem; font-weight: 600;
+}
+.avatar-overlay i { font-size: 1.2rem; }
 .user-avatar {
     width: 96px; height: 96px; border-radius: 16px;
     background: linear-gradient(135deg, var(--hm-primary), var(--hm-primary-dark));
@@ -72,11 +80,38 @@
         {{-- Card de perfil --}}
         <div class="card text-center mb-3">
             <div class="card-body py-4">
-                <div class="user-avatar-wrap mb-3 mx-auto">
-                    <div class="user-avatar mx-auto">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                <div class="user-avatar-wrap mb-3 mx-auto" onclick="document.getElementById('avatarInput').click()" title="Clique para alterar foto">
+                    @if($user->avatar && file_exists(public_path('storage/' . $user->avatar)))
+                        <img src="{{ asset('storage/' . $user->avatar) }}" class="user-avatar-img mx-auto d-block" id="avatarPreview" alt="Avatar">
+                    @else
+                        <div class="user-avatar mx-auto" id="avatarInitials">
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        </div>
+                        <img src="" class="user-avatar-img mx-auto d-block" id="avatarPreview" alt="Avatar" style="display:none!important;">
+                    @endif
+                    <div class="avatar-overlay" style="border-radius:16px;">
+                        <i class="fas fa-camera"></i>
+                        <span>Alterar foto</span>
                     </div>
                 </div>
+
+                {{-- Input oculto --}}
+                <input type="file" name="avatar" id="avatarInput" accept="image/jpeg,image/png,image/webp"
+                       class="d-none" onchange="previewAvatar(this)">
+                <input type="hidden" name="remove_avatar" id="removeAvatar" value="0">
+
+                {{-- Botões de avatar --}}
+                <div class="d-flex justify-content-center gap-2 mb-3" id="avatarBtns">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarInput').click()">
+                        <i class="fas fa-camera"></i> Foto
+                    </button>
+                    @if($user->avatar)
+                    <button type="button" class="btn btn-danger btn-sm" id="btnRemoveAvatar" onclick="removeAvatar()">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    @endif
+                </div>
+
                 <div style="font-weight:700;font-size:1rem;">{{ $user->name }}</div>
                 <div style="font-size:0.82rem;color:var(--hm-text-muted);">{{ $user->email }}</div>
                 <div class="mt-2">
@@ -157,7 +192,7 @@
 
     {{-- ── Formulário principal ────────────────────────── --}}
     <div class="col-lg-9">
-        <form method="POST" action="{{ route('admin.users.update', $user->id) }}" id="userForm">
+        <form method="POST" action="{{ route('admin.users.update', $user->id) }}" id="userForm" enctype="multipart/form-data">
             @csrf @method('PUT')
 
             @if($errors->any())
@@ -200,12 +235,8 @@
                                 <label>Função</label>
                                 <select class="form-control" name="role"
                                         {{ $user->id === auth()->id() ? 'disabled' : '' }}>
-                                    <option value="user"  {{ $user->role === 'user'  ? 'selected' : '' }}>
-                                        Usuário
-                                    </option>
-                                    <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>
-                                        Administrador
-                                    </option>
+                                    <option value="user"  {{ $user->role === 'user'  ? 'selected' : '' }}>Usuário</option>
+                                    <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Administrador</option>
                                 </select>
                                 @if($user->id === auth()->id())
                                     <input type="hidden" name="role" value="{{ $user->role }}">
@@ -213,6 +244,24 @@
                                 @endif
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-0">
+                                <label>Telefone</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    <input type="text" class="form-control" name="phone" id="editPhone"
+                                           value="{{ old('phone', $user->phone ?? '') }}"
+                                           placeholder="(11) 99999-9999">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-3 mb-0">
+                        <label>Bio / Observações</label>
+                        <textarea class="form-control" name="bio" rows="2"
+                                  placeholder="Breve descrição sobre o usuário..."
+                                  maxlength="500">{{ old('bio', $user->bio ?? '') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -294,6 +343,69 @@
 .req.ok::first-letter { content: '✓'; }
 </style>
 <script>
+// ── Avatar preview ────────────────────────────────────────
+function previewAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (file.size > 2 * 1024 * 1024) {
+        HMToast.error('A imagem deve ter no máximo 2MB.');
+        input.value = '';
+        return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        // Esconder iniciais, mostrar imagem
+        var initials = document.getElementById('avatarInitials');
+        var preview  = document.getElementById('avatarPreview');
+        if (initials) initials.style.display = 'none';
+        if (preview) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            preview.style.removeProperty('display');
+        }
+        document.getElementById('removeAvatar').value = '0';
+        HMToast.success('Foto selecionada. Salve para confirmar.', 3000);
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeAvatar() {
+    Swal.fire({
+        title: 'Remover foto?',
+        text: 'A foto de perfil será removida ao salvar.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Remover',
+        cancelButtonText: 'Cancelar',
+    }).then(function(r) {
+        if (!r.isConfirmed) return;
+        // Mostrar iniciais, esconder imagem
+        var initials = document.getElementById('avatarInitials');
+        var preview  = document.getElementById('avatarPreview');
+        if (initials) initials.style.display = 'flex';
+        if (preview)  preview.style.display  = 'none';
+        document.getElementById('removeAvatar').value = '1';
+        document.getElementById('avatarInput').value  = '';
+        // Esconder botão remover
+        var btn = document.getElementById('btnRemoveAvatar');
+        if (btn) btn.style.display = 'none';
+        HMToast.info('Foto marcada para remoção. Salve para confirmar.', 3000);
+    });
+}
+
+// ── Máscara telefone ──────────────────────────────────────
+var phoneEl = document.getElementById('editPhone');
+if (phoneEl) {
+    phoneEl.addEventListener('input', function() {
+        var v = this.value.replace(/\D/g, '').slice(0, 11);
+        this.value = v.length <= 10
+            ? v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
+            : v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    });
+}
+
 // ── Toggle senha ──────────────────────────────────────────
 function togglePwd(inputId, iconId) {
     var input = document.getElementById(inputId);

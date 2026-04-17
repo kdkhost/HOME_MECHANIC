@@ -21,7 +21,33 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'avatar',
+        'phone',
+        'bio',
     ];
+
+    /**
+     * URL do avatar (foto ou inicial gerada)
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar && file_exists(public_path('storage/' . $this->avatar))) {
+            return asset('storage/' . $this->avatar);
+        }
+        return null;
+    }
+
+    /**
+     * Inicial do nome para avatar fallback
+     */
+    public function getInitialsAttribute(): string
+    {
+        $parts = explode(' ', trim($this->name));
+        if (count($parts) >= 2) {
+            return strtoupper($parts[0][0] . $parts[count($parts) - 1][0]);
+        }
+        return strtoupper(substr($this->name, 0, 2));
+    }
 
     /**
      * The attributes that should be hidden for serialization.
