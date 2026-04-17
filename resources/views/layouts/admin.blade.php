@@ -88,6 +88,8 @@
                                 <p>Galeria</p>
                             </a>
                         </li>
+                        {{-- Módulos em desenvolvimento --}}
+                        {{--
                         <li class="nav-item">
                             <a href="{{ route('admin.blog.index') }}" class="nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-newspaper"></i>
@@ -106,6 +108,8 @@
                                 <p>Mensagens</p>
                             </a>
                         </li>
+                        --}}
+                        {{-- Configurações em desenvolvimento
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon bi bi-gear"></i>
@@ -135,6 +139,7 @@
                                 </li>
                             </ul>
                         </li>
+                        --}}
                         <li class="nav-item">
                             <a href="{{ route('admin.documentation.index') }}" class="nav-link {{ request()->routeIs('admin.documentation.*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-book"></i>
