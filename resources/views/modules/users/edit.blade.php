@@ -81,8 +81,12 @@
         <div class="card text-center mb-3">
             <div class="card-body py-4">
                 <div class="user-avatar-wrap mb-3 mx-auto" onclick="document.getElementById('avatarInput').click()" title="Clique para alterar foto">
-                    @if($user->avatar_url)
-                        <img src="{{ $user->avatar_url }}" class="user-avatar-img mx-auto d-block" id="avatarPreview" alt="Avatar">
+                    @if($user->avatar)
+                        <img src="{{ $user->avatar_url }}" class="user-avatar-img mx-auto d-block" id="avatarPreview" alt="Avatar"
+                             onerror="this.style.display='none';document.getElementById('avatarInitials').style.display='flex';">
+                        <div class="user-avatar mx-auto" id="avatarInitials" style="display:none;">
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        </div>
                     @else
                         <div class="user-avatar mx-auto" id="avatarInitials">
                             {{ strtoupper(substr($user->name, 0, 1)) }}

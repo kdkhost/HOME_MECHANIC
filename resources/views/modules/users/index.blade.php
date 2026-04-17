@@ -113,10 +113,10 @@
                     @endphp
                     <tr>
                         <td>
-                            @php $avatarUrl = is_object($u) ? ($u->avatar_url ?? null) : null; @endphp
-                            @if($avatarUrl)
-                                <img src="{{ $avatarUrl }}" alt="{{ $uname }}"
-                                     style="width:38px;height:38px;border-radius:10px;object-fit:cover;box-shadow:0 2px 6px rgba(0,0,0,0.12);">
+                            @if(is_object($u) && $u->avatar)
+                                <img src="{{ $u->avatar_url }}" alt="{{ $uname }}"
+                                     style="width:38px;height:38px;border-radius:10px;object-fit:cover;box-shadow:0 2px 6px rgba(0,0,0,0.12);"
+                                     onerror="this.outerHTML='<div style=\'width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#FF6B00,#E55A00);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;\'>{{ $initials }}</div>'">
                             @else
                                 <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--hm-primary),var(--hm-primary-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">
                                     {{ $initials }}

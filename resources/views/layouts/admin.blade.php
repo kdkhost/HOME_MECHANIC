@@ -141,7 +141,16 @@
                 <!-- Usuário -->
                 <li class="nav-item dropdown user-menu">
                     <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
-                        <div class="nav-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</div>
+                        <div class="nav-avatar">
+                            @if(Auth::user()->avatar)
+                                <img src="{{ '/' . ltrim(Auth::user()->avatar, '/') }}"
+                                     style="width:32px;height:32px;border-radius:8px;object-fit:cover;"
+                                     onerror="this.outerHTML='<span>{{ strtoupper(substr(Auth::user()->name ?? \'A\', 0, 1)) }}</span>'"
+                                     alt="">
+                            @else
+                                {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                            @endif
+                        </div>
                         <div class="d-none d-md-block text-start lh-sm">
                             <div style="font-size:0.84rem; font-weight:600; color:var(--hm-text);">{{ Auth::user()->name ?? 'Admin' }}</div>
                             <div style="font-size:0.72rem; color:var(--hm-text-muted);">{{ Auth::user()->role === 'admin' ? 'Administrador' : 'Usuário' }}</div>
@@ -204,7 +213,14 @@
                     <!-- User panel -->
                     <li class="nav-item px-3 py-2 mb-1" style="border-bottom:1px solid rgba(255,255,255,0.07);">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-person-circle fs-3" style="color:var(--hm-primary);"></i>
+                            @if(Auth::user()->avatar)
+                                <img src="{{ '/' . ltrim(Auth::user()->avatar, '/') }}"
+                                     style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0;"
+                                     onerror="this.outerHTML='<i class=\'bi bi-person-circle fs-3\' style=\'color:var(--hm-primary);\'></i>'"
+                                     alt="">
+                            @else
+                                <i class="bi bi-person-circle fs-3" style="color:var(--hm-primary);"></i>
+                            @endif
                             <div>
                                 <div class="text-white fw-semibold" style="font-size:0.88rem;">{{ Auth::user()->name ?? 'Administrador' }}</div>
                                 <small class="text-muted">{{ Auth::user()->email ?? '' }}</small>
