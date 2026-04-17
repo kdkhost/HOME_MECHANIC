@@ -417,6 +417,42 @@ class InstallerService
      */
     private function prepareInstallationData(array $data): array
     {
+        // Garantir que todas as chaves existam com valores padrão
+        $data = array_merge([
+            'database' => [],
+            'admin' => [],
+            'company' => [],
+            'system' => []
+        ], $data);
+        
+        // Garantir chaves do banco de dados
+        $data['database'] = array_merge([
+            'host' => '127.0.0.1',
+            'port' => 3306,
+            'name' => '',
+            'username' => '',
+            'password' => ''
+        ], $data['database'] ?? []);
+        
+        // Garantir chaves do admin
+        $data['admin'] = array_merge([
+            'name' => '',
+            'email' => '',
+            'password' => ''
+        ], $data['admin'] ?? []);
+        
+        // Garantir chaves da empresa
+        $data['company'] = array_merge([
+            'name' => 'HomeMechanic',
+            'description' => 'Sistema de gestão para oficinas mecânicas especializadas em carros esportivos de luxo e tuning'
+        ], $data['company'] ?? []);
+        
+        // Garantir chaves do sistema
+        $data['system'] = array_merge([
+            'url' => '',
+            'domain' => 'localhost'
+        ], $data['system'] ?? []);
+
         // Detectar URL automaticamente se não fornecida
         if (empty($data['system']['url'])) {
             $data['system']['url'] = $this->detectSystemUrl();
@@ -425,16 +461,6 @@ class InstallerService
         // Extrair domínio da URL
         $parsedUrl = parse_url($data['system']['url']);
         $data['system']['domain'] = $parsedUrl['host'] ?? 'localhost';
-
-        // Definir nome da empresa se não fornecido
-        if (empty($data['company']['name'])) {
-            $data['company']['name'] = 'HomeMechanic';
-        }
-
-        // Definir descrição padrão se não fornecida
-        if (empty($data['company']['description'])) {
-            $data['company']['description'] = 'Sistema de gestão para oficinas mecânicas especializadas em carros esportivos de luxo e tuning';
-        }
 
         return $data;
     }
@@ -489,12 +515,22 @@ class InstallerService
             $this->safeLog('info', 'Arquivo .env temporário removido');
         }
 
-        $envContent = "APP_NAME=\"{$data['company']['name']}\"
+        // Garantir que todos os valores existam
+        $companyName = $data['company']['name'] ?? 'HomeMechanic';
+        $systemUrl = $data['system']['url'] ?? 'http://localhost';
+        $systemDomain = $data['system']['domain'] ?? 'localhost';
+        $dbHost = $data['database']['host'] ?? '127.0.0.1';
+        $dbPort = $data['database']['port'] ?? 3306;
+        $dbName = $data['database']['name'] ?? 'homemechanic';
+        $dbUsername = $data['database']['username'] ?? 'root';
+        $dbPassword = $data['database']['password'] ?? '';
+
+        $envContent = "APP_NAME=\"{$companyName}\"
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
 APP_TIMEZONE=America/Sao_Paulo
-APP_URL={$data['system']['url']}
+APP_URL={$systemUrl}
 
 APP_LOCALE=pt_BR
 APP_FALLBACK_LOCALE=pt_BR
@@ -511,11 +547,11 @@ LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=error
 
 DB_CONNECTION=mysql
-DB_HOST={$data['database']['host']}
-DB_PORT={$data['database']['port']}
-DB_DATABASE={$data['database']['name']}
-DB_USERNAME={$data['database']['username']}
-DB_PASSWORD={$data['database']['password']}
+DB_HOST={$dbHost}
+DB_PORT={$dbPort}
+DB_DATABASE={$dbName}
+DB_USERNAME={$dbUsername}
+DB_PASSWORD={$dbPassword}
 
 SESSION_DRIVER=database
 SESSION_LIFETIME=120
@@ -543,8 +579,8 @@ MAIL_PORT=587
 MAIL_USERNAME=null
 MAIL_PASSWORD=null
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=\"noreply@{$data['system']['domain']}\"
-MAIL_FROM_NAME=\"{$data['company']['name']}\"
+MAIL_FROM_ADDRESS=\"noreply@{$systemDomain}\"
+MAIL_FROM_NAME=\"{$companyName}\"
 
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
@@ -552,7 +588,7 @@ AWS_DEFAULT_REGION=us-east-1
 AWS_BUCKET=
 AWS_USE_PATH_STYLE_ENDPOINT=false
 
-VITE_APP_NAME=\"{$data['company']['name']}\"
+VITE_APP_NAME=\"{$companyName}\"
 ";
 
         File::put(base_path('.env'), $envContent);
@@ -566,11 +602,17 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
         try {
             $this->safeLog('info', 'Iniciando seeders básicos');
 
+            // Garantir que os valores existam
+            $companyName = $data['company']['name'] ?? 'HomeMechanic';
+            $companyDescription = $data['company']['description'] ?? 'Sistema de gestão para oficinas mecânicas';
+            $systemUrl = $data['system']['url'] ?? 'http://localhost';
+            $systemDomain = $data['system']['domain'] ?? 'localhost';
+
             // Configurações básicas do sistema
             $settings = [
-                'site_name' => $data['company']['name'],
-                'site_description' => $data['company']['description'],
-                'site_url' => $data['system']['url'],
+                'site_name' => $companyName,
+                'site_description' => $companyDescription,
+                'site_url' => $systemUrl,
                 'site_logo' => null,
                 'site_favicon' => null,
                 'maintenance_mode' => '0',
@@ -581,8 +623,8 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
                 'smtp_username' => '',
                 'smtp_password' => '',
                 'smtp_encryption' => 'tls',
-                'smtp_from_address' => "noreply@{$data['system']['domain']}",
-                'smtp_from_name' => $data['company']['name'],
+                'smtp_from_address' => "noreply@{$systemDomain}",
+                'smtp_from_name' => $companyName,
             ];
 
             $this->safeLog('info', 'Inserindo configurações básicas', ['count' => count($settings)]);
@@ -794,9 +836,9 @@ VITE_APP_NAME=\"{$data['company']['name']}\"
             'version' => '1.0.0',
             'php_version' => PHP_VERSION,
             'laravel_version' => app()->version(),
-            'admin_email' => $data['admin']['email'],
-            'system_url' => $data['system']['url'],
-            'company_name' => $data['company']['name'],
+            'admin_email' => $data['admin']['email'] ?? 'N/A',
+            'system_url' => $data['system']['url'] ?? 'N/A',
+            'company_name' => $data['company']['name'] ?? 'HomeMechanic',
             'installer_ip' => request()->ip(),
             'server_info' => [
                 'software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
