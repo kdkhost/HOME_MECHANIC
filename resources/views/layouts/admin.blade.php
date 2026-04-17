@@ -311,29 +311,24 @@
     }
 
     // ── Sidebar toggle ──────────────────────────────────────
-    // Em desktop (≥992px): toggle sidebar-collapse no body
-    // Em mobile (<992px): toggle sidebar-open no body
     document.getElementById('sidebarToggle').addEventListener('click', function(e) {
         e.preventDefault();
         const body = document.body;
-        const isDesktop = window.innerWidth >= 992;
-        if (isDesktop) {
+        if (window.innerWidth >= 992) {
             body.classList.toggle('sidebar-collapse');
-            // Salvar estado
-            localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapse') ? '1' : '0');
+            localStorage.setItem('hm_sidebar', body.classList.contains('sidebar-collapse') ? 'closed' : 'open');
         } else {
             body.classList.toggle('sidebar-open');
         }
     });
 
-    // Restaurar estado do sidebar no desktop
+    // Estado padrão: ABERTO. Só fecha se o usuário explicitamente fechou.
     (function() {
-        if (window.innerWidth >= 992) {
-            const collapsed = localStorage.getItem('sidebarCollapsed');
-            if (collapsed === '1') {
-                document.body.classList.add('sidebar-collapse');
-            }
-            // Por padrão: aberto (não adiciona sidebar-collapse)
+        // Limpar chave antiga que pode ter ficado como "fechado"
+        localStorage.removeItem('sidebarCollapsed');
+        // Só colapsa se o usuário salvou explicitamente como fechado
+        if (window.innerWidth >= 992 && localStorage.getItem('hm_sidebar') === 'closed') {
+            document.body.classList.add('sidebar-collapse');
         }
     })();
 
