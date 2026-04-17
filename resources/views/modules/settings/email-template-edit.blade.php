@@ -290,6 +290,10 @@ $(function() {
         ],
         fontSizes: ['12', '13', '14', '15', '16', '18', '20', '24'],
         callbacks: {
+            onInit: function() {
+                // Preview logo após o Summernote estar pronto
+                refreshPreview();
+            },
             onChange: function() { schedulePreview(); }
         },
         placeholder: 'Digite o conteúdo do e-mail aqui...',
@@ -299,9 +303,6 @@ $(function() {
 
     // Assunto → preview ao digitar
     $('#subject').on('input', schedulePreview);
-
-    // Preview inicial
-    setTimeout(refreshPreview, 600);
 });
 
 // ── Alternar modo ─────────────────────────────────────────
@@ -355,6 +356,11 @@ function refreshPreview() {
     var subject = $('#subject').val() || '';
     var body    = getBody() || '';
 
+    // Mostrar loading no iframe
+    document.getElementById('preview-frame').srcdoc =
+        "<div style='padding:2rem;color:#94a3b8;text-align:center;font-family:sans-serif;'>" +
+        "<div style='font-size:1.5rem;margin-bottom:0.5rem;'>⏳</div>Gerando preview...</div>";
+
     $.ajax({
         url:         PREVIEW_URL,
         method:      'POST',
@@ -369,8 +375,11 @@ function refreshPreview() {
                 document.getElementById('preview-frame').srcdoc = data.html;
             }
         },
-        error: function() {
-            HMToast.error('Erro ao gerar preview.');
+        error: function(xhr) {
+            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao gerar preview.';
+            document.getElementById('preview-frame').srcdoc =
+                "<div style='padding:2rem;color:#dc2626;text-align:center;font-family:sans-serif;'>" +
+                "<div style='font-size:1.5rem;margin-bottom:0.5rem;'>❌</div>" + msg + "</div>";
         }
     });
 }
