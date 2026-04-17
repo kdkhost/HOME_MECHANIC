@@ -112,8 +112,8 @@
                         <label>Assunto do E-mail <span class="text-danger">*</span></label>
                         <input type="text" name="subject" id="subject" class="form-control"
                                value="{{ old('subject', $subject) }}" required
-                               placeholder="Ex: Bem-vindo à {{site_name}}!">
-                        <small class="form-text">Use variáveis como <code>{{site_name}}</code> no assunto.</small>
+                               placeholder="Ex: Bem-vindo à @{{ site_name }}!">
+                        <small class="form-text">Use variáveis como <code>@{{ site_name }}</code> no assunto.</small>
                     </div>
 
                     {{-- Modo editor --}}
@@ -357,7 +357,7 @@ document.getElementById('tplForm').addEventListener('submit', function() {
 function sendTestEmail() {
     Swal.fire({
         title: 'Enviar e-mail de teste',
-        html: '<input type="email" id="testEmailAddr" class="swal2-input" placeholder="seu@email.com" value="{{ auth()->user()->email ?? '' }}">',
+        html: '<input type="email" id="testEmailAddr" class="swal2-input" placeholder="seu@email.com" value="{{ addslashes(auth()->user()->email ?? '') }}">',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#FF6B00',
