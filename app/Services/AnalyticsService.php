@@ -6,17 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Jenssegers\Agent\Agent;
 
 class AnalyticsService
 {
-    private Agent $agent;
-
-    public function __construct()
-    {
-        $this->agent = new Agent();
-    }
-
     /**
      * Registrar visita
      */
@@ -35,11 +27,10 @@ class AnalyticsService
             // Verificar se é visita única (primeira visita do IP nas últimas 24h)
             $isUnique = $this->isUniqueVisit($ipAddress);
 
-            // Detectar informações do dispositivo
-            $this->agent->setUserAgent($userAgent);
-            $deviceInfo = $this->getDeviceInfo();
+            // Detectar informações do dispositivo (simplificado)
+            $deviceInfo = $this->getDeviceInfo($userAgent);
 
-            // Obter localização (cache por IP)
+            // Obter localização (simplificado)
             $location = $this->getLocationByIp($ipAddress);
 
             // Registrar no banco
