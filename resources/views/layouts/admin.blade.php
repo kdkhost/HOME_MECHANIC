@@ -2,82 +2,112 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — HomeMechanic Admin</title>
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css">
+    <!-- OverlayScrollbars -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/styles/overlayscrollbars.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Font Awesome (compatibilidade) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- AdminLTE 4 -->
+    <link rel="stylesheet" href="{{ asset('css/adminlte4.min.css') }}">
+    <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Custom -->
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 
     @yield('styles')
 </head>
-{{-- sidebar-mini = necessário para layout-fixed funcionar
-     NÃO adicionamos sidebar-collapse = sidebar fica aberto --}}
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 
-<div class="wrapper">
+<!--begin::App Wrapper-->
+<div class="app-wrapper">
 
-    <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                    <i class="fas fa-bars"></i>
-                </a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown">
-                <a class="nav-link" data-toggle="dropdown" href="#">
-                    <i class="far fa-user-circle mr-1"></i>
-                    <span class="d-none d-md-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-right" style="min-width:200px;">
-                    <div class="px-3 py-2 border-bottom">
-                        <div style="font-weight:700;font-size:0.88rem;">{{ Auth::user()->name ?? 'Admin' }}</div>
-                        <div style="font-size:0.75rem;color:#718096;">{{ Auth::user()->email ?? '' }}</div>
-                    </div>
-                    <a href="{{ route('admin.settings.index') }}" class="dropdown-item">
-                        <i class="fas fa-cog mr-2"></i> Configurações
+    <!--begin::Header-->
+    <nav class="app-header navbar navbar-expand bg-body">
+        <div class="container-fluid">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
+                        <i class="bi bi-list"></i>
                     </a>
-                    <div class="dropdown-divider"></div>
-                    <form method="POST" action="{{ route('admin.logout') }}">
-                        @csrf
-                        <button type="submit" class="dropdown-item text-danger" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
-                            <i class="fas fa-sign-out-alt mr-2"></i> Sair
-                        </button>
-                    </form>
-                </div>
-            </li>
-        </ul>
+                </li>
+                <li class="nav-item d-none d-md-block">
+                    <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
+                        <i class="bi bi-house me-1"></i> Dashboard
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                <!-- Usuário -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle fs-5"></i>
+                        <span class="d-none d-md-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width:220px;">
+                        <li class="px-3 py-2 border-bottom">
+                            <div class="fw-bold" style="font-size:0.88rem;">{{ Auth::user()->name ?? 'Admin' }}</div>
+                            <div class="text-muted" style="font-size:0.75rem;">{{ Auth::user()->email ?? '' }}</div>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.settings.index') }}" class="dropdown-item">
+                                <i class="bi bi-gear me-2"></i> Configurações
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="{{ route('admin.logout') }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Sair
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
     </nav>
+    <!--end::Header-->
 
-    <!-- Sidebar -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="{{ route('admin.dashboard.index') }}" class="brand-link">
-            <i class="fas fa-tools brand-image" style="font-size:1.5rem;color:var(--hm-primary);margin-left:0.5rem;"></i>
-            <span class="brand-text font-weight-bold">HomeMechanic</span>
-        </a>
+    <!--begin::Sidebar-->
+    <aside class="app-sidebar bg-dark shadow" data-bs-theme="dark">
 
-        <div class="sidebar">
-            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                <div class="image">
-                    <i class="fas fa-user-circle fa-2x" style="color:var(--hm-primary);"></i>
-                </div>
-                <div class="info">
-                    <a href="#" class="d-block">{{ Auth::user()->name ?? 'Administrador' }}</a>
-                </div>
-            </div>
+        <!--begin::Brand-->
+        <div class="sidebar-brand">
+            <a href="{{ route('admin.dashboard.index') }}" class="brand-link">
+                <i class="fas fa-tools" style="color:var(--hm-primary);font-size:1.3rem;margin-right:0.5rem;"></i>
+                <span class="brand-text fw-bold" style="color:var(--hm-primary);">HomeMechanic</span>
+            </a>
+        </div>
+        <!--end::Brand-->
 
+        <!--begin::Sidebar Wrapper-->
+        <div class="sidebar-wrapper">
             <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+
+                    <!-- User panel -->
+                    <li class="nav-item px-3 py-2 mb-1" style="border-bottom:1px solid rgba(255,255,255,0.07);">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-person-circle fs-3" style="color:var(--hm-primary);"></i>
+                            <div>
+                                <div class="text-white fw-semibold" style="font-size:0.88rem;">{{ Auth::user()->name ?? 'Administrador' }}</div>
+                                <small class="text-muted">{{ Auth::user()->email ?? '' }}</small>
+                            </div>
+                        </div>
+                    </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.dashboard.index') }}" class="nav-link {{ request()->routeIs('admin.dashboard.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <i class="nav-icon bi bi-speedometer2"></i>
                             <p>Dashboard</p>
                         </a>
                     </li>
@@ -93,28 +123,28 @@
 
                     <li class="nav-item">
                         <a href="{{ route('admin.gallery.index') }}" class="nav-link {{ request()->routeIs('admin.gallery.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-images"></i>
+                            <i class="nav-icon bi bi-images"></i>
                             <p>Galeria</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.blog.index') }}" class="nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-newspaper"></i>
+                            <i class="nav-icon bi bi-newspaper"></i>
                             <p>Blog</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.contact.index') }}" class="nav-link {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-envelope"></i>
+                            <i class="nav-icon bi bi-envelope"></i>
                             <p>Mensagens</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.upload.index') }}" class="nav-link {{ request()->routeIs('admin.upload.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-cloud-upload-alt"></i>
+                            <i class="nav-icon bi bi-cloud-upload"></i>
                             <p>Upload de Arquivos</p>
                         </a>
                     </li>
@@ -123,14 +153,14 @@
 
                     <li class="nav-item">
                         <a href="{{ route('admin.seo.index') }}" class="nav-link {{ request()->routeIs('admin.seo.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-search"></i>
+                            <i class="nav-icon bi bi-search"></i>
                             <p>SEO</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.analytics.index') }}" class="nav-link {{ request()->routeIs('admin.analytics.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-chart-line"></i>
+                            <i class="nav-icon bi bi-graph-up"></i>
                             <p>Analytics</p>
                         </a>
                     </li>
@@ -139,28 +169,28 @@
 
                     <li class="nav-item {{ request()->routeIs('admin.settings.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-cog"></i>
-                            <p>Configurações <i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon bi bi-gear"></i>
+                            <p>Configurações <i class="nav-arrow bi bi-chevron-right ms-auto"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i><p>Geral</p>
+                                    <i class="nav-icon bi bi-circle"></i><p>Geral</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.seo') }}" class="nav-link {{ request()->routeIs('admin.settings.seo') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i><p>SEO</p>
+                                    <i class="nav-icon bi bi-circle"></i><p>SEO</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.email') }}" class="nav-link {{ request()->routeIs('admin.settings.email') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i><p>E-mail (SMTP)</p>
+                                    <i class="nav-icon bi bi-circle"></i><p>E-mail (SMTP)</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.backup') }}" class="nav-link {{ request()->routeIs('admin.settings.backup') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i><p>Backup / Manutenção</p>
+                                    <i class="nav-icon bi bi-circle"></i><p>Backup / Manutenção</p>
                                 </a>
                             </li>
                         </ul>
@@ -168,14 +198,14 @@
 
                     <li class="nav-item">
                         <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-users"></i>
+                            <i class="nav-icon bi bi-people"></i>
                             <p>Usuários</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.documentation.index') }}" class="nav-link {{ request()->routeIs('admin.documentation.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-book"></i>
+                            <i class="nav-icon bi bi-book"></i>
                             <p>Documentação</p>
                         </a>
                     </li>
@@ -183,20 +213,27 @@
                 </ul>
             </nav>
         </div>
+        <!--end::Sidebar Wrapper-->
     </aside>
+    <!--end::Sidebar-->
 
-    <!-- Content Wrapper -->
-    <div class="content-wrapper">
-        <div class="content-header">
+    <!--begin::App Main-->
+    <main class="app-main">
+
+        <!--begin::App Content Header-->
+        <div class="app-content-header">
             <div class="container-fluid">
-                <div class="row mb-2">
+                <div class="row">
                     <div class="col-sm-6">
-                        <h1 class="m-0">@yield('page-title', 'Dashboard')</h1>
+                        <h3 class="mb-0">@yield('page-title', 'Dashboard')</h3>
                     </div>
                     <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
+                        <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item">
-                                <a href="{{ route('admin.dashboard.index') }}"><i class="fas fa-home"></i></a>
+                                <a href="{{ route('admin.dashboard.index') }}"><i class="bi bi-house"></i></a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('admin.dashboard.index') }}">Dashboard</a>
                             </li>
                             @yield('breadcrumb')
                         </ol>
@@ -204,69 +241,100 @@
                 </div>
             </div>
         </div>
+        <!--end::App Content Header-->
 
-        <section class="content">
+        <!--begin::App Content-->
+        <div class="app-content">
             <div class="container-fluid">
 
                 @if(session('success'))
-                    <div class="alert alert-success alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
                 @if(session('warning'))
-                    <div class="alert alert-warning alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('warning') }}
+                    <div class="alert alert-warning alert-dismissible fade show">
+                        <i class="bi bi-exclamation-triangle me-2"></i>{{ session('warning') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
 
                 @yield('content')
 
             </div>
-        </section>
-    </div>
+        </div>
+        <!--end::App Content-->
 
-    <footer class="main-footer">
+    </main>
+    <!--end::App Main-->
+
+    <!--begin::Footer-->
+    <footer class="app-footer">
         <strong>Copyright &copy; {{ date('Y') }} <a href="https://homemechanic.com.br">HomeMechanic</a>.</strong>
         Todos os direitos reservados.
-        <div class="float-right d-none d-sm-inline-block">
+        <div class="float-end d-none d-sm-inline-block">
             Laravel {{ app()->version() }} | PHP {{ PHP_MAJOR_VERSION }}.{{ PHP_MINOR_VERSION }}
         </div>
     </footer>
+    <!--end::Footer-->
 
 </div>
+<!--end::App Wrapper-->
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/browser/overlayscrollbars.browser.es5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/adminlte4.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/admin.js') }}"></script>
 
 <script>
-    // Garantir sidebar aberto — remove sidebar-mini e força expansão
-    $(document).ready(function() {
-        $('body').removeClass('sidebar-mini');
-        $('body').addClass('sidebar-open');
-    });
+    // OverlayScrollbars (requerido pelo AdminLTE 4)
+    if (typeof OverlayScrollbarsGlobal !== 'undefined') {
+        const { OverlayScrollbars } = OverlayScrollbarsGlobal;
+        document.querySelectorAll('.sidebar-wrapper, body').forEach(el => {
+            OverlayScrollbars(el, { scrollbars: { autoHide: 'leave' } });
+        });
+    }
 
-    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
-    setTimeout(function() { $('.alert').fadeOut('slow'); }, 5000);
-    $(document).on('click', '.btn-delete', function(e) {
-        e.preventDefault();
-        const form = $(this).closest('form');
-        Swal.fire({
-            title: 'Confirmar exclusão', text: 'Esta ação não pode ser desfeita.',
-            icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sim, excluir!', cancelButtonText: 'Cancelar'
-        }).then(r => { if (r.isConfirmed) form.submit(); });
+    // CSRF para AJAX
+    if (typeof $ !== 'undefined') {
+        $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
+    }
+
+    // Auto-hide alerts
+    setTimeout(function() {
+        document.querySelectorAll('.alert').forEach(el => {
+            el.style.transition = 'opacity 0.5s';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 500);
+        });
+    }, 5000);
+
+    // Confirm delete
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-delete')) {
+            e.preventDefault();
+            const form = e.target.closest('form');
+            Swal.fire({
+                title: 'Confirmar exclusão',
+                text: 'Esta ação não pode ser desfeita.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, excluir!',
+                cancelButtonText: 'Cancelar'
+            }).then(r => { if (r.isConfirmed) form.submit(); });
+        }
     });
 </script>
 
