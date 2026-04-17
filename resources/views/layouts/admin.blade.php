@@ -19,7 +19,7 @@
 
     @yield('styles')
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-lg-show">
+<body class="hold-transition layout-fixed">
 
 <!-- Preloader -->
 <div class="preloader flex-column justify-content-center align-items-center">
@@ -318,6 +318,12 @@
 
     // Auto-hide alerts
     setTimeout(function() { $('.alert').fadeOut('slow'); }, 5000);
+
+    // Hambúrguer — toggle sidebar-collapse no body
+    $('[data-widget="pushmenu"]').off('click').on('click', function(e) {
+        e.preventDefault();
+        $('body').toggleClass('sidebar-collapse');
+    });
 
     // Confirm delete global
     $(document).on('click', '.btn-delete', function(e) {

@@ -54,63 +54,65 @@ body {
 
 /* ── Sidebar ──────────────────────────────────────────────── */
 
-/* Sidebar sempre expandido — sobrescreve o comportamento mini */
-body.sidebar-mini .main-sidebar,
-body.sidebar-mini .main-sidebar:hover {
+/* Largura fixa do sidebar */
+.main-sidebar {
     width: 250px !important;
+    background: var(--hm-sidebar) !important;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.25) !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    z-index: 1038 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
-body.sidebar-mini.layout-fixed .content-wrapper,
-body.sidebar-mini.layout-fixed .main-footer,
-body.sidebar-mini.layout-fixed .main-header {
+/* Content wrapper sempre com margem do sidebar */
+.content-wrapper,
+.main-footer,
+.main-header.navbar {
     margin-left: 250px !important;
     transition: margin-left 0.3s ease-in-out !important;
 }
 
-/* Textos sempre visíveis */
-body.sidebar-mini .nav-sidebar .nav-link p,
-body.sidebar-mini .brand-text,
-body.sidebar-mini .user-panel .info,
-body.sidebar-mini .nav-header,
-body.sidebar-mini .nav-treeview {
+/* Textos e elementos sempre visíveis */
+.nav-sidebar .nav-link p,
+.brand-text,
+.user-panel .info,
+.nav-header {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    overflow: visible !important;
     width: auto !important;
-    white-space: nowrap;
 }
 
-/* Quando o usuário colapsa manualmente */
-body.sidebar-mini.sidebar-collapse .main-sidebar,
-body.sidebar-mini.sidebar-collapse .main-sidebar:hover {
-    width: 4.6rem !important;
+/* Quando colapsado pelo hambúrguer */
+body.sidebar-collapse .main-sidebar {
+    margin-left: -250px !important;
 }
-body.sidebar-mini.sidebar-collapse .main-sidebar:hover {
-    width: 250px !important;
-}
-body.sidebar-mini.sidebar-collapse.layout-fixed .content-wrapper,
-body.sidebar-mini.sidebar-collapse.layout-fixed .main-footer,
-body.sidebar-mini.sidebar-collapse.layout-fixed .main-header {
-    margin-left: 4.6rem !important;
-}
-body.sidebar-mini.sidebar-collapse .nav-sidebar .nav-link p,
-body.sidebar-mini.sidebar-collapse .brand-text,
-body.sidebar-mini.sidebar-collapse .user-panel .info,
-body.sidebar-mini.sidebar-collapse .nav-header {
-    display: none !important;
-}
-body.sidebar-mini.sidebar-collapse .main-sidebar:hover .nav-sidebar .nav-link p,
-body.sidebar-mini.sidebar-collapse .main-sidebar:hover .brand-text,
-body.sidebar-mini.sidebar-collapse .main-sidebar:hover .user-panel .info,
-body.sidebar-mini.sidebar-collapse .main-sidebar:hover .nav-header {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+body.sidebar-collapse .content-wrapper,
+body.sidebar-collapse .main-footer,
+body.sidebar-collapse .main-header.navbar {
+    margin-left: 0 !important;
 }
 
-.main-sidebar {
-    background: var(--hm-sidebar) !important;
-    box-shadow: 2px 0 12px rgba(0,0,0,0.25) !important;
+/* Mobile */
+@media (max-width: 991.98px) {
+    .main-sidebar {
+        margin-left: -250px !important;
+        box-shadow: none !important;
+    }
+    body.sidebar-open .main-sidebar {
+        margin-left: 0 !important;
+        box-shadow: 2px 0 12px rgba(0,0,0,0.4) !important;
+    }
+    .content-wrapper,
+    .main-footer,
+    .main-header.navbar {
+        margin-left: 0 !important;
+    }
 }
 
 .brand-link {
