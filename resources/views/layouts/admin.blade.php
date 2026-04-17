@@ -98,11 +98,11 @@
                     <a class="nav-link" data-bs-toggle="dropdown" href="#" role="button" title="Atalhos rápidos">
                         <i class="bi bi-grid-3x3-gap-fill"></i>
                     </a>
-                    <div class="dropdown-menu dropdown-menu-end" style="width:280px; padding:0; border-radius:12px; overflow:hidden;">
+                    <div class="dropdown-menu dropdown-menu-end p-0" style="width:260px; border-radius:12px; overflow:hidden;">
                         <div class="px-3 py-2" style="background:#f8fafc; border-bottom:1px solid var(--hm-border);">
                             <span style="font-weight:700; font-size:0.85rem;">Atalhos Rápidos</span>
                         </div>
-                        <div class="shortcuts-grid p-2">
+                        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:0.5rem;">
                             <a href="{{ route('admin.services.index') }}" class="shortcut-item">
                                 <i class="fas fa-tools"></i><span>Serviços</span>
                             </a>
