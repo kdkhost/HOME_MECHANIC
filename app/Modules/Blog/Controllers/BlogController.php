@@ -3,127 +3,138 @@
 namespace App\Modules\Blog\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
+use App\Modules\Blog\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BlogController extends Controller
 {
-    /**
-     * Lista de posts do blog
-     */
-    public function index()
+    public function index(Request $request)
     {
-        // Dados simulados por enquanto
-        $posts = [
-            [
-                'id' => 1,
-                'title' => 'Primeiro Post do Blog',
-                'excerpt' => 'Este é um exemplo de post do blog...',
-                'status' => 'published',
-                'created_at' => now()->subDays(5),
-                'author' => 'Admin'
-            ],
-            [
-                'id' => 2,
-                'title' => 'Dicas de Manutenção Automotiva',
-                'excerpt' => 'Confira as melhores dicas para manter seu veículo...',
-                'status' => 'draft',
-                'created_at' => now()->subDays(2),
-                'author' => 'Admin'
-            ]
-        ];
+        try {
+            $query = Post::with('author')
+                ->when($request->filled('search'), fn($q) => $q->search($request->search))
+                ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
+                ->orderBy('created_at', 'desc');
 
-        return view('modules.blog.index', compact('posts'));
+            $posts = $query->paginate(15);
+            return view('modules.blog.index', compact('posts'));
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao listar posts', ['error' => $e->getMessage()]);
+            return view('modules.blog.index', ['posts' => collect()]);
+        }
     }
 
-    /**
-     * Formulário de criação
-     */
     public function create()
     {
         return view('modules.blog.create');
     }
 
-    /**
-     * Salvar novo post
-     */
     public function store(Request $request)
     {
-        // Validação básica
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title'   => 'required|string|max:255',
             'content' => 'required|string',
-            'status' => 'required|in:draft,published'
+            'status'  => 'required|in:draft,published',
+            'excerpt' => 'nullable|string|max:500',
         ]);
 
-        // TODO: Implementar salvamento no banco
-        
-        return redirect()->route('admin.blog.index')
-            ->with('success', 'Post criado com sucesso!');
+        try {
+            DB::beginTransaction();
+
+            $post = Post::create([
+                'title'        => $request->title,
+                'excerpt'      => $request->excerpt,
+                'content'      => $request->content,
+                'status'       => $request->status,
+                'featured'     => $request->boolean('featured'),
+                'user_id'      => Auth::id(),
+                'published_at' => $request->status === 'published' ? now() : null,
+            ]);
+
+            AuditLog::record('post_created', $post, [], $post->toArray());
+            DB::commit();
+
+            return redirect()->route('admin.blog.index')->with('success', 'Post criado com sucesso!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao criar post', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Erro ao criar post: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Exibir post específico
-     */
     public function show($id)
     {
-        // TODO: Buscar post no banco
-        $post = [
-            'id' => $id,
-            'title' => 'Post de Exemplo',
-            'content' => 'Conteúdo completo do post...',
-            'status' => 'published',
-            'created_at' => now(),
-            'author' => 'Admin'
-        ];
-
-        return view('modules.blog.show', compact('post'));
+        try {
+            $post = Post::with('author')->findOrFail($id);
+            return view('modules.blog.show', compact('post'));
+        } catch (\Exception $e) {
+            return redirect()->route('admin.blog.index')->with('error', 'Post não encontrado.');
+        }
     }
 
-    /**
-     * Formulário de edição
-     */
     public function edit($id)
     {
-        // TODO: Buscar post no banco
-        $post = [
-            'id' => $id,
-            'title' => 'Post de Exemplo',
-            'content' => 'Conteúdo do post para edição...',
-            'status' => 'published',
-            'created_at' => now(),
-            'author' => 'Admin'
-        ];
-
-        return view('modules.blog.edit', compact('post'));
+        try {
+            $post = Post::findOrFail($id);
+            return view('modules.blog.edit', compact('post'));
+        } catch (\Exception $e) {
+            return redirect()->route('admin.blog.index')->with('error', 'Post não encontrado.');
+        }
     }
 
-    /**
-     * Atualizar post
-     */
     public function update(Request $request, $id)
     {
-        // Validação básica
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title'   => 'required|string|max:255',
             'content' => 'required|string',
-            'status' => 'required|in:draft,published'
+            'status'  => 'required|in:draft,published,archived',
+            'excerpt' => 'nullable|string|max:500',
         ]);
 
-        // TODO: Implementar atualização no banco
-        
-        return redirect()->route('admin.blog.index')
-            ->with('success', 'Post atualizado com sucesso!');
+        try {
+            DB::beginTransaction();
+
+            $post    = Post::findOrFail($id);
+            $oldData = $post->toArray();
+
+            $post->update([
+                'title'        => $request->title,
+                'excerpt'      => $request->excerpt,
+                'content'      => $request->content,
+                'status'       => $request->status,
+                'featured'     => $request->boolean('featured'),
+                'published_at' => $request->status === 'published' && !$post->published_at ? now() : $post->published_at,
+            ]);
+
+            AuditLog::record('post_updated', $post, $oldData, $post->fresh()->toArray());
+            DB::commit();
+
+            return redirect()->route('admin.blog.index')->with('success', 'Post atualizado com sucesso!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao atualizar post', ['error' => $e->getMessage(), 'id' => $id]);
+            return back()->withInput()->with('error', 'Erro ao atualizar post: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Excluir post
-     */
     public function destroy($id)
     {
-        // TODO: Implementar exclusão no banco
-        
-        return redirect()->route('admin.blog.index')
-            ->with('success', 'Post excluído com sucesso!');
+        try {
+            $post    = Post::findOrFail($id);
+            $oldData = $post->toArray();
+            $post->delete();
+            AuditLog::record('post_deleted', $post, $oldData, []);
+            return redirect()->route('admin.blog.index')->with('success', 'Post excluído com sucesso!');
+        } catch (\Exception $e) {
+            Log::error('Erro ao excluir post', ['error' => $e->getMessage(), 'id' => $id]);
+            return redirect()->route('admin.blog.index')->with('error', 'Erro ao excluir post.');
+        }
     }
 }
