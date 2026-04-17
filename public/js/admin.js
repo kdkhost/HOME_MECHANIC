@@ -46,25 +46,15 @@ window.toast = (msg, type, dur) => HMToast.show(msg, type, dur);
 /* ── jQuery ready ─────────────────────────────────────────── */
 $(document).ready(function () {
 
-    // ── Hambúrguer ─────────────────────────────────────────
-    const sidebarBtn = document.getElementById('sidebarToggle');
-    if (sidebarBtn) {
-        sidebarBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            const body = document.body;
-            if (window.innerWidth >= 992) {
-                body.classList.toggle('sidebar-collapse');
-                localStorage.setItem('hm_sidebar', body.classList.contains('sidebar-collapse') ? 'closed' : 'open');
-            } else {
-                body.classList.toggle('sidebar-open');
-            }
-        });
-    }
+    // ── Hambúrguer — usa o toggle nativo do AdminLTE 4 ────
+    // O data-lte-toggle="sidebar" já é tratado pelo adminlte4.min.js
+    // Apenas salvamos o estado para restaurar no reload
+    document.addEventListener('lte:sidebar-collapse', () => localStorage.setItem('hm_sidebar', 'closed'));
+    document.addEventListener('lte:sidebar-open',     () => localStorage.setItem('hm_sidebar', 'open'));
 
-    // Restaurar estado do sidebar
+    // Restaurar estado
     (function () {
-        localStorage.removeItem('sidebarCollapsed');
-        if (window.innerWidth >= 992 && localStorage.getItem('hm_sidebar') === 'closed') {
+        if (localStorage.getItem('hm_sidebar') === 'closed') {
             document.body.classList.add('sidebar-collapse');
         }
     })();
@@ -75,13 +65,14 @@ $(document).ready(function () {
 
     function applyDark(on) {
         document.body.classList.toggle('dark-mode', on);
-        if (darkIcon) darkIcon.className = on ? 'fas fa-sun' : 'fas fa-moon';
+        if (darkIcon) darkIcon.className = on ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
         if (darkBtn)  darkBtn.title = on ? 'Modo claro' : 'Modo escuro';
     }
     applyDark(localStorage.getItem('hm_dark') === '1');
 
     if (darkBtn) {
-        darkBtn.addEventListener('click', function () {
+        darkBtn.addEventListener('click', function (e) {
+            e.preventDefault();
             const isDark = document.body.classList.contains('dark-mode');
             applyDark(!isDark);
             localStorage.setItem('hm_dark', isDark ? '0' : '1');
@@ -121,6 +112,9 @@ $(document).ready(function () {
         });
         searchInput.addEventListener('keydown', e => {
             if (e.key === 'Escape') { searchResults.classList.remove('show'); searchInput.value = ''; }
+            if (e.key === 'Enter' && searchResults.querySelector('.search-result-item')) {
+                searchResults.querySelector('.search-result-item').click();
+            }
         });
         document.addEventListener('click', e => {
             if (!e.target.closest('#searchWrap')) searchResults.classList.remove('show');
