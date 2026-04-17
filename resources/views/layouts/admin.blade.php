@@ -145,7 +145,7 @@
                             @if(Auth::user()->avatar)
                                 <img src="{{ '/' . ltrim(Auth::user()->avatar, '/') }}"
                                      style="width:32px;height:32px;border-radius:8px;object-fit:cover;"
-                                     onerror="this.outerHTML='<span>{{ strtoupper(substr(Auth::user()->name ?? \'A\', 0, 1)) }}</span>'"
+                                     onerror="this.style.display='none'"
                                      alt="">
                             @else
                                 {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
