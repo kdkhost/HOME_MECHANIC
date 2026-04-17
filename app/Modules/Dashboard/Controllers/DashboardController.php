@@ -74,61 +74,68 @@ class DashboardController extends Controller
     }
 
     /**
-     * Limpar TODOS os caches do Laravel (cache, views, config, routes)
+     * Limpar caches do Laravel — suporta tipo específico ou todos
      */
     public function clearAllCache(Request $request)
     {
+        $type    = $request->input('type', 'all');
         $results = [];
+        $errors  = 0;
 
-        try {
-            \Illuminate\Support\Facades\Artisan::call('cache:clear');
-            $results[] = '✅ Cache de aplicação limpo';
-        } catch (\Exception $e) {
-            $results[] = '❌ Cache: ' . $e->getMessage();
+        $run = function (string $cmd, string $label) use (&$results, &$errors) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call($cmd);
+                $results[] = "✅ {$label}";
+            } catch (\Throwable $e) {
+                $results[] = "❌ {$label}: " . $e->getMessage();
+                $errors++;
+            }
+        };
+
+        switch ($type) {
+            case 'config': $run('config:clear', 'Cache de configuração limpo'); break;
+            case 'view':   $run('view:clear',   'Views compiladas limpas');     break;
+            case 'route':  $run('route:clear',  'Cache de rotas limpo');        break;
+            case 'app':
+                try {
+                    Cache::flush();
+                    $results[] = '✅ Cache de aplicação limpo';
+                } catch (\Throwable $e) {
+                    $results[] = '❌ Cache de aplicação: ' . $e->getMessage();
+                    $errors++;
+                }
+                break;
+            default: // all
+                $run('cache:clear',  'Cache de aplicação limpo');
+                $run('view:clear',   'Views compiladas limpas');
+                $run('config:clear', 'Cache de configuração limpo');
+                $run('route:clear',  'Cache de rotas limpo');
+                try { $run('event:clear', 'Cache de eventos limpo'); } catch (\Throwable) {}
+                // Limpar cache interno do dashboard
+                try {
+                    Cache::forget('dashboard_data_' . Auth::id());
+                    Cache::forget('quick_stats');
+                    Cache::forget('settings_all');
+                } catch (\Throwable) {}
+                break;
         }
 
-        try {
-            \Illuminate\Support\Facades\Artisan::call('view:clear');
-            $results[] = '✅ Views compiladas limpas';
-        } catch (\Exception $e) {
-            $results[] = '❌ Views: ' . $e->getMessage();
-        }
-
-        try {
-            \Illuminate\Support\Facades\Artisan::call('config:clear');
-            $results[] = '✅ Cache de configuração limpo';
-        } catch (\Exception $e) {
-            $results[] = '❌ Config: ' . $e->getMessage();
-        }
-
-        try {
-            \Illuminate\Support\Facades\Artisan::call('route:clear');
-            $results[] = '✅ Cache de rotas limpo';
-        } catch (\Exception $e) {
-            $results[] = '❌ Rotas: ' . $e->getMessage();
-        }
-
-        try {
-            \Illuminate\Support\Facades\Artisan::call('event:clear');
-            $results[] = '✅ Cache de eventos limpo';
-        } catch (\Exception $e) {
-            // silencioso
-        }
-
-        // Limpar cache do dashboard também
-        Cache::flush();
-
-        \Illuminate\Support\Facades\Log::info('Cache geral limpo pelo admin', [
+        \Illuminate\Support\Facades\Log::info('Cache limpo pelo admin', [
+            'type'    => $type,
             'user_id' => Auth::id(),
             'results' => $results,
         ]);
 
+        $message = $errors === 0
+            ? ($type === 'all' ? 'Todos os caches foram limpos!' : 'Cache limpo com sucesso!')
+            : 'Concluído com ' . $errors . ' erro(s).';
+
         return response()->json([
-            'success' => true,
-            'message' => 'Todos os caches foram limpos com sucesso!',
+            'success' => $errors === 0,
+            'message' => $message,
             'details' => $results,
         ]);
-    }
+    }    }
 
     /**
      * Obter dados completos do dashboard

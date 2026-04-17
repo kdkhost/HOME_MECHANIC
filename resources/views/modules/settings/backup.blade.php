@@ -94,21 +94,11 @@
 
 @section('scripts')
 <script>
-const CACHE_URL   = '{{ route("admin.system.clear-cache") }}';
-const CACHE_TOKEN = '{{ csrf_token() }}';
-
-function clearCacheType(type) {
-    const labels = {
-        all:    'Limpar TODOS os caches',
-        config: 'Limpar cache de configuração',
-        view:   'Limpar views compiladas',
-        route:  'Limpar cache de rotas',
-        app:    'Limpar cache de aplicação',
-    };
-
+// Sobrescrever clearCacheType para mostrar resultado inline nesta página
+window.clearCacheType = function(type) {
+    const labels = { all:'Limpar TODOS os caches', config:'Configuração', view:'Views', route:'Rotas', app:'App Cache' };
     Swal.fire({
         title: labels[type] || 'Limpar cache?',
-        html: '<small style="color:#64748b;">Esta ação força o Laravel a recompilar as configurações.</small>',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: 'var(--hm-primary)',
@@ -118,31 +108,31 @@ function clearCacheType(type) {
     }).then(r => {
         if (!r.isConfirmed) return;
 
-        fetch(CACHE_URL, {
+        const resultDiv = document.getElementById('cacheResult');
+        resultDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i>Limpando cache...</div>';
+        resultDiv.style.display = 'block';
+
+        $.ajax({
+            url: '{{ route("admin.system.clear-cache") }}',
             method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': CACHE_TOKEN,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ type }),
-        })
-        .then(res => res.json())
-        .then(data => {
-            const result = document.getElementById('cacheResult');
-            if (data.success) {
+            data: JSON.stringify({ type }),
+            contentType: 'application/json',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success(data) {
                 const details = (data.details || []).join('<br>');
-                result.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>Sucesso!</strong><br>${details || data.message}</div>`;
-                result.style.display = 'block';
-                HMToast.success(data.message);
-            } else {
-                result.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${data.message}</div>`;
-                result.style.display = 'block';
-                HMToast.error(data.message);
+                resultDiv.innerHTML = data.success
+                    ? `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>Concluído!</strong><br>${details}</div>`
+                    : `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>${data.message}<br>${details}</div>`;
+                if (data.success) HMToast.success(data.message);
+                else HMToast.warning(data.message);
+            },
+            error(xhr) {
+                const msg = xhr.responseJSON?.message || 'Erro ao limpar cache.';
+                resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${msg}</div>`;
+                HMToast.error(msg);
             }
-        })
-        .catch(() => HMToast.error('Erro de conexão.'));
+        });
     });
-}
+};
 </script>
 @endsection

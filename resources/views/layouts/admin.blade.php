@@ -440,63 +440,77 @@
     }, 5000);
 
     // ── Limpar Cache ────────────────────────────────────────
+    const CLEAR_CACHE_URL = '{{ route("admin.system.clear-cache") }}';
+
+    function runClearCache(type = 'all') {
+        const icon = document.getElementById('cacheIcon');
+        const btn  = document.getElementById('btnClearCache');
+
+        if (icon) icon.className = 'fas fa-spinner fa-spin';
+        if (btn)  btn.style.pointerEvents = 'none';
+
+        $.ajax({
+            url:    CLEAR_CACHE_URL,
+            method: 'POST',
+            data:   JSON.stringify({ type }),
+            contentType: 'application/json',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function(data) {
+                if (icon) icon.className = 'fas fa-broom';
+                if (btn)  btn.style.pointerEvents = '';
+
+                const details = (data.details || []).join('<br>');
+                Swal.fire({
+                    title: data.success ? '✅ Cache limpo!' : '⚠️ Concluído com erros',
+                    html:  details || data.message,
+                    icon:  data.success ? 'success' : 'warning',
+                    confirmButtonColor: 'var(--hm-primary)',
+                });
+                if (data.success) HMToast.success(data.message);
+                else HMToast.warning(data.message);
+            },
+            error: function(xhr) {
+                if (icon) icon.className = 'fas fa-broom';
+                if (btn)  btn.style.pointerEvents = '';
+                const msg = xhr.responseJSON?.message || 'Erro ao limpar cache.';
+                HMToast.error(msg);
+            }
+        });
+    }
+
     document.getElementById('btnClearCache')?.addEventListener('click', function(e) {
         e.preventDefault();
-        const icon = document.getElementById('cacheIcon');
-        const btn  = this;
-
-        // Confirmar
         Swal.fire({
             title: 'Limpar todos os caches?',
-            html: '<small style="color:#64748b;">Serão limpos: cache de aplicação, views compiladas, configurações e rotas.</small>',
-            icon: 'question',
+            html:  '<div style="font-size:0.88rem;color:#64748b;margin-top:0.5rem;">Serão limpos:<br>✅ Cache de aplicação<br>✅ Views compiladas<br>✅ Configurações<br>✅ Rotas</div>',
+            icon:  'question',
             showCancelButton: true,
             confirmButtonColor: 'var(--hm-primary)',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: '<i class="fas fa-broom me-1"></i> Limpar tudo',
-            cancelButtonText: 'Cancelar',
-        }).then(result => {
-            if (!result.isConfirmed) return;
-
-            // Loading
-            icon.className = 'fas fa-spinner fa-spin';
-            btn.style.pointerEvents = 'none';
-
-            fetch('{{ route("admin.system.clear-cache") }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(r => r.json())
-            .then(data => {
-                icon.className = 'fas fa-broom';
-                btn.style.pointerEvents = '';
-
-                if (data.success) {
-                    // Mostrar detalhes
-                    const details = (data.details || []).join('<br>');
-                    Swal.fire({
-                        title: 'Cache limpo!',
-                        html: details || data.message,
-                        icon: 'success',
-                        confirmButtonColor: 'var(--hm-primary)',
-                        confirmButtonText: 'OK',
-                    });
-                    HMToast.success(data.message);
-                } else {
-                    HMToast.error(data.message || 'Erro ao limpar cache.');
-                }
-            })
-            .catch(() => {
-                icon.className = 'fas fa-broom';
-                btn.style.pointerEvents = '';
-                HMToast.error('Erro de conexão ao limpar cache.');
-            });
-        });
+            cancelButtonColor:  '#64748b',
+            confirmButtonText:  '<i class="fas fa-broom me-1"></i> Limpar tudo',
+            cancelButtonText:   'Cancelar',
+        }).then(r => { if (r.isConfirmed) runClearCache('all'); });
     });
+
+    // Expor globalmente para a página de backup
+    window.clearCacheType = function(type) {
+        const labels = {
+            all:    'Limpar TODOS os caches',
+            config: 'Limpar cache de configuração',
+            view:   'Limpar views compiladas',
+            route:  'Limpar cache de rotas',
+            app:    'Limpar cache de aplicação',
+        };
+        Swal.fire({
+            title: labels[type] || 'Limpar cache?',
+            icon:  'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--hm-primary)',
+            cancelButtonColor:  '#64748b',
+            confirmButtonText:  '<i class="fas fa-broom me-1"></i> Limpar',
+            cancelButtonText:   'Cancelar',
+        }).then(r => { if (r.isConfirmed) runClearCache(type); });
+    };
 
     // Confirm delete
     document.addEventListener('click', function(e) {
