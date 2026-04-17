@@ -7,7 +7,7 @@
 
 @section('content')
 <div class="page-header">
-    <h2 class="page-header-title"><i class="fas fa-cog mr-2" style="color:var(--hm-primary);"></i>Configurações do Sistema</h2>
+    <h2 class="page-header-title"><i class="fas fa-cog me-2" style="color:var(--hm-primary);"></i>Configurações do Sistema</h2>
 </div>
 
 <div class="row">
@@ -22,46 +22,53 @@
                 @csrf
                 <input type="hidden" name="section" value="general">
                 <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>
-                    @endif
                     <div class="form-group">
                         <label>Nome do Site <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="site_name" value="{{ $settings['site_name'] }}" required>
+                        <input type="text" class="form-control" name="site_name"
+                               value="{{ old('site_name', $settings['site_name'] ?? '') }}" required>
                     </div>
                     <div class="form-group">
                         <label>Descrição do Site</label>
-                        <textarea class="form-control" name="site_description" rows="3">{{ $settings['site_description'] }}</textarea>
+                        <textarea class="form-control" name="site_description" rows="3">{{ old('site_description', $settings['site_description'] ?? '') }}</textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>E-mail de Contato</label>
-                                <input type="email" class="form-control" name="contact_email" value="{{ $settings['contact_email'] }}">
+                                <input type="email" class="form-control" name="contact_email"
+                                       value="{{ old('contact_email', $settings['contact_email'] ?? '') }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Telefone de Contato</label>
-                                <input type="text" class="form-control" name="contact_phone" value="{{ $settings['contact_phone'] }}">
+                                <input type="text" class="form-control" name="contact_phone"
+                                       value="{{ old('contact_phone', $settings['contact_phone'] ?? '') }}">
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Endereço</label>
-                        <input type="text" class="form-control" name="address" value="{{ $settings['address'] }}">
+                        <input type="text" class="form-control" name="address"
+                               value="{{ old('address', $settings['address'] ?? '') }}">
                     </div>
-                    <div class="form-group">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="maintenance_mode" name="maintenance_mode" {{ $settings['maintenance_mode'] ? 'checked' : '' }}>
-                            <label class="custom-control-label" for="maintenance_mode">Modo de Manutenção</label>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="maintenance_mode"
+                                       name="maintenance_mode" value="1"
+                                       {{ ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' }}>
+                                <label class="custom-control-label" for="maintenance_mode">Modo de Manutenção</label>
+                            </div>
+                            <small class="form-text">Quando ativado, apenas administradores acessam o site.</small>
                         </div>
-                        <small class="form-text">Quando ativado, apenas administradores acessam o site.</small>
-                    </div>
-                    <div class="form-group">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="analytics_enabled" name="analytics_enabled" {{ $settings['analytics_enabled'] ? 'checked' : '' }}>
-                            <label class="custom-control-label" for="analytics_enabled">Analytics Habilitado</label>
+                        <div class="col-sm-6">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="analytics_enabled"
+                                       name="analytics_enabled" value="1"
+                                       {{ ($settings['analytics_enabled'] ?? '1') === '1' ? 'checked' : '' }}>
+                                <label class="custom-control-label" for="analytics_enabled">Analytics Habilitado</label>
+                            </div>
                         </div>
                     </div>
                 </div>
