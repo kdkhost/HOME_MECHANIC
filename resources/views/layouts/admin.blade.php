@@ -413,8 +413,7 @@
         document.addEventListener('DOMContentLoaded', () => HMToast.info(@json(session('info'))));
     @endif
 
-<script>
-    // OverlayScrollbars (requerido pelo AdminLTE 4)
+    // ── OverlayScrollbars ─────────────────────────────────────
     if (typeof OverlayScrollbarsGlobal !== 'undefined') {
         const { OverlayScrollbars } = OverlayScrollbarsGlobal;
         document.querySelectorAll('.sidebar-wrapper').forEach(el => {
@@ -422,15 +421,14 @@
         });
     }
 
-    // CSRF para AJAX
-    if (typeof $ !== 'undefined') {
-        $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
-    }
+    // ── CSRF para AJAX ────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof $ !== 'undefined') {
+            $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
+        }
+    });
 
-    // ── Sidebar: usa 100% o toggle nativo do AdminLTE 4 (data-lte-toggle="sidebar")
-    // Não há JS manual — o adminlte4.min.js cuida de tudo incluindo mobile
-
-    // Auto-hide alerts
+    // ── Auto-hide alerts ──────────────────────────────────────
     setTimeout(function() {
         document.querySelectorAll('.alert').forEach(el => {
             el.style.transition = 'opacity 0.5s';
@@ -439,77 +437,87 @@
         });
     }, 5000);
 
-    // ── Limpar Cache ────────────────────────────────────────
+    // ── Limpar Cache ──────────────────────────────────────────
     const CLEAR_CACHE_URL = '{{ route("admin.system.clear-cache") }}';
 
-    function runClearCache(type = 'all') {
+    function runClearCache(type) {
+        type = type || 'all';
         const icon = document.getElementById('cacheIcon');
         const btn  = document.getElementById('btnClearCache');
-
         if (icon) icon.className = 'fas fa-spinner fa-spin';
         if (btn)  btn.style.pointerEvents = 'none';
 
-        $.ajax({
-            url:    CLEAR_CACHE_URL,
-            method: 'POST',
-            data:   JSON.stringify({ type }),
-            contentType: 'application/json',
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-            success: function(data) {
-                if (icon) icon.className = 'fas fa-broom';
-                if (btn)  btn.style.pointerEvents = '';
+        // Aguardar jQuery estar disponível
+        var doRequest = function() {
+            $.ajax({
+                url:         CLEAR_CACHE_URL,
+                method:      'POST',
+                data:        JSON.stringify({ type: type }),
+                contentType: 'application/json',
+                headers:     { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                success: function(data) {
+                    if (icon) icon.className = 'fas fa-broom';
+                    if (btn)  btn.style.pointerEvents = '';
+                    var details = (data.details || []).join('<br>');
+                    Swal.fire({
+                        title: data.success ? '✅ Cache limpo!' : '⚠️ Concluído com erros',
+                        html:  details || data.message,
+                        icon:  data.success ? 'success' : 'warning',
+                        confirmButtonColor: '#FF6B00',
+                    });
+                    if (data.success) HMToast.success(data.message);
+                    else HMToast.warning(data.message);
+                },
+                error: function(xhr) {
+                    if (icon) icon.className = 'fas fa-broom';
+                    if (btn)  btn.style.pointerEvents = '';
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao limpar cache.';
+                    HMToast.error(msg);
+                }
+            });
+        };
 
-                const details = (data.details || []).join('<br>');
-                Swal.fire({
-                    title: data.success ? '✅ Cache limpo!' : '⚠️ Concluído com erros',
-                    html:  details || data.message,
-                    icon:  data.success ? 'success' : 'warning',
-                    confirmButtonColor: 'var(--hm-primary)',
-                });
-                if (data.success) HMToast.success(data.message);
-                else HMToast.warning(data.message);
-            },
-            error: function(xhr) {
-                if (icon) icon.className = 'fas fa-broom';
-                if (btn)  btn.style.pointerEvents = '';
-                const msg = xhr.responseJSON?.message || 'Erro ao limpar cache.';
-                HMToast.error(msg);
-            }
-        });
+        if (typeof $ !== 'undefined') {
+            doRequest();
+        } else {
+            // jQuery ainda não carregou — aguardar
+            var t = setInterval(function() {
+                if (typeof $ !== 'undefined') { clearInterval(t); doRequest(); }
+            }, 100);
+        }
     }
 
-    document.getElementById('btnClearCache')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Limpar todos os caches?',
-            html:  '<div style="font-size:0.88rem;color:#64748b;margin-top:0.5rem;">Serão limpos:<br>✅ Cache de aplicação<br>✅ Views compiladas<br>✅ Configurações<br>✅ Rotas</div>',
-            icon:  'question',
-            showCancelButton: true,
-            confirmButtonColor: 'var(--hm-primary)',
-            cancelButtonColor:  '#64748b',
-            confirmButtonText:  '<i class="fas fa-broom me-1"></i> Limpar tudo',
-            cancelButtonText:   'Cancelar',
-        }).then(r => { if (r.isConfirmed) runClearCache('all'); });
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('btnClearCache');
+        if (btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Limpar todos os caches?',
+                    html:  '<div style="font-size:0.88rem;color:#64748b;margin-top:0.5rem;">Serão limpos:<br>✅ Cache de aplicação<br>✅ Views compiladas<br>✅ Configurações<br>✅ Rotas</div>',
+                    icon:  'question',
+                    showCancelButton:   true,
+                    confirmButtonColor: '#FF6B00',
+                    cancelButtonColor:  '#64748b',
+                    confirmButtonText:  '<i class="fas fa-broom"></i> Limpar tudo',
+                    cancelButtonText:   'Cancelar',
+                }).then(function(r) { if (r.isConfirmed) runClearCache('all'); });
+            });
+        }
     });
 
     // Expor globalmente para a página de backup
     window.clearCacheType = function(type) {
-        const labels = {
-            all:    'Limpar TODOS os caches',
-            config: 'Limpar cache de configuração',
-            view:   'Limpar views compiladas',
-            route:  'Limpar cache de rotas',
-            app:    'Limpar cache de aplicação',
-        };
+        var labels = { all:'Limpar TODOS os caches', config:'Configuração', view:'Views', route:'Rotas', app:'App Cache' };
         Swal.fire({
             title: labels[type] || 'Limpar cache?',
             icon:  'question',
-            showCancelButton: true,
-            confirmButtonColor: 'var(--hm-primary)',
+            showCancelButton:   true,
+            confirmButtonColor: '#FF6B00',
             cancelButtonColor:  '#64748b',
-            confirmButtonText:  '<i class="fas fa-broom me-1"></i> Limpar',
+            confirmButtonText:  '<i class="fas fa-broom"></i> Limpar',
             cancelButtonText:   'Cancelar',
-        }).then(r => { if (r.isConfirmed) runClearCache(type); });
+        }).then(function(r) { if (r.isConfirmed) runClearCache(type); });
     };
 
     // Confirm delete
