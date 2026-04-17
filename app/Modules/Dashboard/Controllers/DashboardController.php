@@ -74,6 +74,63 @@ class DashboardController extends Controller
     }
 
     /**
+     * Limpar TODOS os caches do Laravel (cache, views, config, routes)
+     */
+    public function clearAllCache(Request $request)
+    {
+        $results = [];
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            $results[] = '✅ Cache de aplicação limpo';
+        } catch (\Exception $e) {
+            $results[] = '❌ Cache: ' . $e->getMessage();
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            $results[] = '✅ Views compiladas limpas';
+        } catch (\Exception $e) {
+            $results[] = '❌ Views: ' . $e->getMessage();
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            $results[] = '✅ Cache de configuração limpo';
+        } catch (\Exception $e) {
+            $results[] = '❌ Config: ' . $e->getMessage();
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+            $results[] = '✅ Cache de rotas limpo';
+        } catch (\Exception $e) {
+            $results[] = '❌ Rotas: ' . $e->getMessage();
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('event:clear');
+            $results[] = '✅ Cache de eventos limpo';
+        } catch (\Exception $e) {
+            // silencioso
+        }
+
+        // Limpar cache do dashboard também
+        Cache::flush();
+
+        \Illuminate\Support\Facades\Log::info('Cache geral limpo pelo admin', [
+            'user_id' => Auth::id(),
+            'results' => $results,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Todos os caches foram limpos com sucesso!',
+            'details' => $results,
+        ]);
+    }
+
+    /**
      * Obter dados completos do dashboard
      */
     private function getDashboardData(): array

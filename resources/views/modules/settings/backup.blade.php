@@ -42,11 +42,14 @@
             </div>
             <div class="card-body">
                 <p class="text-muted mb-3">Limpe os caches do sistema para forçar a atualização de configurações e views.</p>
-                <div class="d-flex flex-wrap gap-2" style="gap:0.5rem;">
-                    <button onclick="clearCache('config')" class="btn btn-secondary"><i class="fas fa-cog"></i> Cache de Config</button>
-                    <button onclick="clearCache('view')"   class="btn btn-secondary"><i class="fas fa-eye"></i> Cache de Views</button>
-                    <button onclick="clearCache('all')"    class="btn btn-danger"><i class="fas fa-trash"></i> Limpar Tudo</button>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button onclick="clearCacheType('all')"    class="btn btn-primary"><i class="fas fa-broom"></i> Limpar Tudo</button>
+                    <button onclick="clearCacheType('config')" class="btn btn-secondary"><i class="fas fa-cog"></i> Config</button>
+                    <button onclick="clearCacheType('view')"   class="btn btn-secondary"><i class="fas fa-eye"></i> Views</button>
+                    <button onclick="clearCacheType('route')"  class="btn btn-secondary"><i class="fas fa-route"></i> Rotas</button>
+                    <button onclick="clearCacheType('app')"    class="btn btn-secondary"><i class="fas fa-database"></i> App Cache</button>
                 </div>
+                <div id="cacheResult" style="display:none;"></div>
             </div>
         </div>
 
@@ -91,21 +94,54 @@
 
 @section('scripts')
 <script>
-function clearCache(type) {
+const CACHE_URL   = '{{ route("admin.system.clear-cache") }}';
+const CACHE_TOKEN = '{{ csrf_token() }}';
+
+function clearCacheType(type) {
+    const labels = {
+        all:    'Limpar TODOS os caches',
+        config: 'Limpar cache de configuração',
+        view:   'Limpar views compiladas',
+        route:  'Limpar cache de rotas',
+        app:    'Limpar cache de aplicação',
+    };
+
     Swal.fire({
-        title: 'Limpar cache?',
-        text: 'Confirma a limpeza do cache?',
+        title: labels[type] || 'Limpar cache?',
+        html: '<small style="color:#64748b;">Esta ação força o Laravel a recompilar as configurações.</small>',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: 'var(--hm-primary)',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sim, limpar!',
-        cancelButtonText: 'Cancelar'
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fas fa-broom me-1"></i> Limpar',
+        cancelButtonText: 'Cancelar',
     }).then(r => {
         if (!r.isConfirmed) return;
-        $.post('{{ route("admin.dashboard.clear-cache") }}', { _token: '{{ csrf_token() }}', type })
-            .done(() => Swal.fire({ icon:'success', title:'Cache limpo!', timer:1500, showConfirmButton:false }))
-            .fail(() => Swal.fire({ icon:'error', title:'Erro ao limpar cache.' }));
+
+        fetch(CACHE_URL, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': CACHE_TOKEN,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ type }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            const result = document.getElementById('cacheResult');
+            if (data.success) {
+                const details = (data.details || []).join('<br>');
+                result.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>Sucesso!</strong><br>${details || data.message}</div>`;
+                result.style.display = 'block';
+                HMToast.success(data.message);
+            } else {
+                result.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${data.message}</div>`;
+                result.style.display = 'block';
+                HMToast.error(data.message);
+            }
+        })
+        .catch(() => HMToast.error('Erro de conexão.'));
     });
 }
 </script>

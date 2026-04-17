@@ -25,7 +25,7 @@
 
     @yield('styles')
 </head>
-<body class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary">
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 
 <!--begin::App Wrapper-->
 <div class="app-wrapper">
@@ -129,6 +129,13 @@
                             </a>
                         </div>
                     </div>
+                </li>
+
+                <!-- Limpar Cache -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="btnClearCache" title="Limpar todos os caches do Laravel">
+                        <i class="fas fa-broom" id="cacheIcon"></i>
+                    </a>
                 </li>
 
                 <!-- Usuário -->
@@ -410,7 +417,7 @@
     // OverlayScrollbars (requerido pelo AdminLTE 4)
     if (typeof OverlayScrollbarsGlobal !== 'undefined') {
         const { OverlayScrollbars } = OverlayScrollbarsGlobal;
-        document.querySelectorAll('.sidebar-wrapper, body').forEach(el => {
+        document.querySelectorAll('.sidebar-wrapper').forEach(el => {
             OverlayScrollbars(el, { scrollbars: { autoHide: 'leave' } });
         });
     }
@@ -420,27 +427,8 @@
         $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
     }
 
-    // ── Sidebar toggle ──────────────────────────────────────
-    document.getElementById('sidebarToggle').addEventListener('click', function(e) {
-        e.preventDefault();
-        const body = document.body;
-        if (window.innerWidth >= 992) {
-            body.classList.toggle('sidebar-collapse');
-            localStorage.setItem('hm_sidebar', body.classList.contains('sidebar-collapse') ? 'closed' : 'open');
-        } else {
-            body.classList.toggle('sidebar-open');
-        }
-    });
-
-    // Estado padrão: ABERTO. Só fecha se o usuário explicitamente fechou.
-    (function() {
-        // Limpar chave antiga que pode ter ficado como "fechado"
-        localStorage.removeItem('sidebarCollapsed');
-        // Só colapsa se o usuário salvou explicitamente como fechado
-        if (window.innerWidth >= 992 && localStorage.getItem('hm_sidebar') === 'closed') {
-            document.body.classList.add('sidebar-collapse');
-        }
-    })();
+    // ── Sidebar: usa 100% o toggle nativo do AdminLTE 4 (data-lte-toggle="sidebar")
+    // Não há JS manual — o adminlte4.min.js cuida de tudo incluindo mobile
 
     // Auto-hide alerts
     setTimeout(function() {
@@ -450,6 +438,65 @@
             setTimeout(() => el.remove(), 500);
         });
     }, 5000);
+
+    // ── Limpar Cache ────────────────────────────────────────
+    document.getElementById('btnClearCache')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const icon = document.getElementById('cacheIcon');
+        const btn  = this;
+
+        // Confirmar
+        Swal.fire({
+            title: 'Limpar todos os caches?',
+            html: '<small style="color:#64748b;">Serão limpos: cache de aplicação, views compiladas, configurações e rotas.</small>',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--hm-primary)',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fas fa-broom me-1"></i> Limpar tudo',
+            cancelButtonText: 'Cancelar',
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            // Loading
+            icon.className = 'fas fa-spinner fa-spin';
+            btn.style.pointerEvents = 'none';
+
+            fetch('{{ route("admin.system.clear-cache") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(r => r.json())
+            .then(data => {
+                icon.className = 'fas fa-broom';
+                btn.style.pointerEvents = '';
+
+                if (data.success) {
+                    // Mostrar detalhes
+                    const details = (data.details || []).join('<br>');
+                    Swal.fire({
+                        title: 'Cache limpo!',
+                        html: details || data.message,
+                        icon: 'success',
+                        confirmButtonColor: 'var(--hm-primary)',
+                        confirmButtonText: 'OK',
+                    });
+                    HMToast.success(data.message);
+                } else {
+                    HMToast.error(data.message || 'Erro ao limpar cache.');
+                }
+            })
+            .catch(() => {
+                icon.className = 'fas fa-broom';
+                btn.style.pointerEvents = '';
+                HMToast.error('Erro de conexão ao limpar cache.');
+            });
+        });
+    });
 
     // Confirm delete
     document.addEventListener('click', function(e) {
