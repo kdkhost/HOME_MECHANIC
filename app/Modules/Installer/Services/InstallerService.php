@@ -191,8 +191,12 @@ class InstallerService
 
             // 3. Limpar caches antes de gerar chave
             $this->safeLog('info', 'Etapa 3: Limpando caches');
+            
+            // IMPORTANTE: Limpar apenas caches que não usam banco de dados
             Artisan::call('config:clear');
-            Artisan::call('cache:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+            // NÃO executar cache:clear aqui pois pode tentar acessar o banco
 
             // 4. Gerar chave da aplicação
             $this->safeLog('info', 'Etapa 4: Gerando APP_KEY');
@@ -208,9 +212,8 @@ class InstallerService
             // 5.1. Reconectar ao banco de dados com as novas configurações
             $this->safeLog('info', 'Etapa 5.1: Reconectando ao banco de dados');
             
-            // Limpar TODOS os caches de configuração
+            // Limpar APENAS caches de configuração (não de banco)
             Artisan::call('config:clear');
-            Artisan::call('cache:clear');
             
             // Configurar conexão com banco dinamicamente
             config([
@@ -241,33 +244,7 @@ class InstallerService
             // Reconectar
             DB::reconnect('mysql');
             
-            // Testar conexão
-            try {
-                $pdo = DB::connection()->getPdo();
-                $dbName = DB::connection()->getDatabaseName();
-                
-                // Verificar se o banco está correto
-                if ($dbName !== $data['database']['name']) {
-                    throw new \Exception("Conectado ao banco errado: {$dbName} (esperado: {$data['database']['name']})");
-                }
-                
-                $this->safeLog('info', 'Conexão com banco de dados estabelecida', [
-                    'database' => $dbName,
-                    'connection_name' => DB::connection()->getName()
-                ]);
-            } catch (\Exception $e) {
-                $this->safeLog('error', 'Falha ao conectar ao banco', [
-                    'error' => $e->getMessage(),
-                    'config_database' => config('database.connections.mysql.database'),
-                    'expected_database' => $data['database']['name']
-                ]);
-                throw new \Exception('Falha ao conectar ao banco após criar .env: ' . $e->getMessage());
-            }
-
-            // 6. Executar migrations
-            $this->safeLog('info', 'Etapa 6: Executando migrations');
-            
-            // FORÇAR seleção do banco de dados via SQL direto
+            // FORÇAR seleção do banco de dados via SQL direto IMEDIATAMENTE
             try {
                 $dbName = $data['database']['name'];
                 
@@ -292,6 +269,33 @@ class InstallerService
                     'database' => $data['database']['name']
                 ]);
                 throw new \Exception('Erro ao selecionar banco de dados: ' . $e->getMessage());
+            }
+            
+            // Agora sim, limpar cache do banco (já está no banco correto)
+            try {
+                Artisan::call('cache:clear');
+                $this->safeLog('info', 'Cache do banco limpo com sucesso');
+            } catch (\Exception $e) {
+                $this->safeLog('warning', 'Erro ao limpar cache do banco (não crítico)', ['error' => $e->getMessage()]);
+            }
+
+            // 6. Executar migrations
+            $this->safeLog('info', 'Etapa 6: Executando migrations');
+            
+            // Verificar novamente que estamos no banco correto
+            try {
+                $result = DB::select("SELECT DATABASE() as db");
+                $currentDb = $result[0]->db ?? null;
+                
+                if ($currentDb !== $data['database']['name']) {
+                    // Executar USE novamente
+                    DB::statement("USE `{$data['database']['name']}`");
+                    $this->safeLog('warning', 'Banco foi re-selecionado antes das migrations');
+                }
+                
+                $this->safeLog('info', 'Banco confirmado antes das migrations', ['database' => $currentDb]);
+            } catch (\Exception $e) {
+                throw new \Exception('Erro ao verificar banco antes das migrations: ' . $e->getMessage());
             }
             
             $migrateResult = Artisan::call('migrate', ['--force' => true]);
