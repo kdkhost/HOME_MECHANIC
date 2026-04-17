@@ -12,7 +12,15 @@ use Illuminate\Support\Facades\Log;
 class FrontendController extends Controller
 {
     public function home()     { return view('modules.frontend.home'); }
-    public function services() { return view('modules.frontend.services'); }
+    public function services()
+    {
+        try {
+            $services = \App\Modules\Services\Models\Service::active()->ordered()->get();
+        } catch (\Exception $e) {
+            $services = collect();
+        }
+        return view('modules.frontend.services', compact('services'));
+    }
     public function gallery()  { return view('modules.frontend.gallery'); }
 
     public function blog()

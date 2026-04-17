@@ -77,61 +77,48 @@
 <!-- Services Grid -->
 <section style="padding:5rem 0; background:var(--black);">
     <div class="container">
-        @php
-        $services = [
-            [
-                'img'   => 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-                'icon'  => 'bi-speedometer2',
-                'title' => 'Tuning de Motor',
-                'text'  => 'Extraímos o máximo potencial do seu motor com reprogramação de ECU, upgrades de turbo, intercooler de alta performance e sistemas de injeção otimizados. Cada projeto é único e desenvolvido especificamente para o seu veículo.',
-                'items' => ['Reprogramação de ECU/TCU','Upgrade de Turbo e Intercooler','Sistemas de Injeção Performance','Escape Esportivo Titanium','Filtros de Alta Vazão'],
-                'badge' => 'A partir de R$ 3.500',
-            ],
-            [
-                'img'   => 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80',
-                'icon'  => 'bi-gear-wide-connected',
-                'title' => 'Suspensão Sport',
-                'text'  => 'Kits de rebaixamento ajustáveis, amortecedores de competição e geometria de precisão para máximo controle e resposta. Transformamos a dinâmica do seu supercar para pista ou estrada.',
-                'items' => ['Coilovers Ajustáveis','Barras Estabilizadoras Reforçadas','Geometria de Precisão','Buchas Poliuretano','Rodas Forjadas Leves'],
-                'badge' => 'A partir de R$ 5.000',
-            ],
-            [
-                'img'   => 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
-                'icon'  => 'bi-disc',
-                'title' => 'Freios Performance',
-                'text'  => 'Sistemas de freio de alta performance para máxima segurança em altas velocidades. Discos ventilados, pastilhas de competição e fluido de freio de corrida.',
-                'items' => ['Discos Ventilados Brembo','Pastilhas de Competição','Fluido de Freio Racing','Linhas de Freio Inox','Calibres Monobloco'],
-                'badge' => 'A partir de R$ 4.200',
-            ],
-            [
-                'img'   => 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80',
-                'icon'  => 'bi-stars',
-                'title' => 'Estética Premium',
-                'text'  => 'Envelopamento em vinil de alta qualidade, polimento de alto brilho, proteção de pintura PPF e detalhamento completo. Seu supercar sempre impecável.',
-                'items' => ['Envelopamento Completo','Polimento Espelho','Proteção PPF 10 anos','Ceramic Coating','Detalhamento Interior'],
-                'badge' => 'A partir de R$ 2.800',
-            ],
-            [
-                'img'   => 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80',
-                'icon'  => 'bi-cpu',
-                'title' => 'Diagnóstico Digital',
-                'text'  => 'Leitura completa de todos os sistemas eletrônicos com equipamentos de última geração. Identificamos qualquer problema antes que se torne crítico.',
-                'items' => ['Scanner Multimarca','Leitura de Todos os Módulos','Relatório Detalhado','Calibração de Sensores','Atualização de Firmware'],
-                'badge' => 'A partir de R$ 350',
-            ],
-            [
-                'img'   => 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80',
-                'icon'  => 'bi-wrench-adjustable',
-                'title' => 'Manutenção Preventiva',
-                'text'  => 'Revisões completas seguindo os protocolos das fabricantes. Utilizamos apenas peças originais ou de primeira linha para garantir a longevidade do seu investimento.',
-                'items' => ['Revisão Completa','Troca de Fluidos Premium','Filtros Originais','Inspeção de 150 Pontos','Relatório Fotográfico'],
-                'badge' => 'A partir de R$ 1.200',
-            ],
-        ];
-        @endphp
-
+        @if($services->count() > 0)
         <div class="row g-4">
             @foreach($services as $i => $s)
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ ($loop->index % 3) * 80 }}">
+                <div class="service-full-card h-100">
+                    @if($s->cover_image)
+                    <div class="service-full-img-wrap">
+                        <img src="{{ '/' . ltrim($s->cover_image, '/') }}" alt="{{ $s->title }}" class="service-full-img">
+                    </div>
+                    @else
+                    <div class="service-full-img-wrap">
+                        <div style="width:100%;height:300px;background:linear-gradient(135deg,#1a1a1a,#222);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi {{ $s->icon ?? 'bi-tools' }}" style="font-size:4rem;color:var(--orange);opacity:0.6;"></i>
+                        </div>
+                    </div>
+                    @endif
+                    <div class="service-full-body">
+                        <div class="service-full-icon"><i class="bi {{ $s->icon ?? 'bi-tools' }}"></i></div>
+                        <div class="service-full-title">{{ $s->title }}</div>
+                        <p class="service-full-text">{{ $s->description }}</p>
+                        @if($s->content)
+                        <div class="service-full-text mt-2" style="font-size:0.85rem;">{!! \Illuminate\Support\Str::limit(strip_tags($s->content), 200) !!}</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        {{-- Fallback estático quando não há serviços cadastrados --}}
+        @php
+        $staticServices = [
+            ['img'=>'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80','icon'=>'bi-speedometer2','title'=>'Tuning de Motor','text'=>'Reprogramação de ECU, upgrades de turbo, intercooler de alta performance e sistemas de injeção otimizados.'],
+            ['img'=>'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80','icon'=>'bi-gear-wide-connected','title'=>'Suspensão Sport','text'=>'Kits de rebaixamento ajustáveis, amortecedores de competição e geometria de precisão.'],
+            ['img'=>'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80','icon'=>'bi-disc','title'=>'Freios Performance','text'=>'Sistemas de freio de alta performance para máxima segurança em altas velocidades.'],
+            ['img'=>'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80','icon'=>'bi-stars','title'=>'Estética Premium','text'=>'Envelopamento, polimento de alto brilho, proteção de pintura PPF e detalhamento completo.'],
+            ['img'=>'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80','icon'=>'bi-cpu','title'=>'Diagnóstico Digital','text'=>'Leitura completa de todos os sistemas eletrônicos com equipamentos de última geração.'],
+            ['img'=>'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80','icon'=>'bi-wrench-adjustable','title'=>'Manutenção Preventiva','text'=>'Revisões completas seguindo os protocolos das fabricantes com peças originais.'],
+        ];
+        @endphp
+        <div class="row g-4">
+            @foreach($staticServices as $i => $s)
             <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ ($i % 3) * 80 }}">
                 <div class="service-full-card h-100">
                     <div class="service-full-img-wrap">
@@ -141,17 +128,12 @@
                         <div class="service-full-icon"><i class="bi {{ $s['icon'] }}"></i></div>
                         <div class="service-full-title">{{ $s['title'] }}</div>
                         <p class="service-full-text">{{ $s['text'] }}</p>
-                        <ul class="service-feature-list">
-                            @foreach($s['items'] as $item)
-                            <li><i class="bi bi-check-circle-fill"></i> {{ $item }}</li>
-                            @endforeach
-                        </ul>
-                        <div class="price-badge">{{ $s['badge'] }}</div>
                     </div>
                 </div>
             </div>
             @endforeach
         </div>
+        @endif
 
         <div class="text-center mt-5" data-aos="fade-up">
             <p style="color:var(--gray); margin-bottom:1.5rem;">Precisa de um serviço personalizado? Entre em contato para um orçamento exclusivo.</p>

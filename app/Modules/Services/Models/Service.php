@@ -41,33 +41,20 @@ class Service extends Model
     }
 
     /**
-     * Obter upload da capa
-     */
-    public function getCoverUpload()
-    {
-        if (!$this->cover_image) {
-            return null;
-        }
-
-        return Upload::where('uuid', $this->cover_image)->first();
-    }
-
-    /**
-     * Obter URL da imagem de capa
+     * Obter URL da imagem de capa — path direto em public/uploads/services/
      */
     public function getCoverImageUrlAttribute(): ?string
     {
-        $upload = $this->getCoverUpload();
-        return $upload ? $upload->url : null;
+        if (!$this->cover_image) return null;
+        return '/' . ltrim($this->cover_image, '/');
     }
 
     /**
-     * Obter URL do thumbnail da capa
+     * Obter URL do thumbnail (mesma imagem — sem processamento separado)
      */
     public function getCoverThumbnailUrlAttribute(): ?string
     {
-        $upload = $this->getCoverUpload();
-        return $upload ? $upload->thumbnail_url : null;
+        return $this->cover_image_url;
     }
 
     /**

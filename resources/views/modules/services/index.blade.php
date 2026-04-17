@@ -1,138 +1,174 @@
 ﻿@extends('layouts.admin')
-
-@section('title', 'Serviços - HomeMechanic')
+@section('title', 'Serviços')
 @section('page-title', 'Serviços')
-
 @section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('admin.dashboard.index') }}">Dashboard</a></li>
-<li class="breadcrumb-item active">Serviços</li>
+    <li class="breadcrumb-item active">Serviços</li>
 @endsection
 
 @section('styles')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
-.service-card {
-    transition: transform 0.2s;
+.svc-card { transition: var(--hm-transition); cursor: default; }
+.svc-card:hover { transform: translateY(-2px); box-shadow: var(--hm-shadow-md) !important; }
+.svc-img { width:100%; height:160px; object-fit:cover; border-radius:var(--hm-radius) var(--hm-radius) 0 0; }
+.svc-img-placeholder {
+    width:100%; height:160px; background:var(--hm-primary-light);
+    display:flex; align-items:center; justify-content:center;
+    border-radius:var(--hm-radius) var(--hm-radius) 0 0;
+    color:var(--hm-primary); font-size:2.5rem;
 }
-.service-card:hover {
-    transform: translateY(-2px);
+.img-upload-area {
+    border:2px dashed var(--hm-border); border-radius:8px;
+    padding:1.5rem; text-align:center; cursor:pointer;
+    transition:var(--hm-transition); background:#fafafa;
 }
-.service-status {
-    font-size: 0.8rem;
-}
-.service-actions {
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.service-card:hover .service-actions {
-    opacity: 1;
-}
-.drag-handle {
-    cursor: move;
-}
-.sortable-ghost {
-    opacity: 0.4;
-}
+.img-upload-area:hover { border-color:var(--hm-primary); background:var(--hm-primary-light); }
+.img-upload-area img { max-height:120px; border-radius:6px; }
 </style>
 @endsection
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="bi bi-tools mr-2"></i>
-                    Gerenciar Serviços
-                </h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#serviceModal">
-                        <i class="bi bi-plus"></i> Novo Serviço
-                    </button>
-                </div>
+<div class="page-header">
+    <h2 class="page-header-title"><i class="fas fa-tools me-2" style="color:var(--hm-primary);"></i>Gerenciar Serviços</h2>
+    <div class="page-header-actions">
+        <button class="btn btn-primary" onclick="openModal()">
+            <i class="fas fa-plus"></i> Novo Serviço
+        </button>
+    </div>
+</div>
+
+{{-- Filtros --}}
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control form-control-sm"
+                       placeholder="Buscar serviços..." oninput="debounceLoad()">
             </div>
-            
-            <div class="card-body">
-                <!-- Filtros -->
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <input type="text" id="searchInput" class="form-control" placeholder="Buscar serviços...">
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary" type="button" id="searchBtn">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <select id="statusFilter" class="form-control">
-                            <option value="">Todos os Status</option>
-                            <option value="1">Ativos</option>
-                            <option value="0">Inativos</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select id="featuredFilter" class="form-control">
-                            <option value="">Todos</option>
-                            <option value="1">Em Destaque</option>
-                            <option value="0">Sem Destaque</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select id="sortBy" class="form-control">
-                            <option value="sort_order">Ordem</option>
-                            <option value="title">Título</option>
-                            <option value="created_at">Data de Criação</option>
-                            <option value="updated_at">Última Atualização</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-info" id="refreshBtn">
-                            <i class="bi bi-arrow-clockwise"></i> Atualizar
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Lista de Serviços -->
-                <div id="servicesContainer">
-                    <div class="text-center py-4">
-                        <div class="spinner-border" role="status">
-                            <span class="sr-only">Carregando...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Paginação -->
-                <div id="paginationContainer" class="d-flex justify-content-center mt-3"></div>
+            <div class="col-md-2">
+                <select id="statusFilter" class="form-control form-control-sm" onchange="loadServices()">
+                    <option value="">Todos os Status</option>
+                    <option value="1">Ativos</option>
+                    <option value="0">Inativos</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select id="featuredFilter" class="form-control form-control-sm" onchange="loadServices()">
+                    <option value="">Todos</option>
+                    <option value="1">Em Destaque</option>
+                    <option value="0">Sem Destaque</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select id="sortBy" class="form-control form-control-sm" onchange="loadServices()">
+                    <option value="sort_order">Ordem</option>
+                    <option value="title">Título</option>
+                    <option value="created_at">Data</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary btn-sm w-100" onclick="loadServices()">
+                    <i class="fas fa-sync-alt"></i> Atualizar
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal do Serviço -->
-<div class="modal fade" id="serviceModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
+{{-- Lista --}}
+<div id="servicesContainer">
+    <div class="text-center py-5">
+        <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--hm-primary);"></i>
+    </div>
+</div>
+<div id="paginationContainer" class="d-flex justify-content-center mt-3"></div>
+
+{{-- Modal Criar/Editar --}}
+<div class="modal fade" id="svcModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">
-                    <i class="bi bi-tools mr-2"></i>
-                    <span id="modalTitle">Novo Serviço</span>
-                </h4>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <span class="modal-title" id="modalTitle" style="font-weight:700;font-size:1rem;color:#fff;">
+                    <i class="fas fa-tools me-2"></i>Novo Serviço
+                </span>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="serviceForm">
+            <form id="svcForm" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" id="svcId" name="_id">
+                <input type="hidden" name="_method" id="svcMethod" value="POST">
+                <input type="hidden" name="remove_image" id="removeImage" value="0">
+
                 <div class="modal-body">
-                    @include('modules.services._form')
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label>Título <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title" id="svcTitle" required maxlength="255">
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição Curta <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="description" id="svcDesc" rows="3" required maxlength="500"
+                                          placeholder="Aparece nos cards e listagens (máx. 500 caracteres)"></textarea>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label>Conteúdo Completo</label>
+                                <textarea class="form-control" name="content" id="svcContent" rows="5"
+                                          placeholder="Descrição detalhada do serviço (aceita HTML)"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            {{-- Imagem --}}
+                            <div class="form-group">
+                                <label>Imagem de Capa</label>
+                                <div class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('coverImageInput').click()">
+                                    <div id="imgPreview">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color:var(--hm-primary);"></i>
+                                        <div style="font-size:0.82rem;color:var(--hm-text-muted);">Clique para selecionar</div>
+                                        <div style="font-size:0.72rem;color:#94a3b8;">JPG, PNG, WebP — máx. 5MB</div>
+                                    </div>
+                                </div>
+                                <input type="file" id="coverImageInput" name="cover_image"
+                                       accept="image/jpeg,image/png,image/webp" class="d-none"
+                                       onchange="previewImage(this)">
+                                <button type="button" class="btn btn-danger btn-sm mt-1 w-100 d-none" id="btnRemoveImg" onclick="removeImage()">
+                                    <i class="fas fa-trash"></i> Remover imagem
+                                </button>
+                            </div>
+                            {{-- Ícone --}}
+                            <div class="form-group">
+                                <label>Ícone <small class="text-muted">(Bootstrap Icons)</small></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i id="iconPreview" class="bi bi-tools"></i></span>
+                                    <input type="text" class="form-control" name="icon" id="svcIcon"
+                                           placeholder="bi-tools" maxlength="100"
+                                           oninput="document.getElementById('iconPreview').className='bi '+this.value">
+                                </div>
+                                <small class="form-text"><a href="https://icons.getbootstrap.com/" target="_blank">Ver ícones</a></small>
+                            </div>
+                            {{-- Ordem --}}
+                            <div class="form-group">
+                                <label>Ordem de Exibição</label>
+                                <input type="number" class="form-control" name="sort_order" id="svcOrder" min="0">
+                            </div>
+                            {{-- Switches --}}
+                            <div class="form-group">
+                                <div class="custom-control custom-switch mb-2">
+                                    <input type="checkbox" class="custom-control-input" id="svcFeatured" name="featured" value="1">
+                                    <label class="custom-control-label" for="svcFeatured">Em Destaque</label>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="svcActive" name="active" value="1" checked>
+                                    <label class="custom-control-label" for="svcActive">Ativo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check"></i> Salvar
+                <div class="card-footer d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" id="btnSave">
+                        <i class="fas fa-save"></i> Salvar
                     </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -141,436 +177,302 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-class ServicesManager {
-    constructor() {
-        this.currentPage = 1;
-        this.perPage = 15;
-        this.editingId = null;
-        this.sortable = null;
-        
-        this.init();
-    }
+var currentPage = 1;
+var editingId   = null;
+var debTimer    = null;
+var sortable    = null;
 
-    init() {
-        this.bindEvents();
-        this.loadServices();
-    }
+// ── Carregar serviços ─────────────────────────────────────
+function loadServices(page) {
+    page = page || 1;
+    currentPage = page;
 
-    bindEvents() {
-        // Busca
-        $('#searchInput').on('keyup', this.debounce(() => this.loadServices(), 500));
-        $('#searchBtn').on('click', () => this.loadServices());
-        
-        // Filtros
-        $('#statusFilter, #featuredFilter, #sortBy').on('change', () => this.loadServices());
-        
-        // Refresh
-        $('#refreshBtn').on('click', () => this.loadServices());
-        
-        // Form
-        $('#serviceForm').on('submit', (e) => this.handleSubmit(e));
-        
-        // Modal reset
-        $('#serviceModal').on('hidden.bs.modal', () => this.resetForm());
-    }
+    var params = new URLSearchParams({
+        page:     page,
+        per_page: 12,
+        search:   document.getElementById('searchInput').value,
+        active:   document.getElementById('statusFilter').value,
+        featured: document.getElementById('featuredFilter').value,
+        sort_by:  document.getElementById('sortBy').value,
+    });
 
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
+    document.getElementById('servicesContainer').innerHTML =
+        '<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--hm-primary);"></i></div>';
 
-    async loadServices(page = 1) {
-        try {
-            this.currentPage = page;
-            
-            const params = new URLSearchParams({
-                page: page,
-                per_page: this.perPage,
-                search: $('#searchInput').val(),
-                active: $('#statusFilter').val(),
-                featured: $('#featuredFilter').val(),
-                sort_by: $('#sortBy').val()
-            });
-
-            const response = await fetch(`{{ route('admin.services.index') }}?${params}`, {
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-
-            const data = await response.json();
-
+    $.ajax({
+        url: '{{ route("admin.services.index") }}?' + params.toString(),
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        success: function(data) {
             if (data.success) {
-                this.renderServices(data.data);
-                this.renderPagination(data.pagination);
-                this.initSortable();
+                renderServices(data.data);
+                renderPagination(data.pagination);
             } else {
-                this.showError('Erro ao carregar serviços');
+                HMToast.error('Erro ao carregar serviços.');
             }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showError('Erro de conexão');
-        }
+        },
+        error: function() { HMToast.error('Erro de conexão.'); }
+    });
+}
+
+function debounceLoad() {
+    clearTimeout(debTimer);
+    debTimer = setTimeout(loadServices, 450);
+}
+
+// ── Renderizar cards ──────────────────────────────────────
+function renderServices(services) {
+    var c = document.getElementById('servicesContainer');
+    if (!services.length) {
+        c.innerHTML = '<div class="empty-state"><i class="fas fa-tools"></i><h5>Nenhum serviço encontrado</h5><p>Crie o primeiro serviço clicando em "Novo Serviço".</p></div>';
+        return;
     }
 
-    renderServices(services) {
-        const container = $('#servicesContainer');
-        
-        if (services.length === 0) {
-            container.html(`
-                <div class="text-center py-4">
-                    <i class="bi bi-inbox display-4 text-muted"></i>
-                    <p class="text-muted mt-2">Nenhum serviço encontrado</p>
-                </div>
-            `);
-            return;
-        }
+    var html = '<div class="row g-3" id="svcList">';
+    services.forEach(function(s) {
+        var img = s.cover_image
+            ? '<img src="/' + s.cover_image.replace(/^\//, '') + '" class="svc-img" alt="' + s.title + '">'
+            : '<div class="svc-img-placeholder"><i class="bi ' + (s.icon || 'bi-tools') + '"></i></div>';
 
-        const html = `
-            <div id="servicesList" class="row">
-                ${services.map(service => this.renderServiceCard(service)).join('')}
-            </div>
-        `;
-        
-        container.html(html);
-    }
+        html += '<div class="col-md-4 col-lg-3" data-id="' + s.id + '">' +
+            '<div class="card svc-card">' + img +
+            '<div class="card-body pb-2">' +
+            '<div class="d-flex align-items-start justify-content-between gap-1">' +
+            '<div style="font-weight:700;font-size:0.9rem;color:var(--hm-text);">' + s.title + '</div>' +
+            '<i class="fas fa-grip-vertical drag-handle" style="color:#94a3b8;cursor:move;flex-shrink:0;margin-top:2px;"></i>' +
+            '</div>' +
+            '<p style="font-size:0.78rem;color:var(--hm-text-muted);margin:0.35rem 0 0.5rem;line-height:1.4;">' +
+            s.description.substring(0, 80) + (s.description.length > 80 ? '…' : '') + '</p>' +
+            '<div class="d-flex gap-1 flex-wrap">' +
+            (s.active ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-secondary">Inativo</span>') +
+            (s.featured ? '<span class="badge badge-warning">Destaque</span>' : '') +
+            '</div></div>' +
+            '<div class="card-footer py-2">' +
+            '<div class="btn-group btn-group-sm w-100">' +
+            '<button class="btn btn-warning" onclick="editService(' + s.id + ')" title="Editar"><i class="fas fa-pencil-alt"></i></button>' +
+            '<button class="btn btn-' + (s.active ? 'secondary' : 'success') + '" onclick="toggleActive(' + s.id + ')" title="' + (s.active ? 'Desativar' : 'Ativar') + '"><i class="fas fa-' + (s.active ? 'pause' : 'play') + '"></i></button>' +
+            '<button class="btn btn-' + (s.featured ? 'secondary' : 'warning') + '" onclick="toggleFeatured(' + s.id + ')" title="' + (s.featured ? 'Remover destaque' : 'Destacar') + '"><i class="fas fa-star' + (s.featured ? '' : '-o') + '"></i></button>' +
+            '<button class="btn btn-danger btn-delete" onclick="deleteService(' + s.id + ', \'' + s.title.replace(/'/g,'') + '\')" title="Excluir"><i class="fas fa-trash"></i></button>' +
+            '</div></div></div></div>';
+    });
+    html += '</div>';
+    c.innerHTML = html;
 
-    renderServiceCard(service) {
-        const statusBadge = service.active 
-            ? '<span class="badge badge-success">Ativo</span>'
-            : '<span class="badge badge-secondary">Inativo</span>';
-            
-        const featuredBadge = service.featured 
-            ? '<span class="badge badge-warning ml-1">Destaque</span>'
-            : '';
-
-        const coverImage = service.cover_thumbnail_url 
-            ? `<img src="${service.cover_thumbnail_url}" class="card-img-top" style="height: 150px; object-fit: cover;">`
-            : `<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
-                 <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
-               </div>`;
-
-        return `
-            <div class="col-md-4 mb-3" data-service-id="${service.id}">
-                <div class="card service-card h-100">
-                    ${coverImage}
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0">${service.title}</h5>
-                            <div class="drag-handle text-muted">
-                                <i class="bi bi-grip-vertical"></i>
-                            </div>
-                        </div>
-                        <p class="card-text text-muted small">${service.description}</p>
-                        <div class="service-status mb-2">
-                            ${statusBadge}${featuredBadge}
-                            <small class="text-muted ml-2">Ordem: ${service.sort_order}</small>
-                        </div>
-                    </div>
-                    <div class="card-footer service-actions">
-                        <div class="btn-group btn-group-sm w-100">
-                            <button class="btn btn-outline-primary" onclick="servicesManager.editService(${service.id})">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-outline-${service.active ? 'warning' : 'success'}" 
-                                    onclick="servicesManager.toggleActive(${service.id})">
-                                <i class="bi bi-${service.active ? 'pause' : 'play'}"></i>
-                            </button>
-                            <button class="btn btn-outline-${service.featured ? 'secondary' : 'warning'}" 
-                                    onclick="servicesManager.toggleFeatured(${service.id})">
-                                <i class="bi bi-star${service.featured ? '-fill' : ''}"></i>
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="servicesManager.deleteService(${service.id})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    renderPagination(pagination) {
-        const container = $('#paginationContainer');
-        
-        if (pagination.last_page <= 1) {
-            container.empty();
-            return;
-        }
-
-        let html = '<nav><ul class="pagination">';
-        
-        // Anterior
-        if (pagination.current_page > 1) {
-            html += `<li class="page-item">
-                       <a class="page-link" href="#" onclick="servicesManager.loadServices(${pagination.current_page - 1})">Anterior</a>
-                     </li>`;
-        }
-        
-        // Páginas
-        for (let i = 1; i <= pagination.last_page; i++) {
-            if (i === pagination.current_page) {
-                html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
-            } else {
-                html += `<li class="page-item">
-                           <a class="page-link" href="#" onclick="servicesManager.loadServices(${i})">${i}</a>
-                         </li>`;
-            }
-        }
-        
-        // Próximo
-        if (pagination.current_page < pagination.last_page) {
-            html += `<li class="page-item">
-                       <a class="page-link" href="#" onclick="servicesManager.loadServices(${pagination.current_page + 1})">Próximo</a>
-                     </li>`;
-        }
-        
-        html += '</ul></nav>';
-        container.html(html);
-    }
-
-    initSortable() {
-        if (this.sortable) {
-            this.sortable.destroy();
-        }
-
-        const list = document.getElementById('servicesList');
-        if (!list) return;
-
-        this.sortable = Sortable.create(list, {
+    // Sortable
+    if (sortable) sortable.destroy();
+    var list = document.getElementById('svcList');
+    if (list) {
+        sortable = Sortable.create(list, {
             handle: '.drag-handle',
-            ghostClass: 'sortable-ghost',
-            onEnd: (evt) => this.handleReorder(evt)
+            ghostClass: 'opacity-50',
+            onEnd: function() {
+                var items = [];
+                document.querySelectorAll('#svcList [data-id]').forEach(function(el, i) {
+                    items.push({ id: parseInt(el.dataset.id), sort_order: i + 1 });
+                });
+                $.ajax({
+                    url: '{{ route("admin.services.reorder") }}',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    data: JSON.stringify({ services: items }),
+                    success: function(r) { if (r.success) HMToast.success('Ordem salva!'); }
+                });
+            }
         });
-    }
-
-    async handleReorder(evt) {
-        const services = [];
-        const cards = document.querySelectorAll('[data-service-id]');
-        
-        cards.forEach((card, index) => {
-            services.push({
-                id: parseInt(card.dataset.serviceId),
-                sort_order: index + 1
-            });
-        });
-
-        try {
-            const response = await fetch('{{ route("admin.services.reorder") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                body: JSON.stringify({ services })
-            });
-
-            const data = await response.json();
-            
-            if (data.success) {
-                this.showSuccess(data.message);
-            } else {
-                this.showError('Erro ao reordenar serviços');
-                this.loadServices(this.currentPage);
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showError('Erro de conexão');
-            this.loadServices(this.currentPage);
-        }
-    }
-
-    async editService(id) {
-        try {
-            const response = await fetch(`{{ route('admin.services.index') }}/${id}`, {
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-            
-            if (data.success) {
-                this.fillForm(data.data);
-                this.editingId = id;
-                $('#modalTitle').text('Editar Serviço');
-                $('#serviceModal').modal('show');
-            } else {
-                this.showError('Erro ao carregar serviço');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showError('Erro de conexão');
-        }
-    }
-
-    fillForm(service) {
-        $('#title').val(service.title);
-        $('#slug').val(service.slug);
-        $('#description').val(service.description);
-        $('#content').val(service.content);
-        $('#icon').val(service.icon);
-        $('#cover_image').val(service.cover_image);
-        $('#featured').prop('checked', service.featured);
-        $('#sort_order').val(service.sort_order);
-        $('#active').prop('checked', service.active);
-        
-        // Mostrar preview da imagem se existir
-        if (service.cover_thumbnail_url) {
-            $('#imagePreview').html(`<img src="${service.cover_thumbnail_url}" class="img-thumbnail" style="max-height: 100px;">`);
-        }
-    }
-
-    async handleSubmit(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(e.target);
-        const url = this.editingId 
-            ? `{{ route('admin.services.index') }}/${this.editingId}`
-            : '{{ route("admin.services.store") }}';
-        const method = this.editingId ? 'PUT' : 'POST';
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                },
-                body: formData
-            });
-
-            const data = await response.json();
-            
-            if (data.success) {
-                this.showSuccess(data.message);
-                $('#serviceModal').modal('hide');
-                this.loadServices(this.currentPage);
-            } else {
-                this.showError(data.message || 'Erro ao salvar serviço');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showError('Erro de conexão');
-        }
-    }
-
-    async toggleActive(id) {
-        try {
-            const response = await fetch(`{{ route('admin.services.index') }}/${id}/toggle-active`, {
-                method: 'PATCH',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-            
-            if (data.success) {
-                this.showSuccess(data.message);
-                this.loadServices(this.currentPage);
-            } else {
-                this.showError('Erro ao alterar status');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showError('Erro de conexão');
-        }
-    }
-
-    async toggleFeatured(id) {
-        try {
-            const response = await fetch(`{{ route('admin.services.index') }}/${id}/toggle-featured`, {
-                method: 'PATCH',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-            
-            if (data.success) {
-                this.showSuccess(data.message);
-                this.loadServices(this.currentPage);
-            } else {
-                this.showError('Erro ao alterar destaque');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showError('Erro de conexão');
-        }
-    }
-
-    async deleteService(id) {
-        const result = await Swal.fire({
-            title: 'Confirmar Exclusão',
-            text: 'Tem certeza que deseja excluir este serviço?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sim, excluir!',
-            cancelButtonText: 'Cancelar'
-        });
-
-        if (!result.isConfirmed) return;
-
-        try {
-            const response = await fetch(`{{ route('admin.services.index') }}/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-            
-            if (data.success) {
-                this.showSuccess(data.message);
-                this.loadServices(this.currentPage);
-            } else {
-                this.showError('Erro ao excluir serviço');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showError('Erro de conexão');
-        }
-    }
-
-    resetForm() {
-        $('#serviceForm')[0].reset();
-        $('#imagePreview').empty();
-        this.editingId = null;
-        $('#modalTitle').text('Novo Serviço');
-    }
-
-    showSuccess(message) {
-        HMToast.success(message);
-    }
-
-    showError(message) {
-        HMToast.error(message);
     }
 }
 
-// Inicializar quando o documento estiver pronto
-$(document).ready(() => {
-    window.servicesManager = new ServicesManager();
+// ── Paginação ─────────────────────────────────────────────
+function renderPagination(p) {
+    var c = document.getElementById('paginationContainer');
+    if (p.last_page <= 1) { c.innerHTML = ''; return; }
+    var html = '<nav><ul class="pagination pagination-sm">';
+    if (p.current_page > 1) html += '<li class="page-item"><a class="page-link" href="#" onclick="loadServices(' + (p.current_page-1) + ');return false;">‹</a></li>';
+    for (var i = 1; i <= p.last_page; i++) {
+        html += '<li class="page-item' + (i===p.current_page?' active':'') + '"><a class="page-link" href="#" onclick="loadServices(' + i + ');return false;">' + i + '</a></li>';
+    }
+    if (p.current_page < p.last_page) html += '<li class="page-item"><a class="page-link" href="#" onclick="loadServices(' + (p.current_page+1) + ');return false;">›</a></li>';
+    html += '</ul></nav>';
+    c.innerHTML = html;
+}
+
+// ── Modal ─────────────────────────────────────────────────
+function openModal(id) {
+    resetForm();
+    if (id) {
+        editingId = id;
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-pencil-alt me-2"></i>Editar Serviço';
+    } else {
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Novo Serviço';
+    }
+    var modal = new bootstrap.Modal(document.getElementById('svcModal'));
+    modal.show();
+}
+
+function resetForm() {
+    editingId = null;
+    document.getElementById('svcForm').reset();
+    document.getElementById('svcId').value = '';
+    document.getElementById('svcMethod').value = 'POST';
+    document.getElementById('removeImage').value = '0';
+    document.getElementById('imgPreview').innerHTML =
+        '<i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color:var(--hm-primary);"></i>' +
+        '<div style="font-size:0.82rem;color:var(--hm-text-muted);">Clique para selecionar</div>' +
+        '<div style="font-size:0.72rem;color:#94a3b8;">JPG, PNG, WebP — máx. 5MB</div>';
+    document.getElementById('btnRemoveImg').classList.add('d-none');
+    document.getElementById('svcActive').checked = true;
+    document.getElementById('iconPreview').className = 'bi bi-tools';
+}
+
+function editService(id) {
+    $.ajax({
+        url: '{{ route("admin.services.index") }}/' + id,
+        headers: { 'Accept': 'application/json' },
+        success: function(data) {
+            if (!data.success) { HMToast.error('Erro ao carregar serviço.'); return; }
+            var s = data.data;
+            document.getElementById('svcId').value       = s.id;
+            document.getElementById('svcMethod').value   = 'PUT';
+            document.getElementById('svcTitle').value    = s.title || '';
+            document.getElementById('svcDesc').value     = s.description || '';
+            document.getElementById('svcContent').value  = s.content || '';
+            document.getElementById('svcIcon').value     = s.icon || '';
+            document.getElementById('svcOrder').value    = s.sort_order || '';
+            document.getElementById('svcFeatured').checked = !!s.featured;
+            document.getElementById('svcActive').checked   = !!s.active;
+            document.getElementById('iconPreview').className = 'bi ' + (s.icon || 'bi-tools');
+
+            if (s.cover_image) {
+                document.getElementById('imgPreview').innerHTML =
+                    '<img src="/' + s.cover_image.replace(/^\//, '') + '" style="max-height:120px;border-radius:6px;">';
+                document.getElementById('btnRemoveImg').classList.remove('d-none');
+            }
+            openModal(id);
+        },
+        error: function() { HMToast.error('Erro de conexão.'); }
+    });
+}
+
+// ── Preview imagem ────────────────────────────────────────
+function previewImage(input) {
+    if (!input.files || !input.files[0]) return;
+    if (input.files[0].size > 5 * 1024 * 1024) {
+        HMToast.error('Imagem muito grande. Máximo 5MB.');
+        input.value = '';
+        return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('imgPreview').innerHTML =
+            '<img src="' + e.target.result + '" style="max-height:120px;border-radius:6px;">';
+        document.getElementById('btnRemoveImg').classList.remove('d-none');
+        document.getElementById('removeImage').value = '0';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+function removeImage() {
+    document.getElementById('coverImageInput').value = '';
+    document.getElementById('removeImage').value = '1';
+    document.getElementById('imgPreview').innerHTML =
+        '<i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color:var(--hm-primary);"></i>' +
+        '<div style="font-size:0.82rem;color:var(--hm-text-muted);">Clique para selecionar</div>';
+    document.getElementById('btnRemoveImg').classList.add('d-none');
+}
+
+// ── Submit ────────────────────────────────────────────────
+document.getElementById('svcForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var btn = document.getElementById('btnSave');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+    var id     = document.getElementById('svcId').value;
+    var method = document.getElementById('svcMethod').value;
+    var url    = id
+        ? '{{ route("admin.services.index") }}/' + id
+        : '{{ route("admin.services.store") }}';
+
+    var fd = new FormData(this);
+    if (method === 'PUT') fd.append('_method', 'PUT');
+
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: fd,
+        processData: false,
+        contentType: false,
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+        success: function(data) {
+            if (data.success) {
+                HMToast.success(data.message);
+                bootstrap.Modal.getInstance(document.getElementById('svcModal')).hide();
+                loadServices(currentPage);
+            } else {
+                HMToast.error(data.message || 'Erro ao salvar.');
+            }
+        },
+        error: function(xhr) {
+            var msg = 'Erro ao salvar.';
+            if (xhr.responseJSON) {
+                if (xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                else if (xhr.responseJSON.errors) msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+            }
+            HMToast.error(msg);
+        },
+        complete: function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Salvar';
+        }
+    });
 });
+
+// ── Toggle / Delete ───────────────────────────────────────
+function toggleActive(id) {
+    $.ajax({
+        url: '{{ route("admin.services.index") }}/' + id + '/toggle-active',
+        method: 'PATCH',
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
+        success: function(d) { if (d.success) { HMToast.success(d.message); loadServices(currentPage); } else HMToast.error(d.message); },
+        error: function() { HMToast.error('Erro de conexão.'); }
+    });
+}
+
+function toggleFeatured(id) {
+    $.ajax({
+        url: '{{ route("admin.services.index") }}/' + id + '/toggle-featured',
+        method: 'PATCH',
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
+        success: function(d) { if (d.success) { HMToast.success(d.message); loadServices(currentPage); } else HMToast.error(d.message); },
+        error: function() { HMToast.error('Erro de conexão.'); }
+    });
+}
+
+function deleteService(id, name) {
+    Swal.fire({
+        title: 'Excluir serviço?',
+        html: 'Deseja excluir <strong>' + name + '</strong>?<br><small style="color:#64748b;">Esta ação não pode ser desfeita.</small>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fas fa-trash me-1"></i> Excluir',
+        cancelButtonText: 'Cancelar',
+    }).then(function(r) {
+        if (!r.isConfirmed) return;
+        $.ajax({
+            url: '{{ route("admin.services.index") }}/' + id,
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
+            success: function(d) { if (d.success) { HMToast.success(d.message); loadServices(currentPage); } else HMToast.error(d.message); },
+            error: function() { HMToast.error('Erro de conexão.'); }
+        });
+    });
+}
+
+// ── Init ──────────────────────────────────────────────────
+$(function() { loadServices(); });
 </script>
 @endsection
