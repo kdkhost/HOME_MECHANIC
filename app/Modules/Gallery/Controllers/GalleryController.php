@@ -24,7 +24,6 @@ class GalleryController extends Controller
 
     public function __construct(ImageService $imageService, UploadService $uploadService)
     {
-        $this->middleware('auth');
         $this->imageService = $imageService;
         $this->uploadService = $uploadService;
     }

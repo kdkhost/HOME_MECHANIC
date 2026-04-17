@@ -19,7 +19,6 @@ class ServiceController extends Controller
 
     public function __construct(UploadService $uploadService)
     {
-        $this->middleware('auth');
         $this->uploadService = $uploadService;
     }
 

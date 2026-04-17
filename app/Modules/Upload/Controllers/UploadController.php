@@ -19,7 +19,6 @@ class UploadController extends Controller
         MimeValidatorService $mimeValidator,
         UploadService $uploadService
     ) {
-        $this->middleware('auth');
         $this->mimeValidator = $mimeValidator;
         $this->uploadService = $uploadService;
     }

@@ -15,7 +15,6 @@ class DocumentationController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth');
         $this->markdownConverter = new CommonMarkConverter([
             'html_input' => 'strip',
             'allow_unsafe_links' => false,

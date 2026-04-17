@@ -16,7 +16,6 @@ class SeoController extends Controller
 
     public function __construct(SeoService $seoService)
     {
-        $this->middleware('auth');
         $this->seoService = $seoService;
     }
 
