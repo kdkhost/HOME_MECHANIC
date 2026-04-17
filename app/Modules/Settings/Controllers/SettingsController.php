@@ -16,7 +16,17 @@ class SettingsController extends Controller
         'site_description' => 'Oficina mecânica especializada em carros de luxo e tuning',
         'contact_email'    => 'contato@homemechanic.com.br',
         'contact_phone'    => '(11) 99999-9999',
-        'address'          => 'Av. das Supercars, 1500 — São Paulo, SP',
+        'whatsapp'         => '',
+        // Endereço separado
+        'address_cep'      => '',
+        'address_street'   => '',
+        'address_number'   => '',
+        'address_complement'=> '',
+        'address_district' => '',
+        'address_city'     => '',
+        'address_state'    => '',
+        // Campo legado (mantido para compatibilidade)
+        'address'          => '',
         'maintenance_mode' => '0',
         'analytics_enabled'=> '1',
         'timezone'         => 'America/Sao_Paulo',
@@ -69,7 +79,7 @@ class SettingsController extends Controller
     public function general()
     {
         $settings = $this->readSettings($this->generalDefaults, 'general');
-        return view('modules.settings.general', compact('settings'));
+        return view('modules.settings.index', compact('settings'));
     }
 
     public function seo()
@@ -132,21 +142,40 @@ class SettingsController extends Controller
     private function updateGeneral(Request $request): void
     {
         $request->validate([
-            'site_name'    => 'required|string|max:255',
-            'contact_email'=> 'nullable|email|max:255',
-            'contact_phone'=> 'nullable|string|max:30',
+            'site_name'     => 'required|string|max:255',
+            'contact_email' => 'nullable|email|max:255',
+            'contact_phone' => 'nullable|string|max:30',
+            'address_cep'   => 'nullable|string|max:10',
+        ]);
+
+        // Montar endereço completo para campo legado
+        $parts = array_filter([
+            $request->input('address_street'),
+            $request->input('address_number') ? ', ' . $request->input('address_number') : '',
+            $request->input('address_complement') ? ' - ' . $request->input('address_complement') : '',
+            $request->input('address_district') ? ', ' . $request->input('address_district') : '',
+            $request->input('address_city') ? ' — ' . $request->input('address_city') : '',
+            $request->input('address_state') ? '/' . $request->input('address_state') : '',
         ]);
 
         Setting::setMany([
-            'site_name'         => $request->input('site_name'),
-            'site_description'  => $request->input('site_description'),
-            'contact_email'     => $request->input('contact_email'),
-            'contact_phone'     => $request->input('contact_phone'),
-            'address'           => $request->input('address'),
-            'maintenance_mode'  => $request->boolean('maintenance_mode') ? '1' : '0',
-            'analytics_enabled' => $request->boolean('analytics_enabled') ? '1' : '0',
-            'timezone'          => $request->input('timezone', 'America/Sao_Paulo'),
-            'language'          => $request->input('language', 'pt_BR'),
+            'site_name'          => $request->input('site_name'),
+            'site_description'   => $request->input('site_description'),
+            'contact_email'      => $request->input('contact_email'),
+            'contact_phone'      => $request->input('contact_phone'),
+            'whatsapp'           => $request->input('whatsapp'),
+            'address_cep'        => preg_replace('/\D/', '', $request->input('address_cep', '')),
+            'address_street'     => $request->input('address_street'),
+            'address_number'     => $request->input('address_number'),
+            'address_complement' => $request->input('address_complement'),
+            'address_district'   => $request->input('address_district'),
+            'address_city'       => $request->input('address_city'),
+            'address_state'      => $request->input('address_state'),
+            'address'            => implode('', $parts),
+            'maintenance_mode'   => $request->boolean('maintenance_mode') ? '1' : '0',
+            'analytics_enabled'  => $request->boolean('analytics_enabled') ? '1' : '0',
+            'timezone'           => $request->input('timezone', 'America/Sao_Paulo'),
+            'language'           => $request->input('language', 'pt_BR'),
         ], 'general');
     }
 
