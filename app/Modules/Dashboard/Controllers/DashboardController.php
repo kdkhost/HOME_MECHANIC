@@ -45,18 +45,17 @@ class DashboardController extends Controller
      */
     public function getQuickStats(Request $request)
     {
-        $stats = Cache::remember('quick_stats', 60, function () {
-            $visits = $this->getVisitStats();
-            return [
-                'services_count'  => $this->getServicesCount(),
-                'posts_published' => $this->getPublishedPostsCount(),
-                'gallery_photos'  => $this->getGalleryPhotosCount(),
-                'unread_messages' => $this->getUnreadMessagesCount(),
-                'visits_today'    => $visits['today'],
-                'online_now'      => $visits['online'],
-            ];
-        });
-        return response()->json($stats);
+        $visits = $this->getVisitStats();
+        return response()->json([
+            'services_count'  => $this->getServicesCount(),
+            'posts_published' => $this->getPublishedPostsCount(),
+            'gallery_photos'  => $this->getGalleryPhotosCount(),
+            'unread_messages' => $this->getUnreadMessagesCount(),
+            'total_messages'  => $this->getTotalMessagesCount(),
+            'visits_today'    => $visits['today'],
+            'visits_month'    => $visits['month'],
+            'online_now'      => $visits['online'],
+        ]);
     }
 
     /**

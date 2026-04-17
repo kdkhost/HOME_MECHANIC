@@ -503,17 +503,24 @@ function refreshDashboard() {
     if (btn)  btn.disabled = true;
 
     $.ajax({
-        url: '{{ route("admin.dashboard.data") }}',
+        url: '{{ route("admin.dashboard.quick-stats") }}',
         method: 'GET',
         success: function(res) {
-            if (res.success) {
-                var c = res.data.counters;
-                $('#kpi-services').text(c.services);
-                $('#kpi-posts').text(c.posts_published);
-                $('#kpi-photos').text(c.gallery_photos);
-                $('#kpi-messages').text(c.unread_messages);
-                HMToast.success('Dashboard atualizado!', 2500);
+            // KPI cards
+            $('#kpi-services').text(res.services_count  ?? 0);
+            $('#kpi-posts').text(res.posts_published     ?? 0);
+            $('#kpi-photos').text(res.gallery_photos     ?? 0);
+            $('#kpi-messages').text(res.unread_messages  ?? 0);
+            // Mini stats
+            if (res.visits_today  !== undefined) $('#kpi-visits-today').text(res.visits_today);
+            if (res.visits_month  !== undefined) $('#kpi-visits-month').text(res.visits_month);
+            if (res.online_now    !== undefined) $('#kpi-online').text(res.online_now);
+            if (res.total_messages !== undefined) {
+                // total messages mini stat (4th card)
+                document.querySelectorAll('.mini-stat .mini-stat-num')[3] &&
+                (document.querySelectorAll('.mini-stat .mini-stat-num')[3].textContent = res.total_messages);
             }
+            HMToast.success('Dashboard atualizado!', 2500);
         },
         error: function() { HMToast.error('Erro ao atualizar dashboard.'); },
         complete: function() {
