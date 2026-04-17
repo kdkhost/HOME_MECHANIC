@@ -191,13 +191,45 @@
 
             <!-- Map + WhatsApp -->
             <div class="col-lg-5" data-aos="fade-left">
-                <div class="map-wrap mb-4">
-                    <div class="map-placeholder">
-                        <i class="bi bi-geo-alt-fill"></i>
-                        <div style="font-family:var(--font-head); font-size:1.1rem; font-weight:600; color:var(--white); margin-bottom:0.5rem;">
-                            Av. das Supercars, 1500
+
+                {{-- Mapa Leaflet com endereço do admin --}}
+                @php
+                    $mapAddress = trim(implode(', ', array_filter([
+                        \App\Models\Setting::get('address_street',''),
+                        \App\Models\Setting::get('address_number',''),
+                        \App\Models\Setting::get('address_district',''),
+                        \App\Models\Setting::get('address_city',''),
+                        \App\Models\Setting::get('address_state',''),
+                        'Brasil'
+                    ])));
+                    $mapLabel1 = trim(implode(', ', array_filter([
+                        \App\Models\Setting::get('address_street',''),
+                        \App\Models\Setting::get('address_number',''),
+                    ]))) ?: ($siteSettings['address'] ?: 'Nossa Localização');
+                    $mapLabel2 = trim(implode(' — ', array_filter([
+                        \App\Models\Setting::get('address_district',''),
+                        \App\Models\Setting::get('address_city',''),
+                        \App\Models\Setting::get('address_state',''),
+                    ])));
+                    if (empty($mapAddress) || $mapAddress === 'Brasil') {
+                        $mapAddress = ($siteSettings['address'] ?? '') . ', Brasil';
+                    }
+                @endphp
+
+                <div style="border-radius:8px;overflow:hidden;border:1px solid rgba(255,107,0,0.2);margin-bottom:1.5rem;position:relative;">
+                    {{-- Leaflet CSS --}}
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
+
+                    <div id="frontendMap" style="width:100%;height:320px;background:#1a1a1a;"></div>
+
+                    {{-- Endereço overlay no topo do mapa --}}
+                    <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(10,10,10,0.92),transparent);padding:1rem 1.25rem;z-index:500;pointer-events:none;">
+                        <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:#fff;">
+                            {{ $mapLabel1 }}
                         </div>
-                        <div style="font-size:0.85rem;">Jardim Europa — São Paulo, SP</div>
+                        @if($mapLabel2)
+                        <div style="font-size:0.8rem;color:rgba(255,255,255,0.6);">{{ $mapLabel2 }}</div>
+                        @endif
                     </div>
                 </div>
 
@@ -230,7 +262,10 @@
 @endsection
 
 @section('scripts')
-@php $recaptchaKey = \App\Models\Setting::get('recaptcha_site_key',''); $recaptchaOn = \App\Models\Setting::get('recaptcha_enabled','0') === '1' && !empty($recaptchaKey); @endphp
+@php
+    $recaptchaKey = \App\Models\Setting::get('recaptcha_site_key','');
+    $recaptchaOn  = \App\Models\Setting::get('recaptcha_enabled','0') === '1' && !empty($recaptchaKey);
+@endphp
 @if($recaptchaOn)
 <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaKey }}"></script>
 <script>
@@ -238,10 +273,8 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     e.preventDefault();
     var form = this;
     var btn  = document.getElementById('submitBtn');
-
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-shield-check"></i> Verificando...';
-
     grecaptcha.ready(function() {
         grecaptcha.execute('{{ $recaptchaKey }}', { action: 'contact' }).then(function(token) {
             document.getElementById('recaptchaToken').value = token;
@@ -254,4 +287,70 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 });
 </script>
 @endif
+
+{{-- Leaflet Map --}}
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+(function() {
+    var address = {{ Js::from($mapAddress) }};
+    var label1  = {{ Js::from($mapLabel1) }};
+    var label2  = {{ Js::from($mapLabel2) }};
+
+    // Ícone personalizado laranja
+    var orangeIcon = L.divIcon({
+        html: '<div style="width:32px;height:32px;background:#FF6B00;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 12px rgba(255,107,0,0.6);"></div>',
+        iconSize:   [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor:[0, -36],
+        className:  '',
+    });
+
+    function initMap(lat, lng) {
+        var map = L.map('frontendMap', {
+            center:          [lat, lng],
+            zoom:            16,
+            zoomControl:     true,
+            scrollWheelZoom: false,
+            attributionControl: false,
+        });
+
+        // Tile escuro (compatível com o design dark)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Atribuição discreta
+        L.control.attribution({ prefix: false })
+            .addAttribution('© <a href="https://carto.com" style="color:#FF6B00;">CARTO</a> | © <a href="https://www.openstreetmap.org/copyright" style="color:#FF6B00;">OSM</a>')
+            .addTo(map);
+
+        var popup = '<div style="font-family:\'Rajdhani\',sans-serif;min-width:160px;text-align:center;">' +
+                    '<strong style="font-size:1rem;color:#FF6B00;">' + label1 + '</strong>' +
+                    (label2 ? '<br><span style="font-size:0.82rem;color:#555;">' + label2 + '</span>' : '') +
+                    '</div>';
+
+        L.marker([lat, lng], { icon: orangeIcon })
+            .addTo(map)
+            .bindPopup(popup, { maxWidth: 220 })
+            .openPopup();
+    }
+
+    // Geocodificar via Nominatim
+    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(address), {
+        headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'HomeMechanic/1.0' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(results) {
+        if (results && results.length > 0) {
+            initMap(parseFloat(results[0].lat), parseFloat(results[0].lon));
+        } else {
+            // Fallback: São Paulo centro
+            initMap(-23.5505, -46.6333);
+        }
+    })
+    .catch(function() {
+        initMap(-23.5505, -46.6333);
+    });
+})();
+</script>
 @endsection
