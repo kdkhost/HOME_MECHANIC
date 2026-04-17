@@ -208,6 +208,10 @@ class InstallerService
             // 5.1. Reconectar ao banco de dados com as novas configurações
             $this->safeLog('info', 'Etapa 5.1: Reconectando ao banco de dados');
             
+            // Limpar TODOS os caches de configuração
+            Artisan::call('config:clear');
+            Artisan::call('cache:clear');
+            
             // Configurar conexão com banco dinamicamente
             config([
                 'database.connections.mysql.host' => $data['database']['host'],
@@ -219,20 +223,77 @@ class InstallerService
                 'database.connections.mysql.collation' => 'utf8mb4_unicode_ci',
             ]);
             
-            DB::purge('mysql'); // Limpar conexão antiga
-            DB::reconnect('mysql'); // Reconectar com novo .env
+            // Log da configuração
+            $this->safeLog('info', 'Configuração do banco atualizada', [
+                'host' => $data['database']['host'],
+                'port' => $data['database']['port'],
+                'database' => $data['database']['name'],
+                'username' => $data['database']['username']
+            ]);
+            
+            // Forçar desconexão e reconexão
+            DB::disconnect('mysql');
+            DB::purge('mysql');
+            
+            // Aguardar um momento
+            usleep(500000); // 0.5 segundos
+            
+            // Reconectar
+            DB::reconnect('mysql');
             
             // Testar conexão
             try {
-                DB::connection()->getPdo();
+                $pdo = DB::connection()->getPdo();
                 $dbName = DB::connection()->getDatabaseName();
-                $this->safeLog('info', 'Conexão com banco de dados estabelecida', ['database' => $dbName]);
+                
+                // Verificar se o banco está correto
+                if ($dbName !== $data['database']['name']) {
+                    throw new \Exception("Conectado ao banco errado: {$dbName} (esperado: {$data['database']['name']})");
+                }
+                
+                $this->safeLog('info', 'Conexão com banco de dados estabelecida', [
+                    'database' => $dbName,
+                    'connection_name' => DB::connection()->getName()
+                ]);
             } catch (\Exception $e) {
+                $this->safeLog('error', 'Falha ao conectar ao banco', [
+                    'error' => $e->getMessage(),
+                    'config_database' => config('database.connections.mysql.database'),
+                    'expected_database' => $data['database']['name']
+                ]);
                 throw new \Exception('Falha ao conectar ao banco após criar .env: ' . $e->getMessage());
             }
 
             // 6. Executar migrations
             $this->safeLog('info', 'Etapa 6: Executando migrations');
+            
+            // FORÇAR seleção do banco de dados via SQL direto
+            try {
+                $dbName = $data['database']['name'];
+                
+                // Executar USE database diretamente
+                DB::statement("USE `{$dbName}`");
+                
+                // Verificar se funcionou
+                $result = DB::select("SELECT DATABASE() as db");
+                $currentDb = $result[0]->db ?? null;
+                
+                $this->safeLog('info', 'Banco selecionado via USE statement', [
+                    'database' => $currentDb,
+                    'expected' => $dbName
+                ]);
+                
+                if ($currentDb !== $dbName) {
+                    throw new \Exception("Falha ao selecionar banco. Atual: {$currentDb}, Esperado: {$dbName}");
+                }
+            } catch (\Exception $e) {
+                $this->safeLog('error', 'Erro ao selecionar banco de dados', [
+                    'error' => $e->getMessage(),
+                    'database' => $data['database']['name']
+                ]);
+                throw new \Exception('Erro ao selecionar banco de dados: ' . $e->getMessage());
+            }
+            
             $migrateResult = Artisan::call('migrate', ['--force' => true]);
             if ($migrateResult !== 0) {
                 throw new \Exception('Falha ao executar migrations');
