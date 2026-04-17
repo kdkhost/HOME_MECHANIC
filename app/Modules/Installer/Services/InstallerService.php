@@ -215,6 +215,8 @@ class InstallerService
                 'database.connections.mysql.database' => $data['database']['name'],
                 'database.connections.mysql.username' => $data['database']['username'],
                 'database.connections.mysql.password' => $data['database']['password'],
+                'database.connections.mysql.charset' => 'utf8mb4',
+                'database.connections.mysql.collation' => 'utf8mb4_unicode_ci',
             ]);
             
             DB::purge('mysql'); // Limpar conexão antiga
@@ -576,6 +578,8 @@ DB_PORT={$dbPort}
 DB_DATABASE={$dbName}
 DB_USERNAME={$dbUsername}
 DB_PASSWORD={$dbPassword}
+DB_CHARSET=utf8mb4
+DB_COLLATION=utf8mb4_unicode_ci
 
 SESSION_DRIVER=database
 SESSION_LIFETIME=120
