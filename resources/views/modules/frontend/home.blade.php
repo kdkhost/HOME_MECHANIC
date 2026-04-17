@@ -20,9 +20,9 @@
 }
 .hero-badge {
     display: inline-flex; align-items: center; gap: 0.5rem;
-    background: rgba(201,168,76,0.12);
-    border: 1px solid rgba(201,168,76,0.3);
-    color: var(--gold); font-size: 0.75rem;
+    background: rgba(255,107,0,0.12);
+    border: 1px solid rgba(255,107,0,0.3);
+    color: var(--orange); font-size: 0.75rem;
     font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
     padding: 0.4rem 1rem; border-radius: 2px;
     margin-bottom: 1.5rem;
@@ -33,7 +33,7 @@
     font-weight: 700; line-height: 1;
     color: var(--white); margin-bottom: 1.5rem;
 }
-.hero-title .line-gold { color: var(--gold); display: block; }
+.hero-title .line-orange { color: var(--orange); display: block; }
 .hero-sub {
     color: rgba(255,255,255,0.6);
     font-size: 1.05rem; line-height: 1.8;
@@ -47,7 +47,7 @@
 .hero-stat-num {
     font-family: var(--font-head);
     font-size: 2.2rem; font-weight: 700;
-    color: var(--gold); line-height: 1;
+    color: var(--orange); line-height: 1;
 }
 .hero-stat-label {
     font-size: 0.75rem; color: var(--gray);
@@ -61,7 +61,7 @@
     color: var(--gray); font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase;
     animation: bounce 2s infinite;
 }
-.hero-scroll i { font-size: 1.2rem; color: var(--gold); }
+.hero-scroll i { font-size: 1.2rem; color: var(--orange); }
 @keyframes bounce {
     0%,100% { transform: translateX(-50%) translateY(0); }
     50%      { transform: translateX(-50%) translateY(8px); }
@@ -70,8 +70,8 @@
 /* ── Brands ────────────────────────────────────────────────── */
 .brands-bar {
     background: var(--dark2);
-    border-top: 1px solid rgba(201,168,76,0.1);
-    border-bottom: 1px solid rgba(201,168,76,0.1);
+    border-top: 1px solid rgba(255,107,0,0.1);
+    border-bottom: 1px solid rgba(255,107,0,0.1);
     padding: 1.5rem 0;
     overflow: hidden;
 }
@@ -88,7 +88,7 @@
     flex-shrink: 0;
     transition: var(--transition);
 }
-.brands-track span:hover { color: var(--gold); }
+.brands-track span:hover { color: var(--orange); }
 @keyframes marquee {
     0%   { transform: translateX(0); }
     100% { transform: translateX(-50%); }
@@ -105,7 +105,7 @@
 }
 .about-badge {
     position: absolute; bottom: -1.5rem; right: -1.5rem;
-    background: var(--gold);
+    background: var(--orange);
     color: var(--black);
     padding: 1.5rem 2rem;
     border-radius: 4px;
@@ -124,13 +124,13 @@
     border-radius: 4px;
     transition: var(--transition);
 }
-.about-feature:hover { border-color: rgba(201,168,76,0.3); }
+.about-feature:hover { border-color: rgba(255,107,0,0.3); }
 .about-feature-icon {
     width: 44px; height: 44px; flex-shrink: 0;
-    background: rgba(201,168,76,0.1);
+    background: rgba(255,107,0,0.1);
     border-radius: 4px;
     display: flex; align-items: center; justify-content: center;
-    color: var(--gold); font-size: 1.2rem;
+    color: var(--orange); font-size: 1.2rem;
 }
 .about-feature-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; }
 .about-feature-text  { color: var(--gray); font-size: 0.82rem; margin: 0; }
@@ -146,7 +146,7 @@
     height: 100%;
 }
 .service-card:hover {
-    border-color: rgba(201,168,76,0.4);
+    border-color: rgba(255,107,0,0.4);
     transform: translateY(-6px);
     box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
@@ -161,10 +161,10 @@
 .service-body { padding: 1.5rem; }
 .service-icon {
     width: 48px; height: 48px;
-    background: rgba(201,168,76,0.1);
+    background: rgba(255,107,0,0.1);
     border-radius: 4px;
     display: flex; align-items: center; justify-content: center;
-    color: var(--gold); font-size: 1.3rem;
+    color: var(--orange); font-size: 1.3rem;
     margin-bottom: 1rem;
 }
 .service-title {
@@ -175,12 +175,12 @@
 .service-text { color: var(--gray); font-size: 0.88rem; line-height: 1.7; margin: 0; }
 .service-link {
     display: inline-flex; align-items: center; gap: 0.4rem;
-    color: var(--gold); font-size: 0.8rem; font-weight: 600;
+    color: var(--orange); font-size: 0.8rem; font-weight: 600;
     letter-spacing: 1px; text-transform: uppercase;
     margin-top: 1.25rem;
     transition: var(--transition);
 }
-.service-link:hover { gap: 0.75rem; color: var(--gold-light); }
+.service-link:hover { gap: 0.75rem; color: var(--orange-light); }
 
 /* ── Gallery preview ───────────────────────────────────────── */
 .gallery-grid {
@@ -225,8 +225,8 @@
     height: 100%;
     transition: var(--transition);
 }
-.testimonial-card:hover { border-color: rgba(201,168,76,0.3); }
-.testimonial-stars { color: var(--gold); font-size: 0.9rem; margin-bottom: 1rem; }
+.testimonial-card:hover { border-color: rgba(255,107,0,0.3); }
+.testimonial-stars { color: var(--orange); font-size: 0.9rem; margin-bottom: 1rem; }
 .testimonial-text {
     color: rgba(255,255,255,0.75);
     font-size: 0.92rem; line-height: 1.8;
@@ -235,13 +235,13 @@
 .testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
 .testimonial-avatar {
     width: 44px; height: 44px; border-radius: 50%;
-    background: var(--gold); color: var(--black);
+    background: var(--orange); color: var(--black);
     display: flex; align-items: center; justify-content: center;
     font-family: var(--font-head); font-size: 1.1rem; font-weight: 700;
     flex-shrink: 0;
 }
 .testimonial-name { font-weight: 600; font-size: 0.9rem; }
-.testimonial-car  { color: var(--gold); font-size: 0.78rem; }
+.testimonial-car  { color: var(--orange); font-size: 0.78rem; }
 
 /* ── CTA ───────────────────────────────────────────────────── */
 .cta-section {
@@ -257,7 +257,7 @@
     font-weight: 700; color: var(--white);
     margin-bottom: 1rem;
 }
-.cta-title span { color: var(--gold); }
+.cta-title span { color: var(--orange); }
 </style>
 @endsection
 
@@ -275,7 +275,7 @@
                 </div>
                 <h1 class="hero-title">
                     PERFORMANCE
-                    <span class="line-gold">SEM LIMITES</span>
+                    <span class="line-orange">SEM LIMITES</span>
                 </h1>
                 <p class="hero-sub">
                     Transformamos supercars em obras de arte mecânica. 
@@ -283,10 +283,10 @@
                     estética premium para os carros mais exclusivos do mundo.
                 </p>
                 <div class="d-flex flex-wrap gap-3">
-                    <a href="{{ route('contact') }}" class="btn-gold">
+                    <a href="{{ route('contact') }}" class="btn-orange">
                         <i class="bi bi-calendar-check"></i> Agendar Visita
                     </a>
-                    <a href="{{ route('services') }}" class="btn-outline-gold">
+                    <a href="{{ route('services') }}" class="btn-outline-orange">
                         <i class="bi bi-grid"></i> Nossos Serviços
                     </a>
                 </div>
@@ -347,7 +347,7 @@
                 <h2 class="section-title mb-3">
                     A Oficina Que <span>Entende</span><br>Seu Supercar
                 </h2>
-                <div class="divider-gold"></div>
+                <div class="divider-orange"></div>
                 <p class="section-sub mb-4">
                     Fundada por apaixonados por automóveis de alto desempenho, a HomeMechanic 
                     é referência nacional em tuning e manutenção de supercars. Nossa equipe 
@@ -403,10 +403,10 @@
             <div class="col-lg-6" data-aos="fade-up">
                 <div class="section-label">O Que Fazemos</div>
                 <h2 class="section-title">Serviços <span>Premium</span></h2>
-                <div class="divider-gold"></div>
+                <div class="divider-orange"></div>
             </div>
             <div class="col-lg-6 d-flex align-items-end justify-content-lg-end" data-aos="fade-up" data-aos-delay="100">
-                <a href="{{ route('services') }}" class="btn-outline-gold">
+                <a href="{{ route('services') }}" class="btn-outline-orange">
                     Ver Todos os Serviços <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
@@ -448,10 +448,10 @@
             <div class="col-lg-6" data-aos="fade-up">
                 <div class="section-label">Nosso Trabalho</div>
                 <h2 class="section-title">Galeria de <span>Projetos</span></h2>
-                <div class="divider-gold"></div>
+                <div class="divider-orange"></div>
             </div>
             <div class="col-lg-6 text-lg-end" data-aos="fade-up" data-aos-delay="100">
-                <a href="{{ route('gallery') }}" class="btn-outline-gold">
+                <a href="{{ route('gallery') }}" class="btn-outline-orange">
                     Ver Galeria Completa <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
@@ -487,7 +487,7 @@
         <div class="text-center mb-5" data-aos="fade-up">
             <div class="section-label justify-content-center">Depoimentos</div>
             <h2 class="section-title">O Que Nossos <span>Clientes</span> Dizem</h2>
-            <div class="divider-gold mx-auto"></div>
+            <div class="divider-orange mx-auto"></div>
         </div>
         <div class="row g-4">
             @php
@@ -529,10 +529,10 @@
             Atendimento personalizado e orçamento sem compromisso.
         </p>
         <div class="d-flex flex-wrap gap-3 justify-content-center">
-            <a href="{{ route('contact') }}" class="btn-gold">
+            <a href="{{ route('contact') }}" class="btn-orange">
                 <i class="bi bi-calendar-check"></i> Agendar Agora
             </a>
-            <a href="https://wa.me/5511999999999" class="btn-outline-gold" target="_blank">
+            <a href="https://wa.me/5511999999999" class="btn-outline-orange" target="_blank">
                 <i class="bi bi-whatsapp"></i> WhatsApp
             </a>
         </div>

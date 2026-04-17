@@ -19,7 +19,7 @@
     border-radius: 4px; overflow: hidden;
     transition: var(--transition);
 }
-.service-full-card:hover { border-color: rgba(201,168,76,0.35); }
+.service-full-card:hover { border-color: rgba(255,107,0,0.35); }
 .service-full-img {
     width: 100%; height: 300px;
     object-fit: cover; filter: brightness(0.8);
@@ -30,10 +30,10 @@
 .service-full-body { padding: 2rem; }
 .service-full-icon {
     width: 52px; height: 52px;
-    background: rgba(201,168,76,0.12);
+    background: rgba(255,107,0,0.12);
     border-radius: 4px;
     display: flex; align-items: center; justify-content: center;
-    color: var(--gold); font-size: 1.4rem;
+    color: var(--orange); font-size: 1.4rem;
     margin-bottom: 1.25rem;
 }
 .service-full-title {
@@ -50,12 +50,12 @@
     border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .service-feature-list li:last-child { border-bottom: none; }
-.service-feature-list li i { color: var(--gold); font-size: 0.75rem; }
+.service-feature-list li i { color: var(--orange); font-size: 0.75rem; }
 .price-badge {
     display: inline-block;
-    background: rgba(201,168,76,0.12);
-    border: 1px solid rgba(201,168,76,0.3);
-    color: var(--gold); font-size: 0.78rem;
+    background: rgba(255,107,0,0.12);
+    border: 1px solid rgba(255,107,0,0.3);
+    color: var(--orange); font-size: 0.78rem;
     font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
     padding: 0.3rem 0.85rem; border-radius: 2px;
     margin-top: 1.25rem;
@@ -69,7 +69,7 @@
     <div class="container">
         <div class="section-label">O Que Fazemos</div>
         <h1 class="section-title">Serviços <span>Premium</span></h1>
-        <div class="divider-gold"></div>
+        <div class="divider-orange"></div>
         <p class="section-sub">Cada serviço é executado com precisão cirúrgica por especialistas certificados.</p>
     </div>
 </div>
@@ -155,7 +155,7 @@
 
         <div class="text-center mt-5" data-aos="fade-up">
             <p style="color:var(--gray); margin-bottom:1.5rem;">Precisa de um serviço personalizado? Entre em contato para um orçamento exclusivo.</p>
-            <a href="{{ route('contact') }}" class="btn-gold">
+            <a href="{{ route('contact') }}" class="btn-orange">
                 <i class="bi bi-calendar-check"></i> Solicitar Orçamento
             </a>
         </div>

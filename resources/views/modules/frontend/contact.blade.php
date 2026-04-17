@@ -15,13 +15,13 @@
     border-radius: 4px; padding: 2rem;
     height: 100%; transition: var(--transition);
 }
-.contact-info-card:hover { border-color: rgba(201,168,76,0.3); }
+.contact-info-card:hover { border-color: rgba(255,107,0,0.3); }
 .contact-info-icon {
     width: 52px; height: 52px;
-    background: rgba(201,168,76,0.1);
+    background: rgba(255,107,0,0.1);
     border-radius: 4px;
     display: flex; align-items: center; justify-content: center;
-    color: var(--gold); font-size: 1.4rem;
+    color: var(--orange); font-size: 1.4rem;
     margin-bottom: 1.25rem;
 }
 .contact-info-title { font-weight: 600; font-size: 0.9rem; color: var(--white); margin-bottom: 0.5rem; }
@@ -46,8 +46,8 @@
     transition: var(--transition) !important;
 }
 .form-control-custom:focus {
-    border-color: rgba(201,168,76,0.5) !important;
-    box-shadow: 0 0 0 3px rgba(201,168,76,0.1) !important;
+    border-color: rgba(255,107,0,0.5) !important;
+    box-shadow: 0 0 0 3px rgba(255,107,0,0.1) !important;
     outline: none !important;
 }
 .form-control-custom::placeholder { color: rgba(255,255,255,0.25) !important; }
@@ -61,7 +61,7 @@
 .map-placeholder {
     text-align: center; color: var(--gray);
 }
-.map-placeholder i { font-size: 3rem; color: var(--gold); margin-bottom: 1rem; display: block; }
+.map-placeholder i { font-size: 3rem; color: var(--orange); margin-bottom: 1rem; display: block; }
 </style>
 @endsection
 
@@ -70,7 +70,7 @@
     <div class="container">
         <div class="section-label">Fale Conosco</div>
         <h1 class="section-title">Entre em <span>Contato</span></h1>
-        <div class="divider-gold"></div>
+        <div class="divider-orange"></div>
         <p class="section-sub">Agende uma visita ou solicite um orçamento sem compromisso.</p>
     </div>
 </div>
@@ -104,7 +104,7 @@
             <div class="col-lg-7" data-aos="fade-right">
                 <div class="contact-form-wrap">
                     <h3 style="font-family:var(--font-head); font-size:1.8rem; font-weight:700; margin-bottom:0.5rem;">
-                        Solicite um <span style="color:var(--gold);">Orçamento</span>
+                        Solicite um <span style="color:var(--orange);">Orçamento</span>
                     </h3>
                     <p style="color:var(--gray); font-size:0.88rem; margin-bottom:2rem;">
                         Preencha o formulário e nossa equipe entrará em contato em até 2 horas úteis.
@@ -156,7 +156,7 @@
                                 @error('message')<div style="color:#ea868f;font-size:0.78rem;margin-top:0.25rem;">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">
-                                <button type="submit" class="btn-gold w-100" style="justify-content:center;">
+                                <button type="submit" class="btn-orange w-100" style="justify-content:center;">
                                     <i class="bi bi-send-fill"></i> Enviar Mensagem
                                 </button>
                             </div>
@@ -179,16 +179,16 @@
 
                 <div style="background:var(--dark2); border:1px solid rgba(255,255,255,0.06); border-radius:4px; padding:2rem;">
                     <h4 style="font-family:var(--font-head); font-size:1.3rem; font-weight:700; margin-bottom:0.5rem;">
-                        Atendimento <span style="color:var(--gold);">Imediato</span>
+                        Atendimento <span style="color:var(--orange);">Imediato</span>
                     </h4>
                     <p style="color:var(--gray); font-size:0.88rem; margin-bottom:1.5rem;">
                         Para respostas rápidas, fale diretamente com nossa equipe pelo WhatsApp.
                     </p>
-                    <a href="https://wa.me/5511999999999" target="_blank" class="btn-gold w-100" style="justify-content:center; background:linear-gradient(135deg,#128C7E,#25D366);">
+                    <a href="https://wa.me/5511999999999" target="_blank" class="btn-orange w-100" style="justify-content:center; background:linear-gradient(135deg,#128C7E,#25D366);">
                         <i class="bi bi-whatsapp"></i> Chamar no WhatsApp
                     </a>
                     <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.06);">
-                        <div style="font-size:0.75rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:0.75rem;">
+                        <div style="font-size:0.75rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--orange); margin-bottom:0.75rem;">
                             Redes Sociais
                         </div>
                         <div class="social-links">

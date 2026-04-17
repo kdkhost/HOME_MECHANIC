@@ -21,7 +21,7 @@
     cursor: pointer; transition: var(--transition);
 }
 .filter-btn:hover, .filter-btn.active {
-    background: var(--gold); color: var(--black); border-color: var(--gold);
+    background: var(--orange); color: var(--black); border-color: var(--orange);
 }
 .gallery-masonry {
     columns: 3; column-gap: 8px;
@@ -51,11 +51,11 @@
     font-family: var(--font-head); font-size: 1.1rem; font-weight: 700;
     color: var(--white); margin-bottom: 0.2rem;
 }
-.gallery-overlay-sub { color: var(--gold); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; }
+.gallery-overlay-sub { color: var(--orange); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; }
 .gallery-zoom {
     position: absolute; top: 1rem; right: 1rem;
     width: 36px; height: 36px;
-    background: rgba(201,168,76,0.9); color: var(--black);
+    background: rgba(255,107,0,0.9); color: var(--black);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
     opacity: 0; transition: var(--transition);
 }
@@ -64,7 +64,7 @@
 .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9000; align-items:center; justify-content:center; }
 .lightbox.open { display:flex; }
 .lightbox img { max-width:90vw; max-height:90vh; border-radius:4px; }
-.lightbox-close { position:absolute; top:1.5rem; right:1.5rem; color:var(--gold); font-size:2rem; cursor:pointer; }
+.lightbox-close { position:absolute; top:1.5rem; right:1.5rem; color:var(--orange); font-size:2rem; cursor:pointer; }
 </style>
 @endsection
 
@@ -73,7 +73,7 @@
     <div class="container">
         <div class="section-label">Nosso Portfólio</div>
         <h1 class="section-title">Galeria de <span>Projetos</span></h1>
-        <div class="divider-gold"></div>
+        <div class="divider-orange"></div>
         <p class="section-sub">Cada projeto conta uma história de paixão, precisão e performance.</p>
     </div>
 </div>

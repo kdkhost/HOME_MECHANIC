@@ -15,14 +15,14 @@
     border-radius: 4px; overflow: hidden;
     transition: var(--transition); height: 100%;
 }
-.blog-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-4px); }
+.blog-card:hover { border-color: rgba(255,107,0,0.35); transform: translateY(-4px); }
 .blog-img { width:100%; height:220px; object-fit:cover; filter:brightness(0.8); transition:var(--transition); }
 .blog-card:hover .blog-img { filter:brightness(0.95); }
 .blog-img-wrap { overflow:hidden; }
 .blog-body { padding: 1.5rem; }
 .blog-cat {
     display: inline-block;
-    background: rgba(201,168,76,0.12); color: var(--gold);
+    background: rgba(255,107,0,0.12); color: var(--orange);
     font-size: 0.7rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
     padding: 0.25rem 0.75rem; border-radius: 2px; margin-bottom: 0.75rem;
 }
@@ -31,20 +31,20 @@
     color: var(--white); margin-bottom: 0.75rem; line-height: 1.3;
     transition: var(--transition);
 }
-.blog-card:hover .blog-title { color: var(--gold); }
+.blog-card:hover .blog-title { color: var(--orange); }
 .blog-excerpt { color: var(--gray); font-size: 0.88rem; line-height: 1.7; margin-bottom: 1.25rem; }
 .blog-meta { display:flex; align-items:center; gap:1rem; color:var(--gray); font-size:0.78rem; }
-.blog-meta i { color: var(--gold); }
+.blog-meta i { color: var(--orange); }
 .blog-read {
     display: inline-flex; align-items: center; gap: 0.4rem;
-    color: var(--gold); font-size: 0.78rem; font-weight: 600;
+    color: var(--orange); font-size: 0.78rem; font-weight: 600;
     letter-spacing: 1px; text-transform: uppercase;
     transition: var(--transition);
 }
-.blog-read:hover { gap: 0.75rem; color: var(--gold-light); }
+.blog-read:hover { gap: 0.75rem; color: var(--orange-light); }
 .blog-featured {
     background: var(--dark2);
-    border: 1px solid rgba(201,168,76,0.2);
+    border: 1px solid rgba(255,107,0,0.2);
     border-radius: 4px; overflow: hidden;
     margin-bottom: 3rem;
 }
@@ -58,7 +58,7 @@
     <div class="container">
         <div class="section-label">Conteúdo</div>
         <h1 class="section-title">Blog & <span>Notícias</span></h1>
-        <div class="divider-gold"></div>
+        <div class="divider-orange"></div>
         <p class="section-sub">Dicas, novidades e bastidores do mundo dos supercars.</p>
     </div>
 </div>
