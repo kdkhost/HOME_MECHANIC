@@ -54,41 +54,6 @@ body {
 
 /* ── Sidebar ──────────────────────────────────────────────── */
 
-/* Forçar sidebar sempre expandido (textos visíveis) */
-.sidebar-mini.layout-fixed .main-sidebar,
-.sidebar-mini .main-sidebar {
-    width: 250px !important;
-}
-.sidebar-mini .main-sidebar:hover,
-.sidebar-mini .main-sidebar {
-    overflow-y: auto !important;
-}
-/* Garantir que o content-wrapper respeite a largura do sidebar */
-.sidebar-mini.layout-fixed .content-wrapper,
-.sidebar-mini.layout-fixed .main-footer,
-.sidebar-mini.layout-fixed .main-header {
-    margin-left: 250px !important;
-}
-/* Quando colapsado pelo usuário (sidebar-collapse) */
-.sidebar-collapse.sidebar-mini .main-sidebar {
-    width: 4.6rem !important;
-}
-.sidebar-collapse.sidebar-mini .content-wrapper,
-.sidebar-collapse.sidebar-mini .main-footer,
-.sidebar-collapse.sidebar-mini .main-header {
-    margin-left: 4.6rem !important;
-}
-/* Textos e ícones sempre visíveis no estado expandido */
-.sidebar-mini .nav-sidebar .nav-link p,
-.sidebar-mini .brand-text,
-.sidebar-mini .user-panel .info,
-.sidebar-mini .nav-header {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: auto !important;
-}
-
 .main-sidebar {
     background: var(--hm-sidebar) !important;
     box-shadow: 2px 0 12px rgba(0,0,0,0.25) !important;

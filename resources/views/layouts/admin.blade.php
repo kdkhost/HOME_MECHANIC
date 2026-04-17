@@ -19,7 +19,7 @@
 
     @yield('styles')
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition layout-fixed">
 
 <!-- Preloader -->
 <div class="preloader flex-column justify-content-center align-items-center">
