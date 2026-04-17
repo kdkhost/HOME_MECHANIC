@@ -270,6 +270,190 @@
     .text-orange { color: var(--orange) !important; }
     .bg-dark2  { background: var(--dark2) !important; }
     .bg-dark3  { background: var(--dark3) !important; }
+
+    /* ── Mobile Drawer ─────────────────────────────────────── */
+    /* Overlay */
+    .drawer-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(4px);
+        z-index: 1998;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.35s ease;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+    /* Drawer panel */
+    .mobile-drawer {
+        position: fixed; top: 0; left: 0; bottom: 0;
+        width: 300px; max-width: 85vw;
+        background: var(--dark);
+        border-right: 1px solid rgba(255,107,0,0.15);
+        z-index: 1999;
+        transform: translateX(-100%);
+        transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex; flex-direction: column;
+        overflow-y: auto;
+    }
+    .mobile-drawer.open { transform: translateX(0); }
+
+    /* Drawer header */
+    .drawer-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        background: var(--dark2);
+        flex-shrink: 0;
+    }
+    .drawer-brand {
+        font-family: var(--font-head);
+        font-size: 1.4rem; font-weight: 700;
+        letter-spacing: 2px; color: var(--white);
+    }
+    .drawer-brand span { color: var(--orange); }
+    .drawer-close {
+        width: 36px; height: 36px;
+        background: rgba(255,255,255,0.06);
+        border: none; border-radius: 6px;
+        color: var(--white); font-size: 1.1rem;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: var(--transition);
+    }
+    .drawer-close:hover { background: rgba(255,107,0,0.2); color: var(--orange); }
+
+    /* Drawer nav links */
+    .drawer-nav { padding: 1rem 0; flex: 1; }
+    .drawer-nav a {
+        display: flex; align-items: center; gap: 1rem;
+        padding: 0.9rem 1.5rem;
+        color: rgba(255,255,255,0.7);
+        font-size: 0.95rem; font-weight: 500;
+        letter-spacing: 0.5px;
+        transition: var(--transition);
+        border-left: 3px solid transparent;
+        text-decoration: none;
+    }
+    .drawer-nav a i {
+        width: 20px; text-align: center;
+        color: var(--gray); font-size: 1rem;
+        transition: var(--transition);
+    }
+    .drawer-nav a:hover,
+    .drawer-nav a.active {
+        color: var(--white);
+        background: rgba(255,107,0,0.08);
+        border-left-color: var(--orange);
+    }
+    .drawer-nav a:hover i,
+    .drawer-nav a.active i { color: var(--orange); }
+    .drawer-nav a.active { font-weight: 600; }
+
+    /* Drawer CTA */
+    .drawer-cta {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        flex-shrink: 0;
+    }
+    .drawer-cta a {
+        display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+        background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+        color: var(--black) !important;
+        font-weight: 700; font-size: 0.88rem;
+        letter-spacing: 1.5px; text-transform: uppercase;
+        padding: 0.9rem; border-radius: 6px;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    .drawer-cta a:hover { box-shadow: 0 6px 20px rgba(255,107,0,0.4); transform: translateY(-1px); }
+
+    /* Drawer social */
+    .drawer-social {
+        padding: 1rem 1.5rem 1.5rem;
+        display: flex; gap: 0.6rem;
+        flex-shrink: 0;
+    }
+    .drawer-social a {
+        width: 36px; height: 36px;
+        border: 1px solid rgba(255,107,0,0.25);
+        border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--gray); font-size: 0.95rem;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+    .drawer-social a:hover { background: var(--orange); color: var(--black); border-color: var(--orange); }
+
+    /* Hamburguer button (mobile only) */
+    .btn-drawer {
+        display: none;
+        background: none; border: none;
+        color: var(--white); font-size: 1.5rem;
+        padding: 0.25rem 0.5rem;
+        cursor: pointer; transition: var(--transition);
+    }
+    .btn-drawer:hover { color: var(--orange); }
+    @media (max-width: 991px) {
+        .btn-drawer { display: flex; align-items: center; }
+        .navbar-collapse { display: none !important; } /* esconde o collapse padrão */
+    }
+
+    /* ── Bottom Nav (mobile footer) ────────────────────────── */
+    .bottom-nav {
+        display: none;
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: rgba(17,17,17,0.97);
+        backdrop-filter: blur(12px);
+        border-top: 1px solid rgba(255,107,0,0.15);
+        z-index: 990;
+        padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+    }
+    @media (max-width: 991px) { .bottom-nav { display: flex; } }
+
+    .bottom-nav-inner {
+        display: flex; width: 100%;
+        align-items: stretch;
+    }
+    .bottom-nav-item {
+        flex: 1;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 0.2rem;
+        padding: 0.4rem 0.25rem;
+        color: rgba(255,255,255,0.45);
+        font-size: 0.62rem; font-weight: 600;
+        letter-spacing: 0.5px; text-transform: uppercase;
+        text-decoration: none;
+        transition: var(--transition);
+        position: relative;
+    }
+    .bottom-nav-item i { font-size: 1.25rem; line-height: 1; }
+    .bottom-nav-item:hover,
+    .bottom-nav-item.active { color: var(--orange); }
+    .bottom-nav-item.active::before {
+        content: '';
+        position: absolute; top: 0; left: 25%; right: 25%;
+        height: 2px; background: var(--orange);
+        border-radius: 0 0 3px 3px;
+    }
+    /* CTA item especial */
+    .bottom-nav-item.cta {
+        color: var(--orange);
+    }
+    .bottom-nav-item.cta i {
+        background: var(--orange);
+        color: var(--black);
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 16px rgba(255,107,0,0.4);
+        margin-bottom: 0.1rem;
+    }
+
+    /* Espaço para o bottom nav não cobrir conteúdo */
+    @media (max-width: 991px) {
+        body { padding-bottom: 70px; }
+    }
     </style>
 
     @yield('styles')
@@ -282,16 +466,64 @@
     <div class="pre-bar"><span></span></div>
 </div>
 
-<!-- Navbar -->
+<!-- ── Drawer Overlay ──────────────────────────────────── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- ── Mobile Drawer ──────────────────────────────────── -->
+<div class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-header">
+        <div class="drawer-brand">HOME<span>MECHANIC</span></div>
+        <button class="drawer-close" onclick="closeDrawer()" aria-label="Fechar menu">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <nav class="drawer-nav">
+        <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">
+            <i class="bi bi-house-fill"></i> Início
+        </a>
+        <a href="{{ route('services') }}" class="{{ request()->routeIs('services') ? 'active' : '' }}">
+            <i class="bi bi-tools"></i> Serviços
+        </a>
+        <a href="{{ route('gallery') }}" class="{{ request()->routeIs('gallery') ? 'active' : '' }}">
+            <i class="bi bi-images"></i> Galeria
+        </a>
+        <a href="{{ route('blog') }}" class="{{ request()->routeIs('blog') ? 'active' : '' }}">
+            <i class="bi bi-newspaper"></i> Blog
+        </a>
+        <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">
+            <i class="bi bi-envelope-fill"></i> Contato
+        </a>
+    </nav>
+
+    <div class="drawer-cta">
+        <a href="{{ route('contact') }}">
+            <i class="bi bi-calendar-check-fill"></i> Solicitar Orçamento
+        </a>
+    </div>
+
+    <div class="drawer-social">
+        <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+        <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+        <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+        <a href="https://wa.me/5511999999999" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+    </div>
+</div>
+
+<!-- ── Navbar ──────────────────────────────────────────── -->
 <nav class="navbar navbar-expand-lg" id="navbar">
     <div class="container">
         <a class="navbar-brand nav-brand" href="{{ route('home') }}">
             <div class="brand-icon"><i class="bi bi-tools"></i></div>
             HOME<span>MECHANIC</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-            <span class="navbar-toggler-icon"></span>
+
+        {{-- Hamburguer mobile --}}
+        <button class="btn-drawer" id="btnDrawer" onclick="openDrawer()" aria-label="Abrir menu">
+            <i class="bi bi-list"></i>
         </button>
+
+        {{-- Menu desktop --}}
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
                 <li class="nav-item">
@@ -311,6 +543,32 @@
                 </li>
             </ul>
         </div>
+    </div>
+</nav>
+
+<!-- ── Bottom Nav (mobile) ─────────────────────────────── -->
+<nav class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav-inner">
+        <a href="{{ route('home') }}" class="bottom-nav-item {{ request()->routeIs('home') ? 'active' : '' }}">
+            <i class="bi bi-house-fill"></i>
+            <span>Início</span>
+        </a>
+        <a href="{{ route('services') }}" class="bottom-nav-item {{ request()->routeIs('services') ? 'active' : '' }}">
+            <i class="bi bi-tools"></i>
+            <span>Serviços</span>
+        </a>
+        <a href="{{ route('contact') }}" class="bottom-nav-item cta">
+            <i class="bi bi-calendar-check-fill"></i>
+            <span>Orçamento</span>
+        </a>
+        <a href="{{ route('gallery') }}" class="bottom-nav-item {{ request()->routeIs('gallery') ? 'active' : '' }}">
+            <i class="bi bi-images"></i>
+            <span>Galeria</span>
+        </a>
+        <a href="{{ route('blog') }}" class="bottom-nav-item {{ request()->routeIs('blog') ? 'active' : '' }}">
+            <i class="bi bi-newspaper"></i>
+            <span>Blog</span>
+        </a>
     </div>
 </nav>
 
@@ -379,20 +637,53 @@
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 
 <script>
-    // Preloader
+    // ── Preloader ─────────────────────────────────────────
     window.addEventListener('load', () => {
         const pre = document.getElementById('preloader');
         pre.classList.add('out');
         setTimeout(() => pre.style.display = 'none', 700);
     });
 
-    // Navbar scroll
+    // ── Navbar scroll ─────────────────────────────────────
     window.addEventListener('scroll', () => {
         document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
     });
 
-    // AOS
+    // ── AOS ───────────────────────────────────────────────
     AOS.init({ duration: 700, once: true, offset: 60 });
+
+    // ── Mobile Drawer ─────────────────────────────────────
+    function openDrawer() {
+        document.getElementById('mobileDrawer').classList.add('open');
+        document.getElementById('drawerOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+        document.getElementById('mobileDrawer').classList.remove('open');
+        document.getElementById('drawerOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    // Fechar com ESC
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+    // Fechar drawer ao clicar em link interno
+    document.querySelectorAll('.drawer-nav a, .drawer-cta a').forEach(a => {
+        a.addEventListener('click', () => {
+            if (a.getAttribute('href') && !a.getAttribute('href').startsWith('#')) {
+                closeDrawer();
+            }
+        });
+    });
+
+    // ── Swipe para fechar drawer ──────────────────────────
+    let touchStartX = 0;
+    document.getElementById('mobileDrawer').addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    document.getElementById('mobileDrawer').addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (diff > 60) closeDrawer(); // swipe left → fechar
+    }, { passive: true });
 </script>
 
 @yield('scripts')
