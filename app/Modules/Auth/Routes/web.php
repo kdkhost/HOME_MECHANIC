@@ -3,6 +3,11 @@
 use App\Modules\Auth\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
+// Redirecionar /admin para /admin/login
+Route::get('/admin', function () {
+    return redirect()->route('admin.login');
+});
+
 // Rotas de autenticação (sem middleware auth)
 Route::prefix('admin')->name('admin.')->group(function () {
     // Login
