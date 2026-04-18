@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
@@ -559,7 +559,7 @@
                 .then(data => {
                     if (data.authenticated) {
                         // Usuário já está logado, redirecionar
-                        window.location.href = '{{ route("admin.dashboard") }}';
+                        window.location.href = '{{ route("admin.dashboard.index") }}';
                     }
                 })
                 .catch(error => {
