@@ -84,13 +84,25 @@
                         </div>
                     </div>
 
-                    <div class="form-group" style="max-width:220px;">
-                        <label>Criptografia</label>
-                        <select class="form-control" name="mail_encryption" id="mail_encryption">
-                            <option value="tls" {{ ($settings['mail_encryption'] ?? 'tls') === 'tls' ? 'selected' : '' }}>TLS (porta 587)</option>
-                            <option value="ssl" {{ ($settings['mail_encryption'] ?? '') === 'ssl' ? 'selected' : '' }}>SSL (porta 465)</option>
-                            <option value=""    {{ ($settings['mail_encryption'] ?? '') === ''    ? 'selected' : '' }}>Nenhuma (porta 25)</option>
-                        </select>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-0">
+                                <label>Criptografia</label>
+                                <select class="form-control" name="mail_encryption" id="mail_encryption">
+                                    <option value="tls" {{ ($settings['mail_encryption'] ?? 'tls') === 'tls' ? 'selected' : '' }}>TLS (porta 587)</option>
+                                    <option value="ssl" {{ ($settings['mail_encryption'] ?? '') === 'ssl' ? 'selected' : '' }}>SSL (porta 465)</option>
+                                    <option value=""    {{ ($settings['mail_encryption'] ?? '') === ''    ? 'selected' : '' }}>Nenhuma (porta 25)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-4">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="mail_verify_peer" name="mail_verify_peer" value="1" 
+                                    {{ ($settings['mail_verify_peer'] ?? '1') === '0' ? '' : 'checked' }}>
+                                <label class="custom-control-label font-weight-bold" for="mail_verify_peer">Verificar Certificado SSL (Recomendado)</label>
+                                <small class="d-block text-muted">Desmarque apenas se houver erro de "Peer certificate mismatch" ou STARTTLS.</small>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -267,6 +279,7 @@ document.getElementById('btnTestSmtp').addEventListener('click', function() {
             mail_username:      document.getElementById('mail_username').value,
             mail_password:      document.getElementById('mail_password').value,
             mail_encryption:    document.getElementById('mail_encryption').value,
+            mail_verify_peer:   document.getElementById('mail_verify_peer').checked ? '1' : '0',
             mail_from_address:  document.getElementById('mail_from_address').value,
             mail_from_name:     document.getElementById('mail_from_name').value,
         },

@@ -21,6 +21,50 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerBladeDirectives();
+        $this->loadMailSettings();
+    }
+
+    /**
+     * Carregar configurações de e-mail do banco de dados e aplicar ao config.
+     */
+    private function loadMailSettings(): void
+    {
+        try {
+            // Só tenta carregar se a tabela de settings existir
+            if (!\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                return;
+            }
+
+            $settings = \App\Models\Setting::group('email');
+            
+            if (!empty($settings['mail_host'])) {
+                $config = [
+                    'mail.mailers.smtp.host'       => $settings['mail_host'],
+                    'mail.mailers.smtp.port'       => (int) ($settings['mail_port'] ?? 587),
+                    'mail.mailers.smtp.encryption' => $settings['mail_encryption'] ?? 'tls',
+                    'mail.mailers.smtp.username'   => $settings['mail_username'] ?? null,
+                    'mail.mailers.smtp.password'   => $settings['mail_password'] ?? null,
+                    'mail.from.address'            => $settings['mail_from_address'] ?? config('mail.from.address'),
+                    'mail.from.name'               => $settings['mail_from_name'] ?? config('mail.from.name'),
+                ];
+
+                // Check for SSL verification bypass
+                if (($settings['mail_verify_peer'] ?? '1') === '0') {
+                    $config['mail.mailers.smtp.stream'] = [
+                        'ssl' => [
+                            'allow_self_signed' => true,
+                            'verify_peer' => false,
+                            'verify_peer_name' => false,
+                        ],
+                    ];
+                }
+
+                config($config);
+            }
+        } catch (\Exception $e) {
+            // Silenciosamente falha para não quebrar a aplicação se o DB estiver fora
+            \Illuminate\Support\Facades\Log::warning('Não foi possível carregar as configurações de e-mail do banco: ' . $e->getMessage());
+        }
     }
 
     /**

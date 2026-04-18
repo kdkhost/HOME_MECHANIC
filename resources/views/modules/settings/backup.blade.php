@@ -144,6 +144,54 @@
             </div>
         </div>
 
+        <!-- 🛡️ Sistema de Backup Nativo -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-bottom py-3">
+                <span class="card-title font-weight-bold" style="color:var(--hm-primary);"><i class="fas fa-shield-alt me-2"></i>Backup do Sistema</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-12">
+                        <div class="p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                            <h5 class="font-weight-bold mb-2" style="font-size:1rem;">Gerar Novo Backup</h5>
+                            <p class="text-muted small mb-3">Recomendamos realizar backups periódicos do banco de dados e dos arquivos de upload.</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button onclick="runBackup('all')" class="btn btn-primary btn-sm px-3">
+                                    <i class="fas fa-archive me-1"></i> Backup Completo (BD + Arquivos)
+                                </button>
+                                <button onclick="runBackup('db')" class="btn btn-outline-primary btn-sm px-3">
+                                    <i class="fas fa-database me-1"></i> Apenas Banco de Dados
+                                </button>
+                                <button onclick="runBackup('files')" class="btn btn-outline-secondary btn-sm px-3">
+                                    <i class="fas fa-images me-1"></i> Apenas Arquivos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border" id="backupsTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Arquivo</th>
+                                <th>Tamanho</th>
+                                <th>Data de Criação</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backupsList">
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    <i class="fas fa-spinner fa-spin me-2"></i> Carregando backups...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Limpeza de Cache -->
         <div class="card">
             <div class="card-header">
@@ -307,73 +355,112 @@ window.clearCacheType = function(type) {
         });
     });
 };
-// ── IP Manager ───────────────────────────────────────────
-const ipInput = document.getElementById('ip_input');
-const ipTagsList = document.getElementById('ip-tags-list');
-const btnAddIp = document.getElementById('btnAddIp');
-const btnMyIp = document.getElementById('btnMyIp');
-const hiddenIpInput = document.getElementById('maintenance_ips');
-const currentIp = document.getElementById('my_current_ip').innerText.trim();
-
-let ips = hiddenIpInput.value ? hiddenIpInput.value.split(',').map(i => i.trim()).filter(Boolean) : [];
-
-function renderIpTags() {
-    ipTagsList.innerHTML = '';
-    ips.forEach(ip => {
-        const span = document.createElement('span');
-        span.className = 'ip-tag';
-        span.innerHTML = `${ip} <i class="fas fa-times remove-ip" onclick="removeIp('${ip}')" title="Remover IP"></i>`;
-        ipTagsList.appendChild(span);
+// ── Backup Manager ───────────────────────────────────────
+function loadBackups() {
+    const list = document.getElementById('backupsList');
+    $.ajax({
+        url: '{{ route("admin.settings.backup.run") }}'.replace('run', 'list'),
+        method: 'GET',
+        success(res) {
+            if (!res.success || !res.data.length) {
+                list.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">Nenhum backup encontrado.</td></tr>';
+                return;
+            }
+            list.innerHTML = res.data.map(b => `
+                <tr>
+                    <td><i class="fas fa-file-archive me-2 text-primary"></i> <strong>${b.name}</strong></td>
+                    <td><span class="badge bg-light text-dark border">${b.size}</span></td>
+                    <td>${b.date}</td>
+                    <td class="text-end">
+                        <div class="btn-group">
+                            <a href="${b.url}" class="btn btn-sm btn-outline-success" title="Download">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <button onclick="deleteBackup('${b.name}')" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        },
+        error() {
+            list.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Erro ao carregar lista de backups.</td></tr>';
+        }
     });
-    hiddenIpInput.value = ips.join(',');
 }
 
-window.removeIp = function(ip) {
-    ips = ips.filter(i => i !== ip);
-    renderIpTags();
+function runBackup(type) {
+    const labels = { all: 'Completo', db: 'Banco de Dados', files: 'Arquivos' };
+    Swal.fire({
+        title: `Gerar Backup ${labels[type]}?`,
+        html: '<div style="font-size:0.88rem;color:#64748b;">Dependendo do tamanho do seu site, isso pode levar alguns segundos.</div>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: 'var(--hm-primary)',
+        confirmButtonText: '<i class="fas fa-play me-1"></i> Iniciar',
+        cancelButtonText: 'Cancelar'
+    }).then(r => {
+        if (!r.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Gerando Backup...',
+            html: 'Aguarde um momento, estamos compactando os dados.',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        $.ajax({
+            url: '{{ route("admin.settings.backup.run") }}',
+            method: 'POST',
+            data: JSON.stringify({ type }),
+            contentType: 'application/json',
+            success(res) {
+                Swal.close();
+                if (res.success) {
+                    Swal.fire('✅ Pronto!', res.message, 'success');
+                    loadBackups();
+                } else {
+                    Swal.fire('❌ Erro', res.message, 'error');
+                }
+            },
+            error(xhr) {
+                Swal.close();
+                Swal.fire('❌ Erro Fatal', xhr.responseJSON?.message || 'Erro inesperado na geração do backup.', 'error');
+            }
+        });
+    });
 }
 
-function processAddIp(ipVal) {
-    // Regex pra IPv4 ou CIDR simples ou ranges
-    const ipRegex = /^[0-9\.\-\/\*]+$/;
-    if (!ipVal || !ipRegex.test(ipVal)) {
-        HMToast.warning("Formato de IP ou faixa inválido!");
-        return;
-    }
-    if (ips.includes(ipVal)) {
-        HMToast.warning("Este IP já está na lista!");
-        return;
-    }
-    ips.push(ipVal);
-    renderIpTags();
-    ipInput.value = '';
-    HMToast.success("IP adicionado!");
+function deleteBackup(file) {
+    Swal.fire({
+        title: 'Excluir Backup?',
+        text: `Arquivo: ${file}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Sim, excluir',
+        cancelButtonText: 'Cancelar'
+    }).then(r => {
+        if (!r.isConfirmed) return;
+
+        $.ajax({
+            url: '{{ route("admin.settings.backup.delete") }}',
+            method: 'DELETE',
+            data: JSON.stringify({ file }),
+            contentType: 'application/json',
+            success(res) {
+                if (res.success) {
+                    HMToast.success(res.message);
+                    loadBackups();
+                }
+            }
+        });
+    });
 }
 
-btnAddIp.addEventListener('click', () => {
-    processAddIp(ipInput.value.trim());
-});
-
-ipInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        processAddIp(ipInput.value.trim());
-    }
-});
-
-btnMyIp.addEventListener('click', () => {
-    processAddIp(currentIp);
-});
-
-// Mascara automatica ao digitar (basica para IPv4)
-ipInput.addEventListener('input', function(e) {
-    this.value = this.value.replace(/[^\d\.\-\/\*]/g, '');
-});
-
-// Inicializar Tags
+// Inicializar Tags e Backups
 renderIpTags();
-
-// Inicializar Tags
-renderIpTags();
+loadBackups();
 </script>
 @endsection

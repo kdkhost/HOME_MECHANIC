@@ -39,6 +39,7 @@ O **HomeMechanic** é um sistema web completo desenvolvido especificamente para 
 - **📸 Gestão de Identidade**: Logo e Favicon configuráveis diretamente pelo painel
 - **🚧 Modo de Manutenção Premium**: Interface isolada com countdown e identidades dinâmicas
 - **⚡ Performance Agravada**: Limpeza automática de uploads órfãos e sistema de cache otimizado
+- **📦 Gestão de Backups**: Interface AJAX para geração, download e exclusão de backups (DB e Arquivos)
 - Logs de auditoria completos
 
 ### 🔐 Segurança
@@ -182,6 +183,7 @@ MAIL_PORT=587
 MAIL_USERNAME=seu_email@gmail.com
 MAIL_PASSWORD=sua_senha_app
 MAIL_ENCRYPTION=tls
+MAIL_VERIFY_PEER=true          # Define se deve verificar o certificado SSL do servidor SMTP
 ```
 
 #### Configurações de Upload

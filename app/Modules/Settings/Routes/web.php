@@ -17,6 +17,11 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         Route::get('/backup',  [SettingsController::class, 'backup'])->name('backup');
         Route::post('/email/test', [SettingsController::class, 'testEmail'])->name('email.test');
 
+        // Backups (Ações)
+        Route::post('/backup/run',      [\App\Modules\Settings\Controllers\BackupController::class, 'create'])->name('backup.run');
+        Route::get('/backup/download',  [\App\Modules\Settings\Controllers\BackupController::class, 'download'])->name('backup.download');
+        Route::delete('/backup/delete', [\App\Modules\Settings\Controllers\BackupController::class, 'destroy'])->name('backup.delete');
+
         // reCAPTCHA
         Route::get('/recaptcha',  [RecaptchaController::class, 'index'])->name('recaptcha');
         Route::post('/recaptcha', [RecaptchaController::class, 'update'])->name('recaptcha.update');

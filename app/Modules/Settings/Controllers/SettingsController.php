@@ -55,6 +55,7 @@ class SettingsController extends Controller
         'mail_username'      => '',
         'mail_password'      => '',
         'mail_encryption'    => 'tls',
+        'mail_verify_peer'   => '1',
         'mail_from_address'  => 'noreply@homemechanic.com.br',
         'mail_from_name'     => 'HomeMechanic',
     ];
@@ -235,6 +236,7 @@ class SettingsController extends Controller
             'mail_port'         => $request->input('mail_port'),
             'mail_username'     => $request->input('mail_username'),
             'mail_encryption'   => $request->input('mail_encryption'),
+            'mail_verify_peer'  => $request->boolean('mail_verify_peer') ? '1' : '0',
             'mail_from_address' => $request->input('mail_from_address'),
             'mail_from_name'    => $request->input('mail_from_name'),
         ];
@@ -304,14 +306,17 @@ class SettingsController extends Controller
             $username   = $request->input('mail_username',     Setting::get('mail_username',     ''));
             $password   = $request->input('mail_password')     ?: Setting::get('mail_password',  '');
             $encryption = $request->input('mail_encryption',   Setting::get('mail_encryption',   'tls'));
+            $verifyPeer = $request->input('mail_verify_peer') !== null 
+                ? $request->boolean('mail_verify_peer') 
+                : (Setting::get('mail_verify_peer', '1') === '1');
             $fromAddr   = $request->input('mail_from_address', Setting::get('mail_from_address', 'noreply@homemechanic.com.br'));
             $fromName   = $request->input('mail_from_name',    Setting::get('mail_from_name',    'HomeMechanic'));
-
+            
             // Suporte a subject/body customizados (enviado da página de templates)
             $customSubject = $request->input('mail_subject');
             $customBody    = $request->input('mail_body');
 
-            config([
+            $mailConfig = [
                 'mail.default'                 => 'smtp',
                 'mail.mailers.smtp.host'       => $host,
                 'mail.mailers.smtp.port'       => (int) $port,
@@ -320,7 +325,19 @@ class SettingsController extends Controller
                 'mail.mailers.smtp.encryption' => $encryption ?: null,
                 'mail.from.address'            => $fromAddr,
                 'mail.from.name'               => $fromName,
-            ]);
+            ];
+
+            if (!$verifyPeer) {
+                $mailConfig['mail.mailers.smtp.stream'] = [
+                    'ssl' => [
+                        'allow_self_signed' => true,
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ],
+                ];
+            }
+
+            config($mailConfig);
 
             $subject = $customSubject ?: '✅ Teste SMTP — HomeMechanic';
             $isHtml  = $customBody && strip_tags($customBody) !== $customBody;
