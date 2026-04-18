@@ -72,7 +72,9 @@
     </div>
 </div>
 
-<div class="row g-4">
+<form method="POST" action="{{ route('admin.users.update', $user->id) }}" id="userForm" enctype="multipart/form-data">
+    @csrf @method('PUT')
+    <div class="row g-4">
 
     {{-- ── Coluna lateral: perfil ──────────────────────── --}}
     <div class="col-lg-3">
@@ -196,8 +198,6 @@
 
     {{-- ── Formulário principal ────────────────────────── --}}
     <div class="col-lg-9">
-        <form method="POST" action="{{ route('admin.users.update', $user->id) }}" id="userForm" enctype="multipart/form-data">
-            @csrf @method('PUT')
 
             @if($errors->any())
                 <div class="alert alert-danger mb-3">
@@ -334,10 +334,10 @@
                 </button>
                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary ms-2">Cancelar</a>
             </div>
-        </form>
     </div>
 
-</div>
+    </div>
+</form>
 @endsection
 
 @section('scripts')
