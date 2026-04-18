@@ -82,49 +82,19 @@
         {{-- Card de perfil --}}
         <div class="card text-center mb-3">
             <div class="card-body py-4">
-                <div class="user-avatar-wrap mb-3 mx-auto" onclick="document.getElementById('avatarInput').click()" title="Clique para alterar foto">
-                    @if($user->avatar)
-                        <img src="{{ $user->avatar_url }}" class="user-avatar-img mx-auto d-block" id="avatarPreview" alt="Avatar"
-                             onerror="this.style.display='none';document.getElementById('avatarInitials').style.display='flex';">
-                        <div class="user-avatar mx-auto" id="avatarInitials" style="display:none;">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                        </div>
-                    @else
-                        <div class="user-avatar mx-auto" id="avatarInitials">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                        </div>
-                        <img src="" class="user-avatar-img mx-auto d-block" id="avatarPreview" alt="Avatar" style="display:none!important;">
-                    @endif
-                    <div class="avatar-overlay" style="border-radius:16px;">
-                        <i class="fas fa-camera"></i>
-                        <span>Alterar foto</span>
-                    </div>
+                <div class="mb-4">
+                    <label class="form-label d-block mb-3" style="font-weight:600;">Foto de Perfil</label>
+                    <x-filepond name="avatar" :value="$user->avatar ? $user->avatar_url : null" />
+                    <input type="hidden" name="remove_avatar" id="removeAvatar" value="0">
                 </div>
 
-                {{-- Input oculto --}}
-                <input type="file" name="avatar" id="avatarInput" accept="image/jpeg,image/png,image/webp"
-                       class="d-none" onchange="previewAvatar(this)">
-                <input type="hidden" name="remove_avatar" id="removeAvatar" value="0">
-
-                {{-- Botões de avatar --}}
-                <div class="d-flex justify-content-center gap-2 mb-3" id="avatarBtns">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarInput').click()">
-                        <i class="fas fa-camera"></i> Foto
-                    </button>
-                    @if($user->avatar)
-                    <button type="button" class="btn btn-danger btn-sm" id="btnRemoveAvatar" onclick="removeAvatar()">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    @endif
-                </div>
-
-                <div style="font-weight:700;font-size:1rem;">{{ $user->name }}</div>
-                <div style="font-size:0.82rem;color:var(--hm-text-muted);">{{ $user->email }}</div>
+                <div style="font-weight:700;font-size:1.2rem;margin-bottom:0.25rem;">{{ $user->name }}</div>
+                <div style="font-size:0.88rem;color:var(--hm-text-muted);">{{ $user->email }}</div>
                 <div class="mt-2">
                     @if($user->role === 'admin')
-                        <span class="badge badge-danger"><i class="fas fa-shield-alt me-1"></i>Administrador</span>
+                        <span class="badge badge-danger" style="font-size:0.75rem;"><i class="fas fa-shield-alt me-1"></i>Administrador</span>
                     @else
-                        <span class="badge badge-info"><i class="fas fa-user me-1"></i>Usuário</span>
+                        <span class="badge badge-info" style="font-size:0.75rem;"><i class="fas fa-user me-1"></i>Usuário</span>
                     @endif
                 </div>
             </div>
@@ -347,57 +317,9 @@
 .req.ok::first-letter { content: '✓'; }
 </style>
 <script>
-// ── Avatar preview ────────────────────────────────────────
-function previewAvatar(input) {
-    if (!input.files || !input.files[0]) return;
-    var file = input.files[0];
-    if (file.size > 2 * 1024 * 1024) {
-        HMToast.error('A imagem deve ter no máximo 2MB.');
-        input.value = '';
-        return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        // Esconder iniciais, mostrar imagem
-        var initials = document.getElementById('avatarInitials');
-        var preview  = document.getElementById('avatarPreview');
-        if (initials) initials.style.display = 'none';
-        if (preview) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-            preview.style.removeProperty('display');
-        }
-        document.getElementById('removeAvatar').value = '0';
-        HMToast.success('Foto selecionada. Salve para confirmar.', 3000);
-    };
-    reader.readAsDataURL(file);
-}
+// ── Avatar preview (Obsoleto → Substituído por FilePond) ─────────────────
+// Gerenciado agora via componente x-filepond
 
-function removeAvatar() {
-    Swal.fire({
-        title: 'Remover foto?',
-        text: 'A foto de perfil será removida ao salvar.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#dc2626',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Remover',
-        cancelButtonText: 'Cancelar',
-    }).then(function(r) {
-        if (!r.isConfirmed) return;
-        // Mostrar iniciais, esconder imagem
-        var initials = document.getElementById('avatarInitials');
-        var preview  = document.getElementById('avatarPreview');
-        if (initials) initials.style.display = 'flex';
-        if (preview)  preview.style.display  = 'none';
-        document.getElementById('removeAvatar').value = '1';
-        document.getElementById('avatarInput').value  = '';
-        // Esconder botão remover
-        var btn = document.getElementById('btnRemoveAvatar');
-        if (btn) btn.style.display = 'none';
-        HMToast.info('Foto marcada para remoção. Salve para confirmar.', 3000);
-    });
-}
 
 // ── Máscara telefone ──────────────────────────────────────
 var phoneEl = document.getElementById('editPhone');

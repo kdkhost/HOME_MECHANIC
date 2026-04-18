@@ -6,6 +6,39 @@
     <li class="breadcrumb-item active">Backup</li>
 @endsection
 
+@section('styles')
+<link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
+<link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+<style>
+/* Estilos IPs */
+.ip-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--hm-primary);
+    color: white;
+    padding: 0.25rem 0.6rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+.ip-tag .remove-ip {
+    margin-left: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: rgba(255,255,255,0.7);
+    transition: color 0.2s;
+}
+.ip-tag .remove-ip:hover { color: white; }
+/* Estilos Filepond personalizados */
+.filepond--root { font-family: inherit; margin-bottom: 0; }
+.filepond--panel-root { background-color: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; }
+.filepond--drop-label { color: #6c757d; }
+.filepond--item-panel { background-color: var(--hm-primary); }
+</style>
+@endsection
+
 @section('content')
 <div class="page-header">
     <h2 class="page-header-title"><i class="fas fa-tools mr-2" style="color:var(--hm-primary);"></i>Backup e Manutenção</h2>
@@ -65,27 +98,42 @@
                         </div>
 
                         <div class="col-md-6 mt-3">
-                            <div class="form-group">
-                                <label>Imagem de Fundo (Opcional)</label>
-                                <div class="d-flex align-items-center gap-3">
-                                    <div style="flex-grow:1;">
-                                        <input type="file" class="form-control" name="maintenance_bg_image" accept="image/jpeg,image/png,image/webp">
-                                        <small class="form-text text-muted mt-1">Recomendado: 1920x1080px. Deixe em branco para usar o tema padrão escuro.</small>
-                                    </div>
-                                    @if(!empty($settings['maintenance_bg_image']))
-                                        <div style="flex-shrink:0;">
-                                            <img src="{{ asset('storage/' . $settings['maintenance_bg_image']) }}" alt="Bg Atual" style="height:60px;width:100px;object-fit:cover;border-radius:4px;border:1px solid var(--hm-border);">
-                                        </div>
-                                    @endif
-                                </div>
+                            <div class="form-group mb-4">
+                                <label class="form-label font-weight-bold">Imagem de Fundo (Manutenção)</label>
+                                <x-filepond name="maintenance_bg_image" :value="!empty($settings['maintenance_bg_image']) ? asset('storage/' . $settings['maintenance_bg_image']) : null" />
+                                <small class="text-muted">Recomendado: 1920x1080px. Arraste e solte para enviar.</small>
                             </div>
                         </div>
 
                         <div class="col-md-12 mt-2">
                             <div class="form-group mb-4">
-                                <label>IPs com Acesso Liberado (separados por vírgula)</label>
-                                <textarea class="form-control" name="maintenance_ips" rows="2" placeholder="Ex: 192.168.1.1, 201.55.10.2">{{ old('maintenance_ips', $settings['maintenance_ips'] ?? '') }}</textarea>
-                                <small class="form-text text-muted mt-2"><i class="fas fa-info-circle text-orange"></i> Esses IPs ignoram a manutenção e veem o site normalmente. <strong>Seu IP atual: {{ request()->ip() }}</strong></small>
+                            <div class="form-group mb-4">
+                                <label>IPs com Acesso Liberado</label>
+                                
+                                <div class="ip-manager-container p-3" style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px;">
+                                    <input type="hidden" name="maintenance_ips" id="maintenance_ips" value="{{ old('maintenance_ips', $settings['maintenance_ips'] ?? '') }}">
+                                    
+                                    <div id="ip-tags-list" class="mb-3 d-flex flex-wrap">
+                                        <!-- IP Badges serão renderizadas via JS -->
+                                    </div>
+
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-network-wired text-orange"></i></span>
+                                        </div>
+                                        <input type="text" id="ip_input" class="form-control bg-white" placeholder="Digite IPv4 (ex: 192.168.0.1) ou faixa CIDR (ex: 10.0.0.0/24)">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" id="btnAddIp"><i class="fas fa-plus"></i> Inserir</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3 d-flex align-items-center justify-content-between">
+                                        <button type="button" class="btn btn-sm" id="btnMyIp" style="background:rgba(255,107,0,0.1); color:#ff6b00; border:1px solid rgba(255,107,0,0.3);">
+                                            <i class="fas fa-wifi me-1"></i> Autorizar meu IP Atual
+                                        </button>
+                                        <small class="text-muted">Seu IP detectado: <strong id="my_current_ip">{{ request()->ip() }}</strong></small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-12">
@@ -259,5 +307,73 @@ window.clearCacheType = function(type) {
         });
     });
 };
+// ── IP Manager ───────────────────────────────────────────
+const ipInput = document.getElementById('ip_input');
+const ipTagsList = document.getElementById('ip-tags-list');
+const btnAddIp = document.getElementById('btnAddIp');
+const btnMyIp = document.getElementById('btnMyIp');
+const hiddenIpInput = document.getElementById('maintenance_ips');
+const currentIp = document.getElementById('my_current_ip').innerText.trim();
+
+let ips = hiddenIpInput.value ? hiddenIpInput.value.split(',').map(i => i.trim()).filter(Boolean) : [];
+
+function renderIpTags() {
+    ipTagsList.innerHTML = '';
+    ips.forEach(ip => {
+        const span = document.createElement('span');
+        span.className = 'ip-tag';
+        span.innerHTML = `${ip} <i class="fas fa-times remove-ip" onclick="removeIp('${ip}')" title="Remover IP"></i>`;
+        ipTagsList.appendChild(span);
+    });
+    hiddenIpInput.value = ips.join(',');
+}
+
+window.removeIp = function(ip) {
+    ips = ips.filter(i => i !== ip);
+    renderIpTags();
+}
+
+function processAddIp(ipVal) {
+    // Regex pra IPv4 ou CIDR simples ou ranges
+    const ipRegex = /^[0-9\.\-\/\*]+$/;
+    if (!ipVal || !ipRegex.test(ipVal)) {
+        HMToast.warning("Formato de IP ou faixa inválido!");
+        return;
+    }
+    if (ips.includes(ipVal)) {
+        HMToast.warning("Este IP já está na lista!");
+        return;
+    }
+    ips.push(ipVal);
+    renderIpTags();
+    ipInput.value = '';
+    HMToast.success("IP adicionado!");
+}
+
+btnAddIp.addEventListener('click', () => {
+    processAddIp(ipInput.value.trim());
+});
+
+ipInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        processAddIp(ipInput.value.trim());
+    }
+});
+
+btnMyIp.addEventListener('click', () => {
+    processAddIp(currentIp);
+});
+
+// Mascara automatica ao digitar (basica para IPv4)
+ipInput.addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^\d\.\-\/\*]/g, '');
+});
+
+// Inicializar Tags
+renderIpTags();
+
+// Inicializar Tags
+renderIpTags();
 </script>
 @endsection

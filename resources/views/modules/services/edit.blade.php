@@ -11,7 +11,6 @@
 
 @section('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<link rel="stylesheet" href="https://unpkg.com/dropzone@6/dist/dropzone.css" type="text/css" />
 @endsection
 
 @section('content')
@@ -52,11 +51,8 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script src="https://unpkg.com/dropzone@6/dist/dropzone-min.js"></script>
 <script>
 $(document).ready(function() {
-    // Configurar Dropzone
-    Dropzone.autoDiscover = false;
     
     // Preencher formulário com dados do serviço
     const service = @json($service);
@@ -66,20 +62,12 @@ $(document).ready(function() {
     $('#description').val(service.description);
     $('#content').val(service.content);
     $('#icon').val(service.icon);
-    $('#cover_image').val(service.cover_image);
     $('#featured').prop('checked', service.featured);
     $('#sort_order').val(service.sort_order);
     $('#active').prop('checked', service.active);
     
-    // Atualizar preview do ícone
     if (service.icon) {
         $('#iconPreview').attr('class', `bi ${service.icon}`);
-    }
-    
-    // Mostrar preview da imagem se existir
-    if (service.cover_thumbnail_url) {
-        $('#imagePreview').html(`<img src="${service.cover_thumbnail_url}" class="img-thumbnail" style="max-height: 100px;">`);
-        $('#uploadPlaceholder').hide();
     }
     
     $('#serviceForm').on('submit', function(e) {

@@ -30,6 +30,11 @@
                 <label>Título <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" name="title" value="{{ old('title') }}" required placeholder="Título do post">
             </div>
+            <div class="form-group mb-4">
+                <label class="form-label font-weight-bold">Imagem de Capa</label>
+                <x-filepond name="cover_image" />
+                <small class="text-muted">Recomendado: 1200x600px. Arraste e solte para enviar.</small>
+            </div>
             <div class="form-group">
                 <label>Conteúdo <span class="text-danger">*</span></label>
                 <textarea class="form-control" name="content" rows="10" required placeholder="Escreva o conteúdo aqui...">{{ old('content') }}</textarea>

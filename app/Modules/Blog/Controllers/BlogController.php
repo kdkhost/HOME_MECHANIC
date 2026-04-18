@@ -37,16 +37,17 @@ class BlogController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title'   => 'required|string|max:255',
-            'content' => 'required|string',
-            'status'  => 'required|in:draft,published',
-            'excerpt' => 'nullable|string|max:500',
+            'title'       => 'required|string|max:255',
+            'content'     => 'required|string',
+            'status'      => 'required|in:draft,published',
+            'excerpt'     => 'nullable|string|max:500',
+            'cover_image' => 'nullable|string|max:255',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $post = Post::create([
+            $data = [
                 'title'        => $request->title,
                 'excerpt'      => $request->excerpt,
                 'content'      => $request->content,
@@ -54,7 +55,15 @@ class BlogController extends Controller
                 'featured'     => $request->boolean('featured'),
                 'user_id'      => Auth::id(),
                 'published_at' => $request->status === 'published' ? now() : null,
-            ]);
+            ];
+
+            if ($request->filled('cover_image')) {
+                $uuid = $request->input('cover_image');
+                $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
+                if ($upload) $data['cover_image'] = $upload->path;
+            }
+
+            $post = Post::create($data);
 
             AuditLog::record('post_created', $post, [], $post->toArray());
             DB::commit();
@@ -91,10 +100,11 @@ class BlogController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'title'   => 'required|string|max:255',
-            'content' => 'required|string',
-            'status'  => 'required|in:draft,published,archived',
-            'excerpt' => 'nullable|string|max:500',
+            'title'       => 'required|string|max:255',
+            'content'     => 'required|string',
+            'status'      => 'required|in:draft,published,archived',
+            'excerpt'     => 'nullable|string|max:500',
+            'cover_image' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -103,14 +113,22 @@ class BlogController extends Controller
             $post    = Post::findOrFail($id);
             $oldData = $post->toArray();
 
-            $post->update([
+            $data = [
                 'title'        => $request->title,
                 'excerpt'      => $request->excerpt,
                 'content'      => $request->content,
                 'status'       => $request->status,
                 'featured'     => $request->boolean('featured'),
                 'published_at' => $request->status === 'published' && !$post->published_at ? now() : $post->published_at,
-            ]);
+            ];
+
+            if ($request->filled('cover_image')) {
+                $uuid = $request->input('cover_image');
+                $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
+                if ($upload) $data['cover_image'] = $upload->path;
+            }
+
+            $post->update($data);
 
             AuditLog::record('post_updated', $post, $oldData, $post->fresh()->toArray());
             DB::commit();

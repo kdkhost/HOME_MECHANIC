@@ -65,7 +65,7 @@ class ServiceController extends Controller
             'description' => 'required|string|max:500',
             'content'     => 'nullable|string',
             'icon'        => 'nullable|string|max:100',
-            'cover_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'cover_image' => 'nullable',
             'sort_order'  => 'nullable|integer|min:0',
         ]);
 
@@ -77,6 +77,12 @@ class ServiceController extends Controller
 
             if ($request->hasFile('cover_image')) {
                 $data['cover_image'] = FileUploadHelper::save($request->file('cover_image'), 'uploads/services');
+            } elseif ($request->filled('cover_image')) {
+                $uuid = $request->input('cover_image');
+                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid)) {
+                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
+                    if ($upload) $data['cover_image'] = $upload->path;
+                }
             }
 
             $service = Service::create($data);
@@ -124,7 +130,7 @@ class ServiceController extends Controller
             'description' => 'required|string|max:500',
             'content'     => 'nullable|string',
             'icon'        => 'nullable|string|max:100',
-            'cover_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'cover_image' => 'nullable',
             'sort_order'  => 'nullable|integer|min:0',
         ]);
 
@@ -135,9 +141,17 @@ class ServiceController extends Controller
             $data['active']   = $request->boolean('active', true);
 
             if ($request->hasFile('cover_image')) {
-                // Remove imagem antiga
                 if ($service->cover_image) FileUploadHelper::delete($service->cover_image);
                 $data['cover_image'] = FileUploadHelper::save($request->file('cover_image'), 'uploads/services');
+            } elseif ($request->filled('cover_image')) {
+                $uuid = $request->input('cover_image');
+                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid)) {
+                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
+                    if ($upload) {
+                        if ($service->cover_image) FileUploadHelper::delete($service->cover_image);
+                        $data['cover_image'] = $upload->path;
+                    }
+                }
             }
 
             // Remover imagem

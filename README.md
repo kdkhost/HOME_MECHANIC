@@ -35,9 +35,10 @@ O **HomeMechanic** é um sistema web completo desenvolvido especificamente para 
 - Dashboard com métricas importantes
 - Gerenciamento Dinâmico de Conteúdo Frontend (Hero, CTA, Sobre)
 - CRUD avançado para Módulo de Depoimentos, Galeria e Serviços
-- Sistema de upload drag & drop com pré-visualização
-- Formulários com máscaras globais dinâmicas integradas ao ViaCEP
-- Modo de manutenção flexível com acesso restrito
+- **📤 Sistema de Upload Modernizado**: Fluxo assíncrono com FilePond, barra de progresso e UUIDs
+- **📸 Gestão de Identidade**: Logo e Favicon configuráveis diretamente pelo painel
+- **🚧 Modo de Manutenção Premium**: Interface isolada com countdown e identidades dinâmicas
+- **⚡ Performance Agravada**: Limpeza automática de uploads órfãos e sistema de cache otimizado
 - Logs de auditoria completos
 
 ### 🔐 Segurança
@@ -344,7 +345,7 @@ Desenvolvido com ❤️ pela equipe HomeMechanic
 - [AdminLTE 4](https://adminlte.io) - Template administrativo
 - [Bootstrap 5](https://getbootstrap.com) - Framework CSS
 - [Intervention Image](http://image.intervention.io) - Processamento de imagens
-- [Dropzone.js](https://www.dropzone.dev) - Upload de arquivos
+- [FilePond](https://pqina.nl/filepond/) - Sistema de upload assíncrono versátil
 - [SweetAlert2](https://sweetalert2.github.io) - Alertas elegantes
 - [Toastify](https://apvarun.github.io/toastify-js/) - Notificações
 

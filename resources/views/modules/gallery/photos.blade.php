@@ -118,6 +118,9 @@
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#photoModal">
                         <i class="bi bi-plus"></i> Nova Foto
                     </button>
+                    <button type="button" class="btn btn-success ml-2" data-toggle="modal" data-target="#massUploadModal">
+                        <i class="bi bi-clouds"></i> Upload em Massa
+                    </button>
                     <a href="{{ route('admin.gallery.index') }}" class="btn btn-secondary ml-2">
                         <i class="bi bi-arrow-left"></i> Voltar
                     </a>
@@ -242,30 +245,16 @@
                         </div>
 
                         <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Imagem Principal <span class="text-danger">*</span></label>
-                                <div class="upload-area border rounded p-3 text-center" style="min-height: 200px; cursor: pointer;" onclick="openUploadModal()">
-                                    <div id="imagePreview"></div>
-                                    <div id="uploadPlaceholder">
-                                        <i class="bi bi-cloud-upload display-4 text-muted"></i>
-                                        <p class="text-muted mb-0">Clique para selecionar imagem</p>
-                                        <small class="text-muted">JPG, PNG, WebP (máx. 10MB)</small>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="filename" name="filename" required>
+                            <div class="form-group mb-4">
+                                <label class="form-label font-weight-bold">Imagem Principal <span class="text-danger">*</span></label>
+                                <x-filepond name="filename" id="photo_filename" required="true" />
+                                <small class="text-muted">Arraste a foto principal aqui (Máx: 10MB)</small>
                             </div>
 
                             <div class="form-group">
-                                <label>Thumbnail Personalizado</label>
-                                <div class="upload-area border rounded p-2 text-center" style="min-height: 100px; cursor: pointer;" onclick="openThumbnailModal()">
-                                    <div id="thumbnailPreview"></div>
-                                    <div id="thumbnailPlaceholder">
-                                        <i class="bi bi-image text-muted"></i>
-                                        <small class="text-muted">Opcional</small>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="thumbnail" name="thumbnail">
-                                <small class="form-text text-muted">Se não fornecido, será usado o thumbnail da imagem principal</small>
+                                <label class="form-label font-weight-bold">Thumbnail Personalizado</label>
+                                <x-filepond name="thumbnail" id="photo_thumbnail" />
+                                <small class="form-text text-muted">Opcional. Se vazio, será gerado automaticamente.</small>
                             </div>
                         </div>
                     </div>
@@ -281,38 +270,33 @@
     </div>
 </div>
 
-<!-- Modal de Upload -->
-<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
+<!-- Modal de Upload Massa (Novo) -->
+<div class="modal fade" id="massUploadModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">
-                    <i class="bi bi-cloud-upload mr-2"></i>
-                    Selecionar Imagem
-                </h4>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <h4 class="modal-title"><i class="bi bi-clouds mr-2"></i> Upload em Massa</h4>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
-                <div id="dropzone" class="dropzone border-dashed border-2 rounded p-4 text-center">
-                    <div class="dz-message">
-                        <i class="bi bi-cloud-upload display-4 text-muted"></i>
-                        <h4>Arraste arquivos aqui ou clique para selecionar</h4>
-                        <p class="text-muted">Apenas imagens JPG, PNG, WebP (máx. 10MB)</p>
-                    </div>
+                <div class="form-group">
+                    <label>Categoria de Destino</label>
+                    <select class="form-control" id="mass_category_id">
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
-                
-                <div class="mt-4">
-                    <h6>Imagens Recentes</h6>
-                    <div id="recentImages" class="row">
-                        <div class="col-12 text-center py-3">
-                            <div class="spinner-border spinner-border-sm" role="status">
-                                <span class="sr-only">Carregando...</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label>Fotos</label>
+                    <x-filepond name="mass_photos[]" id="mass_photos" multiple="true" />
+                    <small class="text-muted">Arraste múltiplas fotos de uma vez.</small>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-block" onclick="photosManager.processMassUpload()">
+                    <i class="bi bi-check-circle"></i> Iniciar Importação
+                </button>
             </div>
         </div>
     </div>
@@ -324,7 +308,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-<script src="https://unpkg.com/dropzone@6/dist/dropzone-min.js"></script>
 <script>
 class PhotosManager {
     constructor() {
@@ -615,17 +598,181 @@ class PhotosManager {
         }
     }
 
-    // Continuar com os métodos restantes...
-    async editPhoto(id) {
-        // Implementar edição
+    async handleSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+
+        try {
+            const url = this.editingId 
+                ? `{{ route('admin.gallery.photos.update', '') }}/${this.editingId}`
+                : `{{ route('admin.gallery.photos.store') }}`;
+            
+            const method = this.editingId ? 'PUT' : 'POST';
+            
+            if (this.editingId) formData.append('_method', 'PUT');
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.showSuccess(data.message);
+                $('#photoModal').modal('hide');
+                this.loadPhotos(this.currentPage);
+            } else {
+                this.showError(data.message || 'Erro ao salvar foto');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            this.showError('Erro ao processar solicitação');
+        }
     }
 
-    async toggleActive(id) {
-        // Implementar toggle
+    async processMassUpload() {
+        const categoryId = $('#mass_category_id').val();
+        const photos     = [];
+        
+        document.querySelectorAll('input[name="mass_photos[]"]').forEach(input => {
+            if (input.value) photos.push(input.value);
+        });
+
+        if (photos.length === 0) {
+            this.showError('Selecione ao menos uma foto para o upload em massa.');
+            return;
+        }
+
+        try {
+            Swal.fire({
+                title: 'Processando...',
+                text: 'Por favor, aguarde enquanto importamos suas fotos.',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const response = await fetch('{{ route("admin.gallery.photos.mass-store") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    category_id: categoryId,
+                    mass_photos: photos
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire('Sucesso!', data.message, 'success');
+                $('#massUploadModal').modal('hide');
+                this.loadPhotos(1);
+                
+                const pond = FilePond.find(document.getElementById('mass_photos'));
+                if (pond) pond.removeFiles();
+            } else {
+                Swal.fire('Erro', data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
+        }
+    }
+
+    async editPhoto(id) {
+        try {
+            this.editingId = id;
+            $('#modalTitle').text('Editar Foto');
+            
+            // Note: Usando a rota de photos com parâmetro search ou algo que retorne JSON da foto específica se não houver rota direta
+            // Para simplificar, assumimos que photos Manager já tem os dados ou que photos(Request, photo_id) funciona
+            const response = await fetch(`{{ route('admin.gallery.photos') }}?photo_id=${id}`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data.success && data.data.length > 0) {
+                const photo = data.data[0];
+                $('#title').val(photo.title);
+                $('#category_id').val(photo.category_id);
+                $('#description').val(photo.description);
+                $('#sort_order').val(photo.sort_order);
+                $('#active').prop('checked', !!photo.active);
+
+                if (photo.image_url) {
+                    const pond = FilePond.find(document.getElementById('photo_filename'));
+                    if (pond) pond.addFile(photo.image_url);
+                }
+                if (photo.thumbnail_url) {
+                    const pond = FilePond.find(document.getElementById('photo_thumbnail'));
+                    if (pond) pond.addFile(photo.thumbnail_url);
+                }
+
+                $('#photoModal').modal('show');
+            }
+        } catch (error) {
+            console.error('Erro ao buscar foto:', error);
+            this.showError('Não foi possível carregar os dados da foto.');
+        }
     }
 
     async deletePhoto(id) {
-        // Implementar exclusão
+        const result = await Swal.fire({
+            title: 'Excluir foto?',
+            text: 'Esta ação não poderá ser desfeita.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: 'Sim, excluir',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`{{ route('admin.gallery.photos.destroy', '') }}/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.showSuccess(data.message);
+                    this.loadPhotos(this.currentPage);
+                }
+            } catch (error) {
+                this.showError('Erro ao excluir foto');
+            }
+        }
+    }
+
+    async toggleActive(id) {
+        try {
+            const response = await fetch(`{{ route('admin.gallery.photos.toggle-active', '') }}/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                this.showSuccess(data.message);
+                this.loadPhotos(this.currentPage);
+            }
+        } catch (error) {
+            this.showError('Erro ao alterar status');
+        }
     }
 
     showSuccess(message) {
@@ -638,101 +785,15 @@ class PhotosManager {
 
     resetForm() {
         $('#photoForm')[0].reset();
-        $('#imagePreview, #thumbnailPreview').empty();
-        $('#uploadPlaceholder, #thumbnailPlaceholder').show();
         this.editingId = null;
         $('#modalTitle').text('Nova Foto');
+        FilePond.find(document.getElementById('photo_filename'))?.removeFiles();
+        FilePond.find(document.getElementById('photo_thumbnail'))?.removeFiles();
     }
 }
 
-// Funções globais para upload
-function openUploadModal() {
-    window.photosManager.uploadType = 'main';
-    $('#uploadModal').modal('show');
-    loadRecentImages();
-}
-
-function openThumbnailModal() {
-    window.photosManager.uploadType = 'thumbnail';
-    $('#uploadModal').modal('show');
-    loadRecentImages();
-}
-
-function selectImage(uuid, thumbnailUrl) {
-    if (window.photosManager.uploadType === 'main') {
-        $('#filename').val(uuid);
-        $('#imagePreview').html(`<img src="${thumbnailUrl}" class="img-thumbnail" style="max-height: 180px;">`);
-        $('#uploadPlaceholder').hide();
-    } else {
-        $('#thumbnail').val(uuid);
-        $('#thumbnailPreview').html(`<img src="${thumbnailUrl}" class="img-thumbnail" style="max-height: 80px;">`);
-        $('#thumbnailPlaceholder').hide();
-    }
-    $('#uploadModal').modal('hide');
-}
-
-async function loadRecentImages() {
-    try {
-        const response = await fetch('{{ route("admin.upload.index") }}?type=images&per_page=12', {
-            headers: { 'Accept': 'application/json' }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success && data.data.length > 0) {
-            const html = data.data.map(upload => `
-                <div class="col-md-3 mb-3">
-                    <div class="card upload-card" style="cursor: pointer;" onclick="selectImage('${upload.uuid}', '${upload.thumbnail_url}')">
-                        <img src="${upload.thumbnail_url}" class="card-img-top" style="height: 100px; object-fit: cover;">
-                        <div class="card-body p-2">
-                            <small class="text-muted">${upload.original_name}</small>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            $('#recentImages').html(html);
-        } else {
-            $('#recentImages').html('<div class="col-12 text-center text-muted">Nenhuma imagem encontrada</div>');
-        }
-    } catch (error) {
-        console.error('Erro ao carregar imagens:', error);
-        $('#recentImages').html('<div class="col-12 text-center text-danger">Erro ao carregar imagens</div>');
-    }
-}
-
-// Inicializar quando o documento estiver pronto
 $(document).ready(() => {
     window.photosManager = new PhotosManager();
-    
-    // Configurar Dropzone
-    Dropzone.autoDiscover = false;
-    
-    $('#uploadModal').on('shown.bs.modal', function() {
-        if (!window.photoDropzone) {
-            window.photoDropzone = new Dropzone("#dropzone", {
-                url: "{{ route('admin.upload.store') }}",
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                acceptedFiles: 'image/*',
-                maxFilesize: 10,
-                maxFiles: 1,
-                addRemoveLinks: true,
-                dictDefaultMessage: '',
-                success: function(file, response) {
-                    if (response.success) {
-                        selectImage(response.data.uuid, response.data.thumbnail_url);
-                        this.removeAllFiles();
-                    }
-                },
-                error: function(file, errorMessage) {
-                    console.error('Erro no upload:', errorMessage);
-                    window.photosManager.showError(typeof errorMessage === 'string' ? errorMessage : 'Erro no upload');
-                }
-            });
-        }
-    });
 });
 </script>
 @endsection

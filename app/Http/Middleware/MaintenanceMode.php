@@ -51,8 +51,8 @@ class MaintenanceMode
                         'phone'    => $settings['contact_phone'] ?? '',
                         'whatsapp' => $settings['whatsapp'] ?? '',
                         'email'    => $settings['contact_email'] ?? '',
-                        'favicon'  => $settings['favicon'] ?? '',
-                        'logo'     => $settings['logo_light'] ?? ($settings['logo_dark'] ?? '')
+                        'favicon'  => $settings['site_favicon'] ?? '',
+                        'logo'     => $settings['site_logo'] ?? ''
                     ];
                     
                     // Outras rotas são bloqueadas e recebem a tela de manutenção

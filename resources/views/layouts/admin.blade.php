@@ -23,6 +23,15 @@
     <!-- Custom -->
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 
+    <!-- FilePond -->
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+    <style>
+        .filepond--root { font-family: inherit; }
+        .filepond--panel-root { background-color: #f8f9fa; border: 2px dashed #dee2e6; }
+        .filepond--item-panel { background-color: var(--hm-primary); }
+    </style>
+
     @yield('styles')
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
@@ -431,6 +440,51 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/admin.js') }}"></script>
 <script src="{{ asset('js/hm-masks.js') }}"></script>
+
+<!-- FilePond -->
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+<script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+<script>
+    // Configurações globais FilePond
+    if (typeof FilePond !== 'undefined') {
+        FilePond.registerPlugin(
+            FilePondPluginFileValidateType,
+            FilePondPluginFileValidateSize,
+            FilePondPluginImagePreview
+        );
+        
+        FilePond.setOptions({
+            labelIdle: 'Arraste arquivos ou <span class="filepond--label-action">Procure</span>',
+            labelFileProcessing: 'Enviando',
+            labelFileProcessingComplete: 'Upload concluído',
+            labelTapToCancel: 'clique para cancelar',
+            labelTapToRetry: 'clique para tentar novamente',
+            labelTapToUndo: 'clique para desfazer',
+            credits: false,
+            server: {
+                process: {
+                    url: '{{ route("admin.upload.store") }}',
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    onload: (response) => {
+                        const res = JSON.parse(response);
+                        return res.success ? res.data.uuid : null;
+                    }
+                },
+                revert: (uniqueFileId, load, error) => {
+                    $.ajax({
+                        url: '{{ route("admin.upload.destroy", "") }}/' + uniqueFileId,
+                        method: 'DELETE',
+                        success: () => load(),
+                        error: () => error('Erro ao excluir')
+                    });
+                }
+            }
+        });
+    }
+</script>
 
 <script>
     // ── Flash messages → HMToast ─────────────────────────────

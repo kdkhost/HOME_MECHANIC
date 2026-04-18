@@ -78,6 +78,23 @@
                         <textarea class="form-control" name="site_description" rows="3">{{ old('site_description', $settings['site_description'] ?? '') }}</textarea>
                     </div>
 
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label font-weight-bold">Logo do Site</label>
+                                <x-filepond name="site_logo" :value="!empty($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : null" />
+                                <small class="text-muted">Logo principal (PNG/SVG recomendado).</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label font-weight-bold">Favicon</label>
+                                <x-filepond name="site_favicon" :value="!empty($settings['site_favicon']) ? asset('storage/' . $settings['site_favicon']) : null" />
+                                <small class="text-muted">Ícone da aba (ICO/PNG 32x32px).</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="section-divider"><i class="fas fa-phone"></i> Contato</div>
 
                     <div class="row">

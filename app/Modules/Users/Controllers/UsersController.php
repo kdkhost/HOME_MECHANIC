@@ -38,7 +38,7 @@ class UsersController extends Controller
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'role'     => 'required|in:admin,user',
-            'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'avatar'   => 'nullable', // Pode ser arquivo ou UUID string
             'phone'    => 'nullable|string|max:20',
             'bio'      => 'nullable|string|max:500',
         ]);
@@ -61,6 +61,12 @@ class UsersController extends Controller
 
             if ($request->hasFile('avatar')) {
                 $data['avatar'] = FileUploadHelper::save($request->file('avatar'), 'uploads/avatars');
+            } elseif ($request->filled('avatar')) {
+                $uuid = $request->input('avatar');
+                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid)) {
+                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
+                    if ($upload) $data['avatar'] = $upload->path;
+                }
             }
 
             User::create($data);
@@ -103,7 +109,7 @@ class UsersController extends Controller
             'email'    => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:8|confirmed',
             'role'     => 'required|in:admin,user',
-            'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'avatar'   => 'nullable', // Pode ser arquivo ou UUID string
             'phone'    => 'nullable|string|max:20',
             'bio'      => 'nullable|string|max:500',
         ]);
@@ -131,9 +137,17 @@ class UsersController extends Controller
 
             if ($request->hasFile('avatar')) {
                 if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
-                    // Remover avatar antigo
                     FileUploadHelper::delete($user->avatar);
                     $data['avatar'] = FileUploadHelper::save($request->file('avatar'), 'uploads/avatars');
+                }
+            } elseif ($request->filled('avatar')) {
+                $uuid = $request->input('avatar');
+                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid)) {
+                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
+                    if ($upload && \Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
+                        FileUploadHelper::delete($user->avatar);
+                        $data['avatar'] = $upload->path;
+                    }
                 }
             }
 

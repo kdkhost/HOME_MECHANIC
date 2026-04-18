@@ -50,24 +50,13 @@
                 </div>
                 <div class="card-body">
 
-                    {{-- Avatar upload --}}
-                    <div class="d-flex align-items-center gap-4 mb-4 pb-3" style="border-bottom:1px solid var(--hm-border);">
-                        <div style="position:relative;flex-shrink:0;">
-                            <div id="avatarPreviewWrap"
-                                 style="width:80px;height:80px;border-radius:14px;background:linear-gradient(135deg,var(--hm-primary),var(--hm-primary-dark));color:#fff;font-size:2rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(255,107,0,0.3);overflow:hidden;cursor:pointer;"
-                                 onclick="document.getElementById('avatarInput').click()" title="Clique para adicionar foto">
-                                <span id="avatarInitials">?</span>
-                                <img id="avatarPreview" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;">
-                            </div>
+                    <div class="row align-items-center mb-4 pb-3" style="border-bottom:1px solid var(--hm-border);">
+                        <div class="col-md-3">
+                            <label class="form-label font-weight-bold">Foto de Perfil</label>
+                            <small class="d-block text-muted mb-2">JPG, PNG ou WebP. Máx. 2MB.</small>
                         </div>
-                        <div>
-                            <div style="font-weight:700;font-size:0.88rem;margin-bottom:0.3rem;">Foto de Perfil</div>
-                            <div style="font-size:0.8rem;color:var(--hm-text-muted);margin-bottom:0.6rem;">JPG, PNG ou WebP. Máx. 2MB.</div>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarInput').click()">
-                                <i class="fas fa-camera"></i> Escolher Foto
-                            </button>
-                            <input type="file" name="avatar" id="avatarInput" accept="image/jpeg,image/png,image/webp"
-                                   class="d-none" onchange="previewAvatar(this)">
+                        <div class="col-md-9">
+                            <x-filepond name="avatar" />
                         </div>
                     </div>
 
@@ -206,42 +195,9 @@
 
 @section('scripts')
 <script>
-// ── Avatar preview ────────────────────────────────────────
-function previewAvatar(input) {
-    if (!input.files || !input.files[0]) return;
-    var file = input.files[0];
-    if (file.size > 2 * 1024 * 1024) {
-        HMToast.error('A imagem deve ter no máximo 2MB.');
-        input.value = '';
-        return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('avatarInitials').style.display = 'none';
-        var img = document.getElementById('avatarPreview');
-        img.src = e.target.result;
-        img.style.display = 'block';
-        HMToast.success('Foto selecionada!', 2000);
-    };
-    reader.readAsDataURL(file);
-}
+// ── Avatar preview (Obsoleto → Substituído por FilePond) ─────────────────
+// O componente x-filepond gerencia o upload e preview automaticamente.
 
-// Atualizar iniciais ao digitar nome
-document.getElementById('nameInput').addEventListener('input', function() {
-    var name = this.value.trim();
-    var initials = document.getElementById('avatarInitials');
-    var preview  = document.getElementById('avatarPreview');
-    if (initials && preview && preview.style.display === 'none') {
-        var parts = name.split(' ').filter(Boolean);
-        if (parts.length >= 2) {
-            initials.textContent = (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-        } else if (parts.length === 1) {
-            initials.textContent = parts[0].slice(0,2).toUpperCase();
-        } else {
-            initials.textContent = '?';
-        }
-    }
-});
 
 // ── Máscara telefone ──────────────────────────────────────
 document.getElementById('createPhone').addEventListener('input', function() {

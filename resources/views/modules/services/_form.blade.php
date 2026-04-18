@@ -31,17 +31,10 @@
 
     <div class="col-md-4">
         <!-- Imagem de Capa -->
-        <div class="form-group">
-            <label>Imagem de Capa</label>
-            <div class="upload-area border rounded p-3 text-center" style="min-height: 120px; cursor: pointer;" onclick="openUploadModal()">
-                <div id="imagePreview"></div>
-                <div id="uploadPlaceholder">
-                    <i class="bi bi-cloud-upload display-4 text-muted"></i>
-                    <p class="text-muted mb-0">Clique para selecionar imagem</p>
-                    <small class="text-muted">JPG, PNG, WebP (máx. 10MB)</small>
-                </div>
-            </div>
-            <input type="hidden" id="cover_image" name="cover_image">
+        <div class="form-group mb-4">
+            <label class="form-label font-weight-bold">Imagem de Capa</label>
+            <x-filepond name="cover_image" :value="isset($service) && $service->cover_image ? $service->cover_image_url : null" />
+            <small class="form-text text-muted">Recomendado: 1200x600px. Máx: 5MB.</small>
         </div>
 
         <!-- Ícone -->
@@ -86,126 +79,11 @@
     </div>
 </div>
 
-<!-- Modal de Upload -->
-<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">
-                    <i class="bi bi-cloud-upload mr-2"></i>
-                    Selecionar Imagem
-                </h4>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="dropzone" class="dropzone border-dashed border-2 rounded p-4 text-center">
-                    <div class="dz-message">
-                        <i class="bi bi-cloud-upload display-4 text-muted"></i>
-                        <h4>Arraste arquivos aqui ou clique para selecionar</h4>
-                        <p class="text-muted">Apenas imagens JPG, PNG, WebP (máx. 10MB)</p>
-                    </div>
-                </div>
-                
-                <!-- Lista de uploads recentes -->
-                <div class="mt-4">
-                    <h6>Imagens Recentes</h6>
-                    <div id="recentImages" class="row">
-                        <div class="col-12 text-center py-3">
-                            <div class="spinner-border spinner-border-sm" role="status">
-                                <span class="sr-only">Carregando...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
 // Preview do ícone
 $('#icon').on('input', function() {
     const iconClass = $(this).val() || 'bi-tools';
     $('#iconPreview').attr('class', `bi ${iconClass}`);
-});
-
-// Função para abrir modal de upload
-function openUploadModal() {
-    $('#uploadModal').modal('show');
-    loadRecentImages();
-}
-
-// Carregar imagens recentes
-async function loadRecentImages() {
-    try {
-        const response = await fetch('{{ route("admin.upload.index") }}?type=images&per_page=12', {
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success && data.data.length > 0) {
-            const html = data.data.map(upload => `
-                <div class="col-md-3 mb-3">
-                    <div class="card upload-card" style="cursor: pointer;" onclick="selectImage('${upload.uuid}', '${upload.thumbnail_url}')">
-                        <img src="${upload.thumbnail_url}" class="card-img-top" style="height: 100px; object-fit: cover;">
-                        <div class="card-body p-2">
-                            <small class="text-muted">${upload.original_name}</small>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            $('#recentImages').html(html);
-        } else {
-            $('#recentImages').html('<div class="col-12 text-center text-muted">Nenhuma imagem encontrada</div>');
-        }
-    } catch (error) {
-        console.error('Erro ao carregar imagens:', error);
-        $('#recentImages').html('<div class="col-12 text-center text-danger">Erro ao carregar imagens</div>');
-    }
-}
-
-// Selecionar imagem
-function selectImage(uuid, thumbnailUrl) {
-    $('#cover_image').val(uuid);
-    $('#imagePreview').html(`<img src="${thumbnailUrl}" class="img-thumbnail" style="max-height: 100px;">`);
-    $('#uploadPlaceholder').hide();
-    $('#uploadModal').modal('hide');
-}
-
-// Configurar Dropzone quando o modal for mostrado
-$('#uploadModal').on('shown.bs.modal', function() {
-    if (!window.serviceDropzone) {
-        window.serviceDropzone = new Dropzone("#dropzone", {
-            url: "{{ route('admin.upload.store') }}",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            acceptedFiles: 'image/*',
-            maxFilesize: 10,
-            maxFiles: 1,
-            addRemoveLinks: true,
-            dictDefaultMessage: '',
-            success: function(file, response) {
-                if (response.success) {
-                    selectImage(response.data.uuid, response.data.thumbnail_url);
-                    this.removeAllFiles();
-                }
-            },
-            error: function(file, errorMessage) {
-                console.error('Erro no upload:', errorMessage);
-                HMToast.error(typeof errorMessage === 'string' ? errorMessage : 'Erro no upload');
-            }
-        });
-    }
 });
 </script>
 
@@ -223,13 +101,5 @@ $('#uploadModal').on('shown.bs.modal', function() {
 .upload-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-.dropzone {
-    border: 2px dashed #dee2e6 !important;
-    background: #f8f9fa;
-}
-.dropzone.dz-drag-hover {
-    border-color: #007bff !important;
-    background: #e3f2fd;
 }
 </style>

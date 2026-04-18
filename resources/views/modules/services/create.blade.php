@@ -11,7 +11,6 @@
 
 @section('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<link rel="stylesheet" href="https://unpkg.com/dropzone@6/dist/dropzone.css" type="text/css" />
 @endsection
 
 @section('content')
@@ -51,11 +50,8 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script src="https://unpkg.com/dropzone@6/dist/dropzone-min.js"></script>
 <script>
 $(document).ready(function() {
-    // Configurar Dropzone
-    Dropzone.autoDiscover = false;
     
     $('#serviceForm').on('submit', function(e) {
         e.preventDefault();

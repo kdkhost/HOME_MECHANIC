@@ -41,6 +41,8 @@ class SettingsController extends Controller
         'maintenance_ips'  => '',
         'maintenance_timer'=> '',
         'maintenance_bg_image' => '',
+        'site_logo'        => '',
+        'site_favicon'     => '',
         'analytics_enabled'=> '1',
         'timezone'         => 'America/Sao_Paulo',
         'language'         => 'pt_BR',
@@ -201,6 +203,22 @@ class SettingsController extends Controller
             'timezone'           => $request->input('timezone', 'America/Sao_Paulo'),
             'language'           => $request->input('language', 'pt_BR'),
         ], 'general');
+
+        // Processar Logo, Favicon e BG se vierem como UUIDs do FilePond
+        $imageFields = ['site_logo', 'site_favicon', 'maintenance_bg_image'];
+        foreach ($imageFields as $field) {
+            if ($request->filled($field)) {
+                $val = $request->input($field);
+                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $val)) {
+                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $val)->first();
+                    if ($upload) {
+                        $oldImage = Setting::get($field, '');
+                        if ($oldImage) FileUploadHelper::delete($oldImage);
+                        Setting::set($field, $upload->path, 'general');
+                    }
+                }
+            }
+        }
     }
 
     private function updateEmail(Request $request): void
@@ -254,12 +272,21 @@ class SettingsController extends Controller
         if ($request->hasFile('maintenance_bg_image')) {
             $request->validate(['maintenance_bg_image' => 'image|max:3072|mimes:jpg,jpeg,png,webp']);
             
-            // Remove antiga se existir
             $oldImage = Setting::get('maintenance_bg_image', '');
-            if ($oldImage) {
-                FileUploadHelper::delete($oldImage);
-            }
+            if ($oldImage) FileUploadHelper::delete($oldImage);
+            
             $data['maintenance_bg_image'] = FileUploadHelper::save($request->file('maintenance_bg_image'), 'uploads/maintenance');
+        } elseif ($request->filled('maintenance_bg_image')) {
+            // Se veio string, pode ser o UUID do FilePond
+            $val = $request->input('maintenance_bg_image');
+            if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $val)) {
+                $upload = \App\Modules\Upload\Models\Upload::where('uuid', $val)->first();
+                if ($upload) {
+                    $oldImage = Setting::get('maintenance_bg_image', '');
+                    if ($oldImage) FileUploadHelper::delete($oldImage);
+                    $data['maintenance_bg_image'] = $upload->path;
+                }
+            }
         }
 
         Setting::setMany($data, 'general');

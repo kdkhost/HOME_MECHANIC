@@ -354,6 +354,7 @@ class GalleryController extends Controller
                 $upload = $this->uploadService->getByUuid($data['filename']);
                 if ($upload) {
                     $this->uploadService->attachToModel($upload, GalleryPhoto::class, $photo->id);
+                    $photo->update(['filename' => $upload->path]);
                 }
             }
 
@@ -361,6 +362,7 @@ class GalleryController extends Controller
                 $thumbnailUpload = $this->uploadService->getByUuid($data['thumbnail']);
                 if ($thumbnailUpload) {
                     $this->uploadService->attachToModel($thumbnailUpload, GalleryPhoto::class, $photo->id);
+                    $photo->update(['thumbnail' => $thumbnailUpload->path]);
                 }
             }
 
@@ -404,6 +406,53 @@ class GalleryController extends Controller
             }
 
             return back()->withInput()->with('error', 'Erro ao adicionar foto.');
+        }
+    }
+
+    /**
+     * Upload em massa de fotos
+     */
+    public function massStore(Request $request)
+    {
+        try {
+            $request->validate([
+                'category_id' => 'required|exists:gallery_categories,id',
+                'mass_photos' => 'required|array',
+                'mass_photos.*' => 'required|string|max:36' // UUIDs
+            ]);
+
+            DB::beginTransaction();
+            $categoryId = $request->input('category_id');
+            $uuids      = $request->input('mass_photos');
+            $count      = 0;
+
+            foreach ($uuids as $uuid) {
+                $upload = $this->uploadService->getByUuid($uuid);
+                if ($upload) {
+                    $photo = GalleryPhoto::create([
+                        'category_id' => $categoryId,
+                        'title'       => $upload->original_name ?: 'Foto ' . (now()->timestamp + $count),
+                        'filename'    => $upload->path,
+                        'active'      => true,
+                        'sort_order'  => GalleryPhoto::where('category_id', $categoryId)->max('sort_order') + 1
+                    ]);
+
+                    $this->uploadService->attachToModel($upload, GalleryPhoto::class, $photo->id);
+                    $count++;
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$count} fotos importadas com sucesso!"
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro no upload em massa', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
