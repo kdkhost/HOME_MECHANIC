@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Toastify -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         :root {
@@ -356,7 +358,7 @@
                         @endif
 
                         <!-- Formulário de Login -->
-                        <form id="loginForm" method="POST" action="{{ route('admin.login') }}">
+                        <form id="loginForm" method="POST" action="{{ route('admin.login.submit') }}">
                             @csrf
                             
                             <div class="input-group">
@@ -398,7 +400,7 @@
                         <div class="text-center mt-4">
                             <div class="row">
                                 <div class="col-6">
-                                    <a href="#" class="text-muted small text-decoration-none">
+                                    <a href="{{ route('admin.password.request') }}" class="text-muted small text-decoration-none">
                                         <i class="bi bi-question-circle me-1"></i>
                                         Esqueceu a senha?
                                     </a>
@@ -436,6 +438,36 @@
             const loginBtn = document.getElementById('loginBtn');
             const rateLimitInfo = document.getElementById('rateLimitInfo');
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            /* ── HMToast Local (Bootstrap Icons) ──────────────── */
+            const HMToast = {
+                _cfg: {
+                    success: { bg: 'linear-gradient(135deg,#16a34a,#15803d)', icon: 'bi-check-circle',   title: 'Sucesso'    },
+                    error:   { bg: 'linear-gradient(135deg,#dc2626,#b91c1c)', icon: 'bi-x-circle',       title: 'Erro'       },
+                    warning: { bg: 'linear-gradient(135deg,#d97706,#b45309)', icon: 'bi-exclamation-triangle', title: 'Atenção' },
+                    info:    { bg: 'linear-gradient(135deg,#0891b2,#0e7490)', icon: 'bi-info-circle',    title: 'Informação' },
+                },
+                show(message, type = 'success', duration = 4000) {
+                    const cfg = this._cfg[type] || this._cfg.info;
+                    const html = `
+                        <div class="d-flex align-items-center text-white" style="gap:12px; padding: 12px 15px;">
+                            <div style="font-size: 1.5rem; display: flex; align-items: center;">
+                                <i class="bi ${cfg.icon}"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; line-height: 1.2;">${cfg.title}</div>
+                                <div style="font-size: 0.85rem; opacity: 0.9;">${message}</div>
+                            </div>
+                        </div>`;
+                    Toastify({
+                        node: (() => { const d = document.createElement('div'); d.innerHTML = html; return d.firstElementChild; })(),
+                        duration, gravity: 'top', position: 'right', stopOnFocus: true,
+                        style: { background: cfg.bg, padding: '0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' },
+                    }).showToast();
+                },
+                success(msg, dur) { this.show(msg, 'success', dur); },
+                error(msg, dur)   { this.show(msg, 'error', dur || 6000); }
+            };
             
             let rateLimitTimer;
             let sessionTimer;

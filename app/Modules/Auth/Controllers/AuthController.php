@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Auth\Events\PasswordReset;
 
 class AuthController extends Controller
 {
@@ -228,5 +233,98 @@ class AuthController extends Controller
         $elapsed = time() - $lastActivity;
         
         return max(0, $maxLifetime - $elapsed);
+    }
+
+    /**
+     * Exibir formulário de solicitação de recuperação de senha
+     */
+    public function showForgotPasswordForm()
+    {
+        return view('modules.auth.forgot-password');
+    }
+
+    /**
+     * Enviar link de recuperação de senha via e-mail
+     */
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email'], [
+            'email.required' => 'O campo e-mail é obrigatório.',
+            'email.email' => 'Informe um endereço de e-mail válido.'
+        ]);
+
+        try {
+            $status = Password::sendResetLink($request->only('email'));
+
+            if ($status === Password::RESET_LINK_SENT) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Enviamos o link de recuperação para o seu e-mail!'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Não conseguimos encontrar um usuário com esse endereço de e-mail.'
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar e-mail de recuperação: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno ao enviar e-mail. Verifique as configurações de SMTP.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Exibir formulário de reset de senha
+     */
+    public function showResetPasswordForm(Request $request, $token = null)
+    {
+        return view('modules.auth.reset-password')->with(
+            ['token' => $token, 'email' => $request->email]
+        );
+    }
+
+    /**
+     * Processar o reset da senha
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ], [
+            'token.required' => 'Token de recuperação inválido.',
+            'email.required' => 'O e-mail é obrigatório.',
+            'password.required' => 'A nova senha é obrigatória.',
+            'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
+            'password.confirmed' => 'A confirmação de senha não confere.'
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = Hash::make($password);
+                $user->setRememberToken(Str::random(60));
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Sua senha foi redefinida com sucesso!',
+                'redirect' => route('admin.login')
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Não foi possível redefinir sua senha: ' . __($status)
+        ], 422);
     }
 }

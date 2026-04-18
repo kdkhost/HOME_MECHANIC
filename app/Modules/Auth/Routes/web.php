@@ -24,4 +24,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/auth/renew-session', [AuthController::class, 'renewSession'])->name('auth.renew-session')
         ->middleware('auth');
     Route::get('/auth/rate-limit-info', [AuthController::class, 'getRateLimitInfo'])->name('auth.rate-limit-info');
+
+    // Recuperação de Senha
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
