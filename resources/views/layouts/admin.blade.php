@@ -252,6 +252,13 @@
                     </li>
 
                     <li class="nav-item">
+                        <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-star"></i>
+                            <p>Depoimentos</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a href="{{ route('admin.blog.index') }}" class="nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
                             <i class="nav-icon bi bi-newspaper"></i>
                             <p>Blog</p>
@@ -299,6 +306,11 @@
                             <li class="nav-item">
                                 <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
                                     <i class="nav-icon bi bi-circle"></i><p>Geral</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                        <a href="{{ route('admin.settings.frontend') }}" class="nav-link {{ request()->routeIs('admin.settings.frontend') ? 'active' : '' }}">
+                                    <i class="nav-icon bi bi-circle"></i><p>Conteúdo do Site</p>
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -418,6 +430,7 @@
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/admin.js') }}"></script>
+<script src="{{ asset('js/hm-masks.js') }}"></script>
 
 <script>
     // ── Flash messages → HMToast ─────────────────────────────

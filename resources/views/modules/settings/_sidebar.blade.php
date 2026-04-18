@@ -10,6 +10,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.settings.frontend') }}"
+                       class="nav-link {{ ($active ?? '') === 'frontend' ? 'active' : '' }}">
+                        <i class="fas fa-home"></i> Conteúdo do Site
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.settings.seo') }}"
                        class="nav-link {{ ($active ?? '') === 'seo' ? 'active' : '' }}">
                         <i class="fas fa-search"></i> SEO

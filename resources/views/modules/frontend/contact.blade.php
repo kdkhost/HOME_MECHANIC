@@ -138,7 +138,7 @@
                             <div class="col-sm-6">
                                 <label class="form-label-custom">Telefone / WhatsApp</label>
                                 <input type="text" name="phone" class="form-control form-control-custom"
-                                       placeholder="(11) 99999-9999" value="{{ old('phone') }}">
+                                       placeholder="(11) 99999-9999" value="{{ old('phone') }}" data-mask="phone">
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label-custom">Assunto *</label>

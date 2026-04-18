@@ -32,17 +32,14 @@ class MaintenanceMode
                 
                 // Se não está na lista de permitidos
                 if (!$allowedIp) {
-                    // Rotas admin só para IPs permitidos
-                    if ($request->is('admin/*')) {
-                        return response()->view('errors.503', [], 503)
-                            ->header('Retry-After', 3600);
+                    // Permitir acesso às rotas /admin e arquivos estáticos
+                    if ($request->is('admin') || $request->is('admin/*') || $request->is('api/*')) {
+                        return $next($request);
                     }
                     
-                    // Outras rotas também bloqueadas
-                    if (!$request->is('admin/*')) {
-                        return response()->view('errors.503', [], 503)
-                            ->header('Retry-After', 3600);
-                    }
+                    // Outras rotas são bloqueadas e recebem a tela de manutenção
+                    return response()->view('errors.503', [], 503)
+                        ->header('Retry-After', 3600);
                 }
             }
         } catch (\Exception $e) {

@@ -232,10 +232,10 @@
                     </div>
                     <div class="card-body">
                         <ul class="list-unstyled mb-0">
-                            <li><i class="bi bi-envelope me-2"></i> suporte@homemechanic.com.br</li>
-                            <li><i class="bi bi-github me-2"></i> GitHub Issues</li>
+                            <li><i class="bi bi-envelope me-2"></i> contato@kdkhost.com.br</li>
+                            <li><i class="bi bi-github me-2"></i> GitHub kdkhost/li>
                             <li><i class="bi bi-chat-dots me-2"></i> Chat Online</li>
-                            <li><i class="bi bi-telephone me-2"></i> (11) 99999-9999</li>
+                            <li><i class="bi bi-telephone me-2"></i> (21) 98132-5441</li>
                         </ul>
                     </div>
                 </div>

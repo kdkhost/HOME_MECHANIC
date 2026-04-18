@@ -33,11 +33,11 @@ O **HomeMechanic** é um sistema web completo desenvolvido especificamente para 
 
 ### ⚙️ Painel Administrativo
 - Dashboard com métricas importantes
-- CRUD completo para todos os módulos
-- Sistema de upload drag & drop
-- Editor WYSIWYG para conteúdo
-- Configurações de SMTP com teste
-- Modo de manutenção avançado
+- Gerenciamento Dinâmico de Conteúdo Frontend (Hero, CTA, Sobre)
+- CRUD avançado para Módulo de Depoimentos, Galeria e Serviços
+- Sistema de upload drag & drop com pré-visualização
+- Formulários com máscaras globais dinâmicas integradas ao ViaCEP
+- Modo de manutenção flexível com acesso restrito
 - Logs de auditoria completos
 
 ### 🔐 Segurança

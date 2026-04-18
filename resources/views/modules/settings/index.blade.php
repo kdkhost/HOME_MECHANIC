@@ -98,7 +98,7 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-phone"></i></span>
                                     <input type="text" class="form-control" name="contact_phone"
-                                           id="contact_phone"
+                                           id="contact_phone" data-mask="phone"
                                            value="{{ old('contact_phone', $settings['contact_phone'] ?? '') }}"
                                            placeholder="(11) 99999-9999">
                                 </div>
@@ -110,7 +110,7 @@
                                 <div class="input-group">
                                     <span class="input-group-text" style="background:#25D366;border-color:#25D366;color:#fff;"><i class="fab fa-whatsapp"></i></span>
                                     <input type="text" class="form-control" name="whatsapp"
-                                           id="whatsapp"
+                                           id="whatsapp" data-mask="whatsapp"
                                            value="{{ old('whatsapp', $settings['whatsapp'] ?? '') }}"
                                            placeholder="(11) 99999-9999">
                                 </div>
@@ -199,6 +199,7 @@
                                 <label>CEP <span class="text-danger">*</span></label>
                                 <div class="cep-wrap">
                                     <input type="text" class="form-control" name="address_cep" id="address_cep"
+                                           data-mask="cep"
                                            value="{{ old('address_cep', $settings['address_cep'] ?? '') }}"
                                            placeholder="00000-000" maxlength="9">
                                     <i class="fas fa-spinner fa-spin cep-spinner" id="cepSpinner"></i>
@@ -339,69 +340,8 @@
 
 @section('scripts')
 <script>
-// ── Máscara de telefone ───────────────────────────────────
-function maskPhone(el) {
-    el.addEventListener('input', function() {
-        var v = this.value.replace(/\D/g, '').slice(0, 11);
-        if (v.length <= 10) {
-            v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
-        } else {
-            v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
-        }
-        this.value = v;
-    });
-}
-maskPhone(document.getElementById('contact_phone'));
-maskPhone(document.getElementById('whatsapp'));
-
-// ── Máscara de CEP ────────────────────────────────────────
-document.getElementById('address_cep').addEventListener('input', function() {
-    var v = this.value.replace(/\D/g, '').slice(0, 8);
-    if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5);
-    this.value = v;
-    if (v.replace(/\D/g,'').length === 8) fetchCep(v.replace(/\D/g,''));
-});
-
-// ── Busca de CEP via ViaCEP ───────────────────────────────
-function fetchCep(cep) {
-    var spinner = document.getElementById('cepSpinner');
-    var ok      = document.getElementById('cepOk');
-    var err     = document.getElementById('cepErr');
-
-    spinner.style.display = 'block';
-    ok.style.display = err.style.display = 'none';
-
-    fetch('https://viacep.com.br/ws/' + cep + '/json/')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            spinner.style.display = 'none';
-
-            if (data.erro) {
-                err.style.display = 'block';
-                return;
-            }
-
-            // Preencher campos
-            document.getElementById('address_street').value   = data.logradouro || '';
-            document.getElementById('address_district').value = data.bairro      || '';
-            document.getElementById('address_city').value     = data.localidade  || '';
-            document.getElementById('address_state').value    = data.uf          || '';
-
-            ok.style.display = 'block';
-
-            // Focar no campo número
-            var numField = document.getElementById('address_number');
-            numField.value = '';
-            numField.focus();
-
-            // Atualizar mapa automaticamente
-            setTimeout(showMap, 300);
-        })
-        .catch(function() {
-            spinner.style.display = 'none';
-            err.style.display = 'block';
-        });
-}
+// Máscaras de telefone, WhatsApp e CEP agora são globais via hm-masks.js (data-mask)
+// ViaCEP também é tratado automaticamente pelo hm-masks.js
 
 // ── Mapa via OpenStreetMap + Leaflet ──────────────────────
 var mapInstance = null;

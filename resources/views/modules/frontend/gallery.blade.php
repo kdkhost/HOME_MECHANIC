@@ -81,41 +81,25 @@
 <section style="padding:4rem 0; background:var(--black);">
     <div class="container">
         <div class="filter-bar" data-aos="fade-up">
-            <button class="filter-btn active">Todos</button>
-            <button class="filter-btn">Tuning</button>
-            <button class="filter-btn">Suspensão</button>
-            <button class="filter-btn">Estética</button>
-            <button class="filter-btn">Freios</button>
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            @foreach($categories as $cat)
+                <button class="filter-btn" data-filter=".cat-{{ $cat->id }}">{{ $cat->name }}</button>
+            @endforeach
         </div>
 
-        @php
-        $photos = [
-            ['url'=>'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80','title'=>'Lamborghini Huracán','sub'=>'Tuning Completo'],
-            ['url'=>'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80','title'=>'Ferrari 488 GTB','sub'=>'Estética Premium'],
-            ['url'=>'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80','title'=>'Porsche 911 GT3','sub'=>'Suspensão Sport'],
-            ['url'=>'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80','title'=>'McLaren 720S','sub'=>'Tuning Motor'],
-            ['url'=>'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80','title'=>'Aston Martin DB11','sub'=>'Freios Brembo'],
-            ['url'=>'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80','title'=>'Bugatti Chiron','sub'=>'Diagnóstico'],
-            ['url'=>'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80','title'=>'BMW M4 Competition','sub'=>'Tuning ECU'],
-            ['url'=>'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80','title'=>'Mercedes AMG GT','sub'=>'Estética'],
-            ['url'=>'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&q=80','title'=>'Audi R8 V10','sub'=>'Performance'],
-            ['url'=>'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800&q=80','title'=>'Nissan GT-R','sub'=>'Tuning Completo'],
-            ['url'=>'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80','title'=>'Porsche Cayenne','sub'=>'Suspensão'],
-            ['url'=>'https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800&q=80','title'=>'Ferrari F8','sub'=>'Estética Premium'],
-        ];
-        @endphp
-
         <div class="gallery-masonry" data-aos="fade-up" data-aos-delay="100">
-            @foreach($photos as $p)
-            <div class="gallery-item" onclick="openLightbox('{{ $p['url'] }}')">
-                <img src="{{ $p['url'] }}" alt="{{ $p['title'] }}" loading="lazy">
+            @forelse($photos as $p)
+            <div class="gallery-item mix cat-{{ $p->category_id }}" onclick="openLightbox('{{ asset($p->image_path) }}')">
+                <img src="{{ asset($p->image_path) }}" alt="{{ $p->title }}" loading="lazy">
                 <div class="gallery-overlay">
-                    <div class="gallery-overlay-title">{{ $p['title'] }}</div>
-                    <div class="gallery-overlay-sub">{{ $p['sub'] }}</div>
+                    <div class="gallery-overlay-title">{{ $p->title }}</div>
+                    <div class="gallery-overlay-sub">{{ $p->category ? $p->category->name : '' }}</div>
                 </div>
                 <div class="gallery-zoom"><i class="bi bi-zoom-in"></i></div>
             </div>
-            @endforeach
+            @empty
+            <div class="col-12 text-center text-muted w-100">Nenhuma foto cadastrada.</div>
+            @endforelse
         </div>
     </div>
 </section>
@@ -140,11 +124,19 @@ function closeLightbox() {
 }
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
 
-// Filter buttons (visual only)
+// Filter buttons logic
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
+        const filter = this.getAttribute('data-filter');
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            if(filter === 'all' || item.classList.contains(filter.replace('.',''))) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
     });
 });
 </script>

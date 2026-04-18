@@ -13,6 +13,7 @@ class FrontendSettingsProvider extends ServiceProvider
         $buildSettings = function () {
             try {
                 $s = Setting::group('general');
+                $f = Setting::group('frontend');
                 return [
                     'site_name'        => $s['site_name']        ?? 'HomeMechanic',
                     'site_desc'        => $s['site_description']  ?? 'Tuning & Performance de Luxo',
@@ -34,6 +35,22 @@ class FrontendSettingsProvider extends ServiceProvider
                     'social_twitter'   => $s['social_twitter']    ?? '',
                     'social_tiktok'    => $s['social_tiktok']     ?? '',
                     'social_linkedin'  => $s['social_linkedin']   ?? '',
+                    // Frontend Dinâmico
+                    'hero_title'       => $f['hero_title'] ?? 'HOME MECHANIC',
+                    'hero_subtitle'    => $f['hero_subtitle'] ?? 'Eleve a performance e o estilo do seu veículo. Especialistas em tuning, estética e manutenção premium para quem existe excelência.',
+                    'hero_badge_text'  => $f['hero_badge_text'] ?? 'Bem-vindo à',
+                    'hero_stat1_value' => $f['hero_stat1_value'] ?? '15+',
+                    'hero_stat1_label' => $f['hero_stat1_label'] ?? 'Anos Mercado',
+                    'hero_stat2_value' => $f['hero_stat2_value'] ?? '5K+',
+                    'hero_stat2_label' => $f['hero_stat2_label'] ?? 'Projetos',
+                    'hero_stat3_value' => $f['hero_stat3_value'] ?? '100%',
+                    'hero_stat3_label' => $f['hero_stat3_label'] ?? 'Satisfação',
+                    'about_title'      => $f['about_title'] ?? 'Nossa Missão é Superar Suas Expectativas',
+                    'about_subtitle'   => $f['about_subtitle'] ?? 'Excelência Automotiva',
+                    'about_years'      => $f['about_years'] ?? '15',
+                    'about_text'       => $f['about_text'] ?? 'Com profissionais qualificados e tecnologia de ponta, oferecemos um serviço que vai além da manutenção. Nós transformamos o seu veículo.',
+                    'cta_title'        => $f['cta_title'] ?? 'Pronto para Transformar seu Veículo?',
+                    'cta_text'         => $f['cta_text'] ?? 'Traga seu projeto para a equipe mais qualificada do mercado.',
                 ];
             } catch (\Exception $e) {
                 return [
@@ -42,6 +59,9 @@ class FrontendSettingsProvider extends ServiceProvider
                     'email' => 'contato@homemechanic.com.br', 'address' => '', 'address_full' => '',
                     'social_instagram' => '', 'social_facebook' => '', 'social_youtube' => '',
                     'social_twitter' => '', 'social_tiktok' => '', 'social_linkedin' => '',
+                    'hero_title' => 'HOME MECHANIC', 'hero_subtitle' => '', 'hero_badge_text' => '',
+                    'hero_stat1_value' => '', 'hero_stat1_label' => '', 'hero_stat2_value' => '', 'hero_stat2_label' => '', 'hero_stat3_value' => '', 'hero_stat3_label' => '',
+                    'about_title' => '', 'about_subtitle' => '', 'about_years' => '', 'about_text' => '', 'cta_title' => '', 'cta_text' => '',
                 ];
             }
         };

@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', $service->title . ' - HomeMechanic')
 @section('page-title', $service->title)

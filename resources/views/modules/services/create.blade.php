@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Novo Serviço - HomeMechanic')
 @section('page-title', 'Novo Serviço')

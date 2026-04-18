@@ -286,16 +286,13 @@
             <div class="col-lg-7">
                 <div class="hero-badge">
                     <i class="bi bi-diamond-fill" style="font-size:0.6rem;"></i>
-                    Especialistas em Supercars
+                    {{ $siteSettings['hero_badge_text'] }}
                 </div>
                 <h1 class="hero-title">
-                    PERFORMANCE
-                    <span class="line-orange">SEM LIMITES</span>
+                    {!! nl2br(e($siteSettings['hero_title'])) !!}
                 </h1>
                 <p class="hero-sub">
-                    Transformamos supercars em obras de arte mecânica. 
-                    Tuning de alto desempenho, manutenção especializada e 
-                    estética premium para os carros mais exclusivos do mundo.
+                    {{ $siteSettings['hero_subtitle'] }}
                 </p>
                 <div class="d-flex flex-wrap gap-3">
                     <a href="{{ route('contact') }}" class="btn-orange">
@@ -307,16 +304,16 @@
                 </div>
                 <div class="hero-stats">
                     <div>
-                        <div class="hero-stat-num">15+</div>
-                        <div class="hero-stat-label">Anos de Experiência</div>
+                        <div class="hero-stat-num">{{ $siteSettings['hero_stat1_value'] }}</div>
+                        <div class="hero-stat-label">{{ $siteSettings['hero_stat1_label'] }}</div>
                     </div>
                     <div>
-                        <div class="hero-stat-num">800+</div>
-                        <div class="hero-stat-label">Projetos Realizados</div>
+                        <div class="hero-stat-num">{{ $siteSettings['hero_stat2_value'] }}</div>
+                        <div class="hero-stat-label">{{ $siteSettings['hero_stat2_label'] }}</div>
                     </div>
                     <div>
-                        <div class="hero-stat-num">98%</div>
-                        <div class="hero-stat-label">Clientes Satisfeitos</div>
+                        <div class="hero-stat-num">{{ $siteSettings['hero_stat3_value'] }}</div>
+                        <div class="hero-stat-label">{{ $siteSettings['hero_stat3_label'] }}</div>
                     </div>
                 </div>
             </div>
@@ -352,21 +349,19 @@
                     <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80"
                          alt="Oficina HomeMechanic" class="about-img">
                     <div class="about-badge">
-                        <div class="about-badge-num">15</div>
-                        <div class="about-badge-text">Anos de<br>Excelência</div>
+                        <div class="about-badge-num">{{ $siteSettings['about_years'] }}</div>
+                        <div class="about-badge-text">{{ $siteSettings['about_subtitle'] }}</div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-7" data-aos="fade-left">
                 <div class="section-label">Sobre Nós</div>
                 <h2 class="section-title mb-3">
-                    A Oficina Que <span>Entende</span><br>Seu Supercar
+                    {!! nl2br(e($siteSettings['about_title'])) !!}
                 </h2>
                 <div class="divider-orange"></div>
                 <p class="section-sub mb-4">
-                    Fundada por apaixonados por automóveis de alto desempenho, a HomeMechanic 
-                    é referência nacional em tuning e manutenção de supercars. Nossa equipe 
-                    de especialistas certificados utiliza equipamentos de última geração.
+                    {{ $siteSettings['about_text'] }}
                 </p>
                 <div class="row g-3">
                     <div class="col-sm-6">
@@ -427,31 +422,25 @@
             </div>
         </div>
         <div class="row g-4">
-            @php
-            $services = [
-                ['img'=>'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80','icon'=>'bi-speedometer2','title'=>'Tuning de Motor','text'=>'Reprogramação de ECU, upgrades de turbo, intercooler e sistemas de injeção para máxima performance.'],
-                ['img'=>'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80','icon'=>'bi-gear-wide-connected','title'=>'Suspensão Sport','text'=>'Kits de rebaixamento, amortecedores ajustáveis e geometria de precisão para máximo controle.'],
-                ['img'=>'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80','icon'=>'bi-stars','title'=>'Estética Premium','text'=>'Envelopamento, polimento de alto brilho, proteção de pintura e detalhamento completo.'],
-                ['img'=>'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80','icon'=>'bi-cpu','title'=>'Diagnóstico Digital','text'=>'Leitura completa de todos os sistemas eletrônicos com equipamentos de última geração.'],
-            ];
-            @endphp
-            @foreach($services as $i => $s)
-            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ $i * 80 }}">
+            @forelse($services as $i => $s)
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ $loop->index * 80 }}">
                 <div class="service-card">
                     <div class="service-img-wrap">
-                        <img src="{{ $s['img'] }}" alt="{{ $s['title'] }}" class="service-img">
+                        <img src="{{ $s->banner ? asset($s->banner) : 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' }}" alt="{{ $s->title }}" class="service-img">
                     </div>
                     <div class="service-body">
-                        <div class="service-icon"><i class="bi {{ $s['icon'] }}"></i></div>
-                        <div class="service-title">{{ $s['title'] }}</div>
-                        <p class="service-text">{{ $s['text'] }}</p>
+                        <div class="service-icon"><i class="{{ empty($s->icon) ? 'bi bi-tools' : $s->icon }}"></i></div>
+                        <div class="service-title">{{ $s->title }}</div>
+                        <p class="service-text">{{ Str::limit($s->description, 90) }}</p>
                         <a href="{{ route('services') }}" class="service-link">
                             Saiba mais <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div class="col-12 text-center text-muted">Nenhum serviço cadastrado.</div>
+            @endforelse
         </div>
     </div>
 </section>
@@ -472,26 +461,14 @@
             </div>
         </div>
         <div class="gallery-grid" data-aos="fade-up" data-aos-delay="150">
+            @forelse($galleryPhotos as $photo)
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80" alt="Lamborghini Tuning">
-                <div class="gallery-overlay"><span>Lamborghini Huracán</span></div>
+                <img src="{{ asset($photo->image_path) }}" alt="{{ $photo->title }}">
+                <div class="gallery-overlay"><span>{{ $photo->title }}</span></div>
             </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80" alt="Ferrari">
-                <div class="gallery-overlay"><span>Ferrari 488 GTB</span></div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80" alt="Porsche">
-                <div class="gallery-overlay"><span>Porsche 911 GT3</span></div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" alt="McLaren">
-                <div class="gallery-overlay"><span>McLaren 720S</span></div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80" alt="Aston Martin">
-                <div class="gallery-overlay"><span>Aston Martin DB11</span></div>
-            </div>
+            @empty
+            <div class="col-12 text-center text-muted">Nenhuma foto cadastrada.</div>
+            @endforelse
         </div>
     </div>
 </section>
@@ -505,32 +482,27 @@
             <div class="divider-orange mx-auto"></div>
         </div>
         <div class="row g-4">
-            @php
-            $testimonials = [
-                ['name'=>'Ricardo Almeida','car'=>'Lamborghini Huracán','text'=>'Serviço impecável. Meu Huracán ficou com uma performance que eu nunca imaginei ser possível. Equipe extremamente profissional e atenciosa.','init'=>'RA'],
-                ['name'=>'Fernanda Costa','car'=>'Ferrari 488 GTB','text'=>'A HomeMechanic é a única oficina que confio para cuidar da minha Ferrari. Conhecimento técnico incomparável e atendimento VIP.','init'=>'FC'],
-                ['name'=>'Marcos Oliveira','car'=>'Porsche 911 GT3','text'=>'Fiz o tuning completo do meu GT3 aqui. O resultado superou todas as expectativas. Recomendo sem hesitar para qualquer dono de supercar.','init'=>'MO'],
-            ];
-            @endphp
-            @foreach($testimonials as $i => $t)
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ $i * 100 }}">
+            @forelse($testimonials as $i => $t)
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
                 <div class="testimonial-card">
                     <div class="testimonial-stars">
-                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
+                        @for($k=1; $k<=5; $k++)
+                            <i class="{{ $k <= $t->rating ? 'bi bi-star-fill' : 'bi bi-star' }}"></i>
+                        @endfor
                     </div>
-                    <p class="testimonial-text">"{{ $t['text'] }}"</p>
+                    <p class="testimonial-text">"{{ $t->content }}"</p>
                     <div class="testimonial-author">
-                        <div class="testimonial-avatar">{{ $t['init'] }}</div>
+                        <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
                         <div>
-                            <div class="testimonial-name">{{ $t['name'] }}</div>
-                            <div class="testimonial-car">{{ $t['car'] }}</div>
+                            <div class="testimonial-name">{{ $t->name }}</div>
+                            <div class="testimonial-car">{{ $t->role }}</div>
                         </div>
                     </div>
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div class="col-12 text-center text-muted">Nenhum depoimento cadastrado.</div>
+            @endforelse
         </div>
     </div>
 </section>
@@ -538,10 +510,9 @@
 <!-- CTA -->
 <section class="cta-section" data-aos="fade-up">
     <div class="container">
-        <div class="cta-title">Pronto Para <span>Elevar</span><br>Seu Supercar?</div>
+        <div class="cta-title">{!! nl2br(e($siteSettings['cta_title'])) !!}</div>
         <p style="color:rgba(255,255,255,0.6); font-size:1.05rem; margin-bottom:2.5rem; max-width:500px; margin-left:auto; margin-right:auto;">
-            Agende uma visita e descubra o que podemos fazer pelo seu carro. 
-            Atendimento personalizado e orçamento sem compromisso.
+            {{ $siteSettings['cta_text'] }}
         </p>
         <div class="d-flex flex-wrap gap-3 justify-content-center">
             <a href="{{ route('contact') }}" class="btn-orange">

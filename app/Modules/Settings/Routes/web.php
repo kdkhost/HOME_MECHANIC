@@ -10,6 +10,8 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         Route::get('/',        [SettingsController::class, 'index'])->name('index');
         Route::post('/',       [SettingsController::class, 'update'])->name('update');
         Route::get('/general', [SettingsController::class, 'general'])->name('general');
+        Route::get('/frontend', [\App\Modules\Settings\Controllers\FrontendContentController::class, 'edit'])->name('frontend');
+        Route::post('/frontend', [\App\Modules\Settings\Controllers\FrontendContentController::class, 'update'])->name('frontend.update');
         Route::get('/seo',     [SettingsController::class, 'seo'])->name('seo');
         Route::get('/email',   [SettingsController::class, 'email'])->name('email');
         Route::get('/backup',  [SettingsController::class, 'backup'])->name('backup');

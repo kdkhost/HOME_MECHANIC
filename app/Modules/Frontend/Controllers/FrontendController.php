@@ -11,7 +11,20 @@ use Illuminate\Support\Facades\Log;
 
 class FrontendController extends Controller
 {
-    public function home()     { return view('modules.frontend.home'); }
+    public function home()
+    {
+        try {
+            $services = \App\Modules\Services\Models\Service::active()->featured()->ordered()->take(4)->get();
+            $testimonials = \App\Modules\Testimonials\Models\Testimonial::active()->ordered()->take(3)->get();
+            $galleryPhotos = \App\Modules\Gallery\Models\GalleryPhoto::active()->latest()->take(6)->get();
+        } catch (\Exception $e) {
+            $services = collect();
+            $testimonials = collect();
+            $galleryPhotos = collect();
+        }
+        return view('modules.frontend.home', compact('services', 'testimonials', 'galleryPhotos'));
+    }
+
     public function services()
     {
         try {
@@ -21,7 +34,18 @@ class FrontendController extends Controller
         }
         return view('modules.frontend.services', compact('services'));
     }
-    public function gallery()  { return view('modules.frontend.gallery'); }
+
+    public function gallery()
+    {
+        try {
+            $categories = \App\Modules\Gallery\Models\GalleryCategory::ordered()->get();
+            $photos = \App\Modules\Gallery\Models\GalleryPhoto::with('category')->active()->latest()->get();
+        } catch (\Exception $e) {
+            $categories = collect();
+            $photos = collect();
+        }
+        return view('modules.frontend.gallery', compact('categories', 'photos'));
+    }
 
     public function blog()
     {
