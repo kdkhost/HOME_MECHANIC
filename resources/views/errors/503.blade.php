@@ -12,11 +12,10 @@
                         <i class="bi bi-tools" style="font-size: 6rem; color: #FF6B00;"></i>
                     </div>
                     
-                    <h1 class="maintenance-title mb-3">Sistema em Manutenção</h1>
+                    <h1 class="maintenance-title mb-3">{{ $title ?? 'Sistema em Manutenção' }}</h1>
                     
                     <p class="maintenance-message mb-4">
-                        Estamos realizando melhorias no sistema para oferecer uma experiência ainda melhor. 
-                        Voltaremos em breve com novidades!
+                        {{ $message ?? 'Estamos realizando melhorias no sistema para oferecer uma experiência ainda melhor. Voltaremos em breve com novidades!' }}
                     </p>
                     
                     <div class="maintenance-info mb-5">

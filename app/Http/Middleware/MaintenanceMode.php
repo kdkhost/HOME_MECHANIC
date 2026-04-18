@@ -24,11 +24,13 @@ class MaintenanceMode
             if ($maintenanceMode === '1' || $maintenanceMode === 'true') {
                 $clientIp = $request->ip();
                 
-                // Verificar se o IP está na lista de permitidos
-                $allowedIp = \DB::table('maintenance_ips')
-                    ->where('ip_address', $clientIp)
-                    ->where('active', true)
-                    ->exists();
+                // Pegar os IPs autorizados e separar por vírgula
+                $allowedIpsString = \DB::table('settings')
+                    ->where('key', 'maintenance_ips')
+                    ->value('value') ?? '';
+                
+                $allowedIps = array_map('trim', explode(',', $allowedIpsString));
+                $allowedIp = in_array($clientIp, $allowedIps);
                 
                 // Se não está na lista de permitidos
                 if (!$allowedIp) {
@@ -37,9 +39,15 @@ class MaintenanceMode
                         return $next($request);
                     }
                     
+                    // Ler título e mensagem salvos
+                    $mTitle = \DB::table('settings')->where('key', 'maintenance_title')->value('value') ?: 'Site em Manutenção';
+                    $mMessage = \DB::table('settings')->where('key', 'maintenance_message')->value('value') ?: 'Voltaremos em breve. Estamos realizando atualizações.';
+                    
                     // Outras rotas são bloqueadas e recebem a tela de manutenção
-                    return response()->view('errors.503', [], 503)
-                        ->header('Retry-After', 3600);
+                    return response()->view('errors.503', [
+                        'title' => $mTitle,
+                        'message' => $mMessage
+                    ], 503)->header('Retry-After', 3600);
                 }
             }
         } catch (\Exception $e) {
