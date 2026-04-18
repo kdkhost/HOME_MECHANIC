@@ -19,7 +19,7 @@ class FrontendContentController extends Controller
     {
         $data = $request->except(['_token', '_method']);
         
-        Setting::setMany('frontend', $data);
+        Setting::setMany($data, 'frontend');
         Cache::forget('settings_frontend');
 
         // Se a requisição for AJAX (para compatibilidade com sua estrutura)
