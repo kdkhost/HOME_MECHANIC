@@ -303,54 +303,15 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-8 d-flex align-items-center"></div>
-                    </div>
-
-                    {{-- ── Manutenção ──────────────────────── --}}
-                    <div class="section-divider mt-4"><i class="fas fa-hard-hat"></i> Modo de Manutenção</div>
-                    <div class="row" style="background: rgba(255,107,0,0.02); border: 1px solid rgba(255,107,0,0.1); border-radius: 4px; padding: 1.5rem; margin: 0;">
-                        <div class="col-md-12 mb-4 border-bottom pb-3">
+                    {{-- ── Analytics ──────────────────────── --}}
+                    <div class="section-divider mt-4"><i class="fas fa-chart-line"></i> Integrações</div>
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-4">
                             <div class="custom-control custom-switch custom-switch-lg">
-                                <input type="checkbox" class="custom-control-input" id="maintenance_mode"
-                                       name="maintenance_mode" value="1"
-                                       {{ ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' }}>
-                                <label class="custom-control-label font-weight-bold" style="font-size: 1.1rem; padding-top: 2px; color: #ff6b00;" for="maintenance_mode">Ativar Modo de Manutenção</label>
-                            </div>
-                            <small class="form-text mt-2" style="font-size: 0.95rem; color: #6c757d;">
-                                Quando ativado, o site exibe uma página de manutenção para visitantes. Administradores e IPs autorizados continuam com acesso normal.
-                            </small>
-                        </div>
-                        <div class="col-md-6 mt-3">
-                            <div class="form-group">
-                                <label>Título da Página de Manutenção</label>
-                                <input type="text" class="form-control" name="maintenance_title"
-                                       value="{{ old('maintenance_title', $settings['maintenance_title'] ?? 'Site em Manutenção') }}"
-                                       placeholder="Ex: Site em Manutenção">
-                            </div>
-                        </div>
-                        <div class="col-md-6 mt-3">
-                            <div class="form-group">
-                                <label>Mensagem para Visitantes</label>
-                                <input type="text" class="form-control" name="maintenance_message"
-                                       value="{{ old('maintenance_message', $settings['maintenance_message'] ?? 'Voltaremos em breve. Estamos realizando atualizações.') }}"
-                                       placeholder="Ex: Voltaremos em breve.">
-                            </div>
-                        </div>
-                        <div class="col-md-12 mt-2">
-                            <div class="form-group mb-0">
-                                <label>IPs com Acesso Liberado (separados por vírgula)</label>
-                                <textarea class="form-control" name="maintenance_ips" rows="2" placeholder="Ex: 192.168.1.1, 201.55.10.2">{{ old('maintenance_ips', $settings['maintenance_ips'] ?? '') }}</textarea>
-                                <small class="form-text text-muted mt-2"><i class="fas fa-info-circle" style="color: #ff6b00;"></i> Esses IPs ignoram a manutenção e veem o site normalmente. <strong>Seu IP atual: {{ request()->ip() }}</strong></small>
-                            </div>
-                        </div>
-                        <div class="col-md-4 d-flex align-items-center">
-                            <div class="form-group mb-0 w-100">
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="analytics_enabled"
-                                           name="analytics_enabled" value="1"
-                                           {{ ($settings['analytics_enabled'] ?? '1') === '1' ? 'checked' : '' }}>
-                                    <label class="custom-control-label" for="analytics_enabled">Analytics Habilitado</label>
-                                </div>
+                                <input type="checkbox" class="custom-control-input" id="analytics_enabled"
+                                       name="analytics_enabled" value="1"
+                                       {{ ($settings['analytics_enabled'] ?? '0') === '1' ? 'checked' : '' }}>
+                                <label class="custom-control-label font-weight-bold" style="font-size: 1.1rem; padding-top: 2px;" for="analytics_enabled">Ativar Analytics</label>
                             </div>
                         </div>
                     </div>

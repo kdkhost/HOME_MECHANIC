@@ -17,20 +17,53 @@
     <div class="col-md-9">
 
         <!-- Modo de Manutenção -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title"><i class="fas fa-hard-hat"></i> Modo de Manutenção</span>
+        <div class="card" style="border: 1px solid rgba(255,107,0,0.1);">
+            <div class="card-header" style="background: rgba(255,107,0,0.02);">
+                <span class="card-title font-weight-bold" style="color: #ff6b00;"><i class="fas fa-hard-hat"></i> Parâmetros de Manutenção</span>
             </div>
-            <div class="card-body">
-                <p class="text-muted mb-3">Quando ativado, o site exibe uma página de manutenção para visitantes. Administradores continuam com acesso normal.</p>
+            <div class="card-body py-4">
                 <form method="POST" action="{{ route('admin.settings.update') }}">
                     @csrf
                     <input type="hidden" name="section" value="maintenance">
-                    <div class="custom-control custom-switch mb-3">
-                        <input type="checkbox" class="custom-control-input" id="maintenance_mode" name="maintenance_mode">
-                        <label class="custom-control-label" for="maintenance_mode">Ativar Modo de Manutenção</label>
+                    <div class="row">
+                        <div class="col-md-12 mb-4 border-bottom pb-3">
+                            <div class="custom-control custom-switch custom-switch-lg">
+                                <input type="checkbox" class="custom-control-input" id="maintenance_mode"
+                                       name="maintenance_mode" value="1"
+                                       {{ ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' }}>
+                                <label class="custom-control-label font-weight-bold" style="font-size: 1.1rem; padding-top: 2px;" for="maintenance_mode">Ativar Modo de Manutenção</label>
+                            </div>
+                            <small class="form-text mt-2" style="font-size: 0.95rem; color: #6c757d;">
+                                Quando ativado, o site exibe uma página de manutenção para visitantes. Administradores e IPs autorizados continuam com acesso normal.
+                            </small>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <div class="form-group">
+                                <label>Título da Página de Manutenção</label>
+                                <input type="text" class="form-control" name="maintenance_title"
+                                       value="{{ old('maintenance_title', $settings['maintenance_title'] ?? 'Site em Manutenção') }}"
+                                       placeholder="Ex: Site em Manutenção">
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <div class="form-group">
+                                <label>Mensagem para Visitantes</label>
+                                <input type="text" class="form-control" name="maintenance_message"
+                                       value="{{ old('maintenance_message', $settings['maintenance_message'] ?? 'Voltaremos em breve. Estamos realizando atualizações.') }}"
+                                       placeholder="Ex: Voltaremos em breve.">
+                            </div>
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <div class="form-group mb-4">
+                                <label>IPs com Acesso Liberado (separados por vírgula)</label>
+                                <textarea class="form-control" name="maintenance_ips" rows="2" placeholder="Ex: 192.168.1.1, 201.55.10.2">{{ old('maintenance_ips', $settings['maintenance_ips'] ?? '') }}</textarea>
+                                <small class="form-text text-muted mt-2"><i class="fas fa-info-circle text-orange"></i> Esses IPs ignoram a manutenção e veem o site normalmente. <strong>Seu IP atual: {{ request()->ip() }}</strong></small>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> Salvar Manutenção</button>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> Salvar</button>
                 </form>
             </div>
         </div>

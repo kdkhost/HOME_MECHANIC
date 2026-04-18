@@ -111,7 +111,8 @@ class SettingsController extends Controller
 
     public function backup()
     {
-        return view('modules.settings.backup');
+        $settings = $this->readSettings($this->generalDefaults, 'general');
+        return view('modules.settings.backup', compact('settings'));
     }
 
     // ── Update ─────────────────────────────────────────────
@@ -239,7 +240,12 @@ class SettingsController extends Controller
 
     private function updateMaintenance(Request $request): void
     {
-        Setting::set('maintenance_mode', $request->boolean('maintenance_mode') ? '1' : '0', 'general');
+        Setting::setMany([
+            'maintenance_mode'   => $request->boolean('maintenance_mode') ? '1' : '0',
+            'maintenance_title'  => $request->input('maintenance_title', 'Site em Manutenção'),
+            'maintenance_message'=> $request->input('maintenance_message', 'Voltaremos em breve.'),
+            'maintenance_ips'    => $request->input('maintenance_ips', ''),
+        ], 'general');
     }
 
     // ── Test SMTP ──────────────────────────────────────────
