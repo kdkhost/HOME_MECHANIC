@@ -1,253 +1,313 @@
-@extends('layouts.frontend')
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ $title ?? 'Sistema em Manutenção' }}</title>
+    
+    @if(!empty($contact['favicon']))
+        <link rel="icon" href="{{ asset('storage/' . $contact['favicon']) }}" type="image/x-icon">
+    @endif
 
-@section('title', 'Sistema em Manutenção')
+    {{-- Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    {{-- Bootstrap Icons --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-@section('content')
-<div class="maintenance-page">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 col-md-10">
-                <div class="maintenance-content text-center">
-                    <div class="maintenance-icon mb-4">
-                        <i class="bi bi-tools" style="font-size: 6rem; color: #FF6B00;"></i>
-                    </div>
-                    
-                    <h1 class="maintenance-title mb-3">{{ $title ?? 'Sistema em Manutenção' }}</h1>
-                    
-                    <p class="maintenance-message mb-4">
-                        {{ $message ?? 'Estamos realizando melhorias no sistema para oferecer uma experiência ainda melhor. Voltaremos em breve com novidades!' }}
-                    </p>
-                    
-                    <div class="maintenance-info mb-5">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="info-card">
-                                    <i class="bi bi-clock-fill mb-2"></i>
-                                    <h5>Previsão de Retorno</h5>
-                                    <p class="mb-0">Em algumas horas</p>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-card">
-                                    <i class="bi bi-gear-fill mb-2"></i>
-                                    <h5>Tipo de Manutenção</h5>
-                                    <p class="mb-0">Melhorias do Sistema</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="maintenance-contact">
-                        <h5 class="mb-3">Precisa de Atendimento Urgente?</h5>
-                        <div class="contact-options">
-                            <a href="tel:+5511999999999" class="btn btn-primary btn-lg me-3 mb-2">
-                                <i class="bi bi-telephone-fill me-2"></i>
-                                (11) 99999-9999
-                            </a>
-                            
-                            <a href="mailto:contato@homemechanic.com.br" class="btn btn-outline-secondary btn-lg mb-2">
-                                <i class="bi bi-envelope-fill me-2"></i>
-                                E-mail
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="maintenance-footer mt-5">
-                        <p class="text-muted">
-                            <i class="bi bi-shield-check me-1"></i>
-                            Seus dados estão seguros e serão preservados durante a manutenção.
-                        </p>
-                    </div>
+    <style>
+        :root {
+            --hm-primary: #FF6B00;
+            --hm-primary-dark: #E55A00;
+            --hm-dark: #0D0D0D;
+            --hm-darker: #050505;
+            --hm-light: #F8F9FA;
+            --hm-gray: #6c757d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--hm-darker);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Bg Background */
+        .maintenance-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1;
+            /* Se houver bg_image configurado, usa ele. Senão usa gradient */
+            @if(!empty($bg))
+                background: url('{{ asset('storage/' . $bg) }}') no-repeat center center;
+                background-size: cover;
+            @else
+                background: linear-gradient(135deg, #0D0D0D 0%, #2C2C2C 100%);
+            @endif
+        }
+
+        /* Overlay para escurecer o fundo sempre */
+        .bg-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* Engrenagens Animadas (Fallback se não tiver img) */
+        .gears-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 2;
+        }
+        .gear {
+            position: absolute;
+            color: rgba(255, 107, 0, 0.15);
+            animation: rotate 20s linear infinite;
+        }
+        .gear-1 { top: 10%; left: 5%; font-size: 8rem; animation-duration: 25s; }
+        .gear-2 { bottom: 15%; right: 10%; font-size: 14rem; animation-duration: 35s; animation-direction: reverse; }
+        .gear-3 { top: 40%; right: 25%; font-size: 5rem; animation-duration: 15s; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* Content Plate */
+        .maintenance-glass {
+            position: relative;
+            z-index: 10;
+            background: rgba(13, 13, 13, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 3rem 4rem;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-img {
+            max-width: 280px;
+            max-height: 80px;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--hm-primary);
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        p.msg {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            color: #d1d5db;
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+        }
+
+        /* Countdown */
+        .countdown-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        .time-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 107, 0, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem 1rem 1rem;
+            width: 110px;
+            box-shadow: inset 0 0 20px rgba(255, 107, 0, 0.05);
+            backdrop-filter: blur(4px);
+        }
+        .time-box span {
+            display: block;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .time-box label {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: var(--hm-primary);
+            font-weight: 600;
+        }
+
+        /* Contatos */
+        .contacts {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+        }
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .contact-btn i {
+            color: var(--hm-primary);
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+        .contact-btn:hover {
+            background: rgba(255, 107, 0, 0.1);
+            border-color: rgba(255, 107, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .maintenance-glass { padding: 2rem 1.5rem; }
+            h1 { font-size: 2.2rem; }
+            p.msg { font-size: 1rem; }
+            .countdown-wrapper { gap: 0.75rem; }
+            .time-box { width: 75px; padding: 1rem 0.5rem 0.75rem; }
+            .time-box span { font-size: 2rem; }
+            .time-box label { font-size: 0.6rem; letter-spacing: 1px; }
+            .contact-btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="maintenance-bg">
+        <div class="bg-overlay"></div>
+    </div>
+
+    @if(empty($bg))
+    <div class="gears-container">
+        <i class="bi bi-gear-fill gear gear-1"></i>
+        <i class="bi bi-gear-wide-connected gear gear-2"></i>
+        <i class="bi bi-gear-fill gear gear-3"></i>
+    </div>
+    @endif
+
+    <div class="maintenance-glass">
+        {{-- Logo --}}
+        @if(!empty($contact['logo']))
+            <img src="{{ asset('storage/' . $contact['logo']) }}" alt="Logo" class="logo-img">
+        @else
+            <i class="bi bi-tools" style="font-size: 4rem; color: var(--hm-primary); margin-bottom:1rem; display:inline-block;"></i>
+        @endif
+
+        <h1>{{ $title ?? 'Sistema em Manutenção' }}</h1>
+        <p class="msg">{{ $message ?? 'Estamos realizando melhorias.' }}</p>
+
+        {{-- Countdown Timer --}}
+        @if(!empty($timer))
+            <div class="countdown-wrapper" id="countdown">
+                <div class="time-box">
+                    <span id="c-days">00</span>
+                    <label>Dias</label>
+                </div>
+                <div class="time-box">
+                    <span id="c-hours">00</span>
+                    <label>Horas</label>
+                </div>
+                <div class="time-box">
+                    <span id="c-minutes">00</span>
+                    <label>Min</label>
+                </div>
+                <div class="time-box">
+                    <span id="c-seconds">00</span>
+                    <label>Seg</label>
                 </div>
             </div>
+            
+            <script>
+                const targetDate = new Date("{{ $timer }}").getTime();
+                
+                function updateTimer() {
+                    const now = new Date().getTime();
+                    const distance = targetDate - now;
+
+                    if (distance < 0) {
+                        document.getElementById("countdown").style.display = "none";
+                        return;
+                    }
+
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.getElementById("c-days").innerText = String(days).padStart(2, '0');
+                    document.getElementById("c-hours").innerText = String(hours).padStart(2, '0');
+                    document.getElementById("c-minutes").innerText = String(minutes).padStart(2, '0');
+                    document.getElementById("c-seconds").innerText = String(seconds).padStart(2, '0');
+                }
+
+                setInterval(updateTimer, 1000);
+                updateTimer();
+            </script>
+        @endif
+
+        {{-- Contatos --}}
+        <div class="contacts">
+            @if(!empty($contact['whatsapp']))
+                <a href="https://wa.me/55{{ preg_replace('/\D/', '', $contact['whatsapp']) }}" class="contact-btn" target="_blank">
+                    <i class="bi bi-whatsapp"></i>
+                    <span>Tire Dúvidas</span>
+                </a>
+            @endif
+            @if(!empty($contact['phone']))
+                <a href="tel:+55{{ preg_replace('/\D/', '', $contact['phone']) }}" class="contact-btn">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span>Ligue para nós</span>
+                </a>
+            @endif
+            @if(!empty($contact['email']))
+                <a href="mailto:{{ $contact['email'] }}" class="contact-btn">
+                    <i class="bi bi-envelope-fill"></i>
+                    <span>Enviar E-mail</span>
+                </a>
+            @endif
         </div>
     </div>
-    
-    <!-- Animated background -->
-    <div class="maintenance-bg">
-        <div class="gear gear-1">
-            <i class="bi bi-gear-fill"></i>
-        </div>
-        <div class="gear gear-2">
-            <i class="bi bi-gear-wide-connected"></i>
-        </div>
-        <div class="gear gear-3">
-            <i class="bi bi-gear-fill"></i>
-        </div>
-    </div>
-</div>
 
-<style>
-.maintenance-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    background: linear-gradient(135deg, #0D0D0D 0%, #2C2C2C 100%);
-    color: white;
-    position: relative;
-    overflow: hidden;
-}
-
-.maintenance-content {
-    background: rgba(255, 255, 255, 0.95);
-    color: #0D0D0D;
-    padding: 4rem;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    animation: fadeInUp 0.8s ease-out;
-    position: relative;
-    z-index: 10;
-}
-
-.maintenance-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 3rem;
-    font-weight: 700;
-    color: #0D0D0D;
-    margin-bottom: 1rem;
-}
-
-.maintenance-message {
-    font-size: 1.2rem;
-    color: #6c757d;
-    line-height: 1.6;
-}
-
-.info-card {
-    background: #f8f9fa;
-    padding: 2rem;
-    border-radius: 15px;
-    border: 2px solid #e9ecef;
-    transition: all 0.3s ease;
-}
-
-.info-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-
-.info-card i {
-    font-size: 2rem;
-    color: #FF6B00;
-}
-
-.info-card h5 {
-    color: #0D0D0D;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.btn-primary {
-    background: #FF6B00;
-    border-color: #FF6B00;
-    padding: 15px 30px;
-    font-weight: 600;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    background: #E55A00;
-    border-color: #E55A00;
-    transform: translateY(-2px);
-}
-
-.btn-outline-secondary {
-    border-color: #2C2C2C;
-    color: #2C2C2C;
-    padding: 15px 30px;
-    font-weight: 600;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-secondary:hover {
-    background: #2C2C2C;
-    border-color: #2C2C2C;
-    transform: translateY(-2px);
-}
-
-.maintenance-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.gear {
-    position: absolute;
-    color: rgba(255, 107, 0, 0.1);
-    animation: rotate 20s linear infinite;
-}
-
-.gear-1 {
-    top: 10%;
-    left: 10%;
-    font-size: 4rem;
-    animation-duration: 15s;
-}
-
-.gear-2 {
-    top: 20%;
-    right: 15%;
-    font-size: 6rem;
-    animation-duration: 25s;
-    animation-direction: reverse;
-}
-
-.gear-3 {
-    bottom: 15%;
-    left: 20%;
-    font-size: 5rem;
-    animation-duration: 18s;
-}
-
-@keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@media (max-width: 768px) {
-    .maintenance-content {
-        padding: 2rem;
-        margin: 1rem;
-    }
-    
-    .maintenance-title {
-        font-size: 2.5rem;
-    }
-    
-    .btn-lg {
-        display: block;
-        width: 100%;
-        margin-bottom: 1rem;
-    }
-    
-    .me-3 {
-        margin-right: 0 !important;
-    }
-    
-    .gear {
-        display: none;
-    }
-}
-</style>
-@endsection
+</body>
+</html>

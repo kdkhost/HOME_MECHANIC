@@ -40,13 +40,28 @@ class MaintenanceMode
                     }
                     
                     // Ler título e mensagem salvos
-                    $mTitle = \DB::table('settings')->where('key', 'maintenance_title')->value('value') ?: 'Site em Manutenção';
-                    $mMessage = \DB::table('settings')->where('key', 'maintenance_message')->value('value') ?: 'Voltaremos em breve. Estamos realizando atualizações.';
+                    $settings = \DB::table('settings')->pluck('value', 'key');
+                    $mTitle   = $settings['maintenance_title'] ?? 'Site em Manutenção';
+                    $mMessage = $settings['maintenance_message'] ?? 'Voltaremos em breve. Estamos realizando atualizações.';
+                    $mTimer   = $settings['maintenance_timer'] ?? null;
+                    $mBg      = $settings['maintenance_bg_image'] ?? null;
+                    
+                    // Dados de Empresa
+                    $contactData = [
+                        'phone'    => $settings['contact_phone'] ?? '',
+                        'whatsapp' => $settings['whatsapp'] ?? '',
+                        'email'    => $settings['contact_email'] ?? '',
+                        'favicon'  => $settings['favicon'] ?? '',
+                        'logo'     => $settings['logo_light'] ?? ($settings['logo_dark'] ?? '')
+                    ];
                     
                     // Outras rotas são bloqueadas e recebem a tela de manutenção
                     return response()->view('errors.503', [
-                        'title' => $mTitle,
-                        'message' => $mMessage
+                        'title'   => $mTitle,
+                        'message' => $mMessage,
+                        'timer'   => $mTimer,
+                        'bg'      => $mBg,
+                        'contact' => $contactData
                     ], 503)->header('Retry-After', 3600);
                 }
             }

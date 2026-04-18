@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\FileUploadHelper;
 
 class SettingsController extends Controller
 {
@@ -38,6 +39,8 @@ class SettingsController extends Controller
         'maintenance_title' => 'Site em Manutenção',
         'maintenance_message' => 'Voltaremos em breve. Estamos realizando atualizações.',
         'maintenance_ips'  => '',
+        'maintenance_timer'=> '',
+        'maintenance_bg_image' => '',
         'analytics_enabled'=> '1',
         'timezone'         => 'America/Sao_Paulo',
         'language'         => 'pt_BR',
@@ -240,12 +243,26 @@ class SettingsController extends Controller
 
     private function updateMaintenance(Request $request): void
     {
-        Setting::setMany([
+        $data = [
             'maintenance_mode'   => $request->boolean('maintenance_mode') ? '1' : '0',
             'maintenance_title'  => $request->input('maintenance_title', 'Site em Manutenção'),
             'maintenance_message'=> $request->input('maintenance_message', 'Voltaremos em breve.'),
             'maintenance_ips'    => $request->input('maintenance_ips', ''),
-        ], 'general');
+            'maintenance_timer'  => $request->input('maintenance_timer', ''),
+        ];
+
+        if ($request->hasFile('maintenance_bg_image')) {
+            $request->validate(['maintenance_bg_image' => 'image|max:3072|mimes:jpg,jpeg,png,webp']);
+            
+            // Remove antiga se existir
+            $oldImage = Setting::get('maintenance_bg_image', '');
+            if ($oldImage) {
+                FileUploadHelper::delete($oldImage);
+            }
+            $data['maintenance_bg_image'] = FileUploadHelper::save($request->file('maintenance_bg_image'), 'uploads/maintenance');
+        }
+
+        Setting::setMany($data, 'general');
     }
 
     // ── Test SMTP ──────────────────────────────────────────

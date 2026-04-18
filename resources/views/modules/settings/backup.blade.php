@@ -22,7 +22,7 @@
                 <span class="card-title font-weight-bold" style="color: #ff6b00;"><i class="fas fa-hard-hat"></i> Parâmetros de Manutenção</span>
             </div>
             <div class="card-body py-4">
-                <form method="POST" action="{{ route('admin.settings.update') }}">
+                <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="section" value="maintenance">
                     <div class="row">
@@ -34,9 +34,10 @@
                                 <label class="custom-control-label font-weight-bold" style="font-size: 1.1rem; padding-top: 2px;" for="maintenance_mode">Ativar Modo de Manutenção</label>
                             </div>
                             <small class="form-text mt-2" style="font-size: 0.95rem; color: #6c757d;">
-                                Quando ativado, o site exibe uma página de manutenção para visitantes. Administradores e IPs autorizados continuam com acesso normal.
+                                Quando ativado, o site exibe uma página de manutenção isolada. Administradores e IPs autorizados continuam com acesso normal.
                             </small>
                         </div>
+                        
                         <div class="col-md-6 mt-3">
                             <div class="form-group">
                                 <label>Título da Página de Manutenção</label>
@@ -53,6 +54,33 @@
                                        placeholder="Ex: Voltaremos em breve.">
                             </div>
                         </div>
+
+                        <div class="col-md-6 mt-3">
+                            <div class="form-group">
+                                <label>Temporizador de Retorno (Opcional)</label>
+                                <input type="datetime-local" class="form-control" name="maintenance_timer"
+                                       value="{{ old('maintenance_timer', $settings['maintenance_timer'] ?? '') }}">
+                                <small class="form-text text-muted mt-1">Defina quando a página voltará para exibir um <strong>Cronômetro</strong>.</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <div class="form-group">
+                                <label>Imagem de Fundo (Opcional)</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div style="flex-grow:1;">
+                                        <input type="file" class="form-control" name="maintenance_bg_image" accept="image/jpeg,image/png,image/webp">
+                                        <small class="form-text text-muted mt-1">Recomendado: 1920x1080px. Deixe em branco para usar o tema padrão escuro.</small>
+                                    </div>
+                                    @if(!empty($settings['maintenance_bg_image']))
+                                        <div style="flex-shrink:0;">
+                                            <img src="{{ asset('storage/' . $settings['maintenance_bg_image']) }}" alt="Bg Atual" style="height:60px;width:100px;object-fit:cover;border-radius:4px;border:1px solid var(--hm-border);">
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-md-12 mt-2">
                             <div class="form-group mb-4">
                                 <label>IPs com Acesso Liberado (separados por vírgula)</label>
