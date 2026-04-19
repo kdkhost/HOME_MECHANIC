@@ -93,7 +93,16 @@
                         <div class="col-md-6 mt-3">
                             <div class="form-group mb-4">
                                 <label class="form-label font-weight-bold">Imagem de Fundo (Manutenção)</label>
-                                <x-filepond name="maintenance_bg_image" :value="!empty($settings['maintenance_bg_image']) ? asset('storage/' . $settings['maintenance_bg_image']) : null" />
+                                @php
+                                    $bgImage = $settings['maintenance_bg_image'] ?? '';
+                                    if ($bgImage) {
+                                        // UploadService salva direto em public/uploads. Se for legacia, vai pra storage/.
+                                        $bgUrl = file_exists(public_path($bgImage)) ? asset($bgImage) : asset('storage/' . $bgImage);
+                                    } else {
+                                        $bgUrl = null;
+                                    }
+                                @endphp
+                                <x-filepond name="maintenance_bg_image" max-file-size="10MB" :value="$bgUrl" />
                                 <small class="text-muted">Recomendado: 1920x1080px. Arraste e solte para enviar.</small>
                             </div>
                         </div>
