@@ -11,11 +11,22 @@ header('Content-Type: application/json');
 
 $results = [
     'php_version' => PHP_VERSION,
+    'interface' => php_sapi_name(),
     'extensions' => [
         'gd' => extension_loaded('gd'),
         'exif' => extension_loaded('exif'),
         'mbstring' => extension_loaded('mbstring'),
         'imagick' => extension_loaded('imagick'),
+    ],
+    'paths' => [
+        'base' => base_path(),
+        'public' => public_path(),
+        'storage' => storage_path(),
+    ],
+    'config' => [
+        'app_url' => config('app.url'),
+        'filesystem_disk' => config('filesystems.default'),
+        'maintenance_store' => config('app.maintenance_store'),
     ],
     'db_connection' => [
         'status' => 'unknown',
