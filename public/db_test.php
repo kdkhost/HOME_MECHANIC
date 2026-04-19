@@ -11,6 +11,12 @@ header('Content-Type: application/json');
 
 $results = [
     'php_version' => PHP_VERSION,
+    'extensions' => [
+        'gd' => extension_loaded('gd'),
+        'exif' => extension_loaded('exif'),
+        'mbstring' => extension_loaded('mbstring'),
+        'imagick' => extension_loaded('imagick'),
+    ],
     'db_connection' => [
         'status' => 'unknown',
         'error' => null,
