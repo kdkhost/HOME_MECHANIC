@@ -306,6 +306,15 @@ class InstallerController extends Controller
             }
         }
 
+        // Verificar limites (opcional - não bloqueia se required for false)
+        if (isset($requirements['limits'])) {
+            foreach ($requirements['limits'] as $limit) {
+                if (($limit['required'] ?? false) && !$limit['status']) {
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 }

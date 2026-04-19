@@ -551,6 +551,8 @@
                         @endif
                     </div>
 
+                    @endif
+
                     <!-- File Permissions -->
                     @if(isset($requirements['permissions']))
                         <div class="requirement-category">
@@ -570,6 +572,32 @@
                                         <div class="requirement-name">{{ $info['name'] }}</div>
                                         <div class="requirement-status">
                                             {{ $info['status'] ? 'Gravável' : 'Sem permissão de escrita' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <!-- PHP Limits -->
+                    @if(isset($requirements['limits']))
+                        <div class="requirement-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <i class="bi bi-speedometer2"></i>
+                                </div>
+                                <h5 class="category-title">Limites PHP</h5>
+                            </div>
+                            
+                            @foreach($requirements['limits'] as $limit => $info)
+                                <div class="requirement-item {{ $info['status'] ? 'success' : 'warning' }}">
+                                    <div class="requirement-icon">
+                                        <i class="bi bi-{{ $info['status'] ? 'check-circle text-success' : 'exclamation-triangle text-warning' }}"></i>
+                                    </div>
+                                    <div class="requirement-details">
+                                        <div class="requirement-name">{{ $info['name'] }}</div>
+                                        <div class="requirement-status">
+                                            Valor atual: {{ $info['current'] }}
                                         </div>
                                     </div>
                                 </div>
