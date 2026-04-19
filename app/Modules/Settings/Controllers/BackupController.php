@@ -29,11 +29,21 @@ class BackupController extends Controller
             $type = $request->input('type', 'all'); // all, db, files
             $timestamp = date('Y-m-d_H-i-s');
             $filename = "backup_{$type}_{$timestamp}.zip";
-            $zipPath = storage_path("app/{$this->backupPath}/{$filename}");
+            
+            // Garantir que a pasta física exista
+            $backupDir = storage_path("app/" . $this->backupPath);
+            if (!is_dir($backupDir)) {
+                if (!@mkdir($backupDir, 0775, true) && !is_dir($backupDir)) {
+                    throw new \Exception("Falha ao criar diretório de backups em: {$backupDir}. Verifique as permissões do servidor.");
+                }
+            }
+            
+            $zipPath = $backupDir . '/' . $filename;
 
             $zip = new ZipArchive();
-            if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-                throw new \Exception("Não foi possível criar o arquivo ZIP.");
+            $res = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+            if ($res !== true) {
+                throw new \Exception("Não foi possível criar o arquivo ZIP. Código de Erro ZipArchive: {$res} no caminho: {$zipPath}");
             }
 
             // 1. Backup do Banco de Dados

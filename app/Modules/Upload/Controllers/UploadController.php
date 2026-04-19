@@ -44,9 +44,16 @@ class UploadController extends Controller
             }
 
             if (!$file) {
+                \Log::warning('UploadController: Nenhum arquivo no request', [
+                    'all_files' => $request->allFiles(),
+                    'post_data' => $request->all(),
+                    'php_error' => $_FILES ?? 'no_files_array',
+                    'upload_max_filesize' => ini_get('upload_max_filesize'),
+                    'post_max_size' => ini_get('post_max_size'),
+                ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Nenhum arquivo foi enviado.'
+                    'message' => 'Nenhum arquivo capturado. Verifique limite do servidor ou permissões.'
                 ], 400);
             }
 
