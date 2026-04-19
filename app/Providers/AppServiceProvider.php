@@ -39,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
             
             if (!empty($settings['mail_host'])) {
                 $config = [
+                    'mail.default'                 => 'smtp',
                     'mail.mailers.smtp.host'       => $settings['mail_host'],
                     'mail.mailers.smtp.port'       => (int) ($settings['mail_port'] ?? 587),
                     'mail.mailers.smtp.encryption' => $settings['mail_encryption'] ?? 'tls',

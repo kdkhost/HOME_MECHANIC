@@ -268,10 +268,21 @@ class AuthController extends Controller
                 'message' => 'Não conseguimos encontrar um usuário com esse endereço de e-mail.'
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Erro ao enviar e-mail de recuperação: ' . $e->getMessage());
+            Log::error('Erro ao enviar e-mail de recuperação: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Se for um erro de banco de dados, informar separadamente
+            if (strpos($e->getMessage(), 'SQLSTATE') !== false || strpos($e->getMessage(), 'Connection refused') !== false) {
+                 return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de conexão com o banco de dados. Verifique se o MySQL está rodando corretamente.'
+                ], 500);
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erro interno ao enviar e-mail. Verifique as configurações de SMTP.'
+                'message' => 'Erro ao enviar e-mail: ' . $e->getMessage() . '. Verifique as configurações de SMTP no painel administrativo.'
             ], 500);
         }
     }
