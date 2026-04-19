@@ -10,6 +10,7 @@ Route::get('/admin', function () {
 
 // Rotas de autenticação (sem middleware auth)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
 
 Route::prefix('admin')->name('admin.')->group(function () {
     // Login
