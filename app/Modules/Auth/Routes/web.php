@@ -9,6 +9,8 @@ Route::get('/admin', function () {
 });
 
 // Rotas de autenticação (sem middleware auth)
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+
 Route::prefix('admin')->name('admin.')->group(function () {
     // Login
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
