@@ -55,7 +55,11 @@ class InstallerService
             'json' => 'JSON',
             'bcmath' => 'BCMath',
             'fileinfo' => 'Fileinfo',
-            'gd' => 'GD (para processamento de imagens)'
+            'gd' => 'GD (Processamento de Imagens)',
+            'imagick' => 'Imagick (Processamento de Imagens Superior)',
+            'exif' => 'Exif (Metadados de Imagem)',
+            'curl' => 'CURL',
+            'zip' => 'Zip'
         ];
 
         foreach ($requiredExtensions as $extension => $name) {
@@ -97,9 +101,9 @@ class InstallerService
         ];
 
         // Verificar permissões de escrita
-        $writableDirectories = [
             'storage' => storage_path(),
-            'bootstrap_cache' => base_path('bootstrap/cache')
+            'bootstrap_cache' => base_path('bootstrap/cache'),
+            'public_uploads' => public_path('uploads')
         ];
 
         foreach ($writableDirectories as $key => $path) {
@@ -110,7 +114,40 @@ class InstallerService
             ];
         }
 
+        // Verificar limites do PHP
+        $requirements['limits'] = [
+            'memory_limit' => [
+                'name' => 'Limite de Memória (Mín. 128M)',
+                'required' => false,
+                'status' => $this->parseSize(ini_get('memory_limit')) >= $this->parseSize('128M'),
+                'current' => ini_get('memory_limit')
+            ],
+            'upload_max_filesize' => [
+                'name' => 'Upload Max Filesize (Mín. 10M)',
+                'required' => false,
+                'status' => $this->parseSize(ini_get('upload_max_filesize')) >= $this->parseSize('10M'),
+                'current' => ini_get('upload_max_filesize')
+            ]
+        ];
+
         return $requirements;
+    }
+
+    /**
+     * Converter string de tamanho (ex: 128M) para bytes
+     */
+    private function parseSize(string $size): int
+    {
+        $unit = strtolower(substr($size, -1));
+        $value = (int)$size;
+        
+        switch($unit) {
+            case 'g': $value *= 1024;
+            case 'm': $value *= 1024;
+            case 'k': $value *= 1024;
+        }
+        
+        return $value;
     }
 
     /**

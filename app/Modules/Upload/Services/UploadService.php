@@ -13,11 +13,31 @@ use Intervention\Image\Drivers\Imagick\Driver;
 
 class UploadService
 {
-    private ImageManager $imageManager;
+    private ?ImageManager $imageManager = null;
 
     public function __construct()
     {
-        $this->imageManager = new ImageManager(new Driver());
+        // Construtor vazio para evitar falhas de inicialização de driver no DI do Laravel
+    }
+
+    /**
+     * Obter instância do ImageManager com detecção automática de driver
+     */
+    private function getManager(): ImageManager
+    {
+        if ($this->imageManager) return $this->imageManager;
+
+        try {
+            // Tenta Imagick primeiro (mais robusto)
+            if (extension_loaded('imagick')) {
+                return $this->imageManager = new ImageManager(new \Intervention\Image\Drivers\Imagick\Driver());
+            }
+            // Fallback para GD
+            return $this->imageManager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+        } catch (\Exception $e) {
+            Log::warning('Falha ao inicializar driver de imagem: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
@@ -93,7 +113,8 @@ class UploadService
             $originalFullPath  = public_path($storedPath);
             $thumbnailFullPath = public_path($thumbnailPath);
 
-            $image = $this->imageManager->read($originalFullPath);
+            $manager = $this->getManager();
+            $image = $manager->read($originalFullPath);
             $image->scaleDown(width: 400, height: 300);
             $image->save($thumbnailFullPath, quality: 85);
 
