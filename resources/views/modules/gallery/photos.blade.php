@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Fotos da Galeria - Home Mechanic')
 @section('page-title', 'Fotos da Galeria')
