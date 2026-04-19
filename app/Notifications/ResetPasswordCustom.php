@@ -85,7 +85,7 @@ class ResetPasswordCustom extends Notification
 
         return (new MailMessage)
             ->subject($subjectParsed)
-            ->html($html);
+            ->view('emails.custom', ['content' => $html]);
     }
 
     /**
