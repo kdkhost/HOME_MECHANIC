@@ -82,14 +82,14 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label font-weight-bold">Logo do Site</label>
-                                <x-filepond name="site_logo" :value="!empty($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : null" />
+                                <x-filepond name="site_logo" :value="!empty($settings['site_logo']) ? (str_starts_with($settings['site_logo'], 'http') ? $settings['site_logo'] : '/' . ltrim($settings['site_logo'], '/')) : null" />
                                 <small class="text-muted">Logo principal (PNG/SVG recomendado).</small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label font-weight-bold">Favicon</label>
-                                <x-filepond name="site_favicon" :value="!empty($settings['site_favicon']) ? asset('storage/' . $settings['site_favicon']) : null" />
+                                <x-filepond name="site_favicon" :value="!empty($settings['site_favicon']) ? (str_starts_with($settings['site_favicon'], 'http') ? $settings['site_favicon'] : '/' . ltrim($settings['site_favicon'], '/')) : null" />
                                 <small class="text-muted">Ícone da aba (ICO/PNG 32x32px).</small>
                             </div>
                         </div>

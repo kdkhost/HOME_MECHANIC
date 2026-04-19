@@ -96,8 +96,7 @@
                                 @php
                                     $bgImage = $settings['maintenance_bg_image'] ?? '';
                                     if ($bgImage) {
-                                        // UploadService salva direto em public/uploads. Se for legacia, vai pra storage/.
-                                        $bgUrl = file_exists(public_path($bgImage)) ? asset($bgImage) : asset('storage/' . $bgImage);
+                                        $bgUrl = str_starts_with($bgImage, 'http') ? $bgImage : '/' . ltrim($bgImage, '/');
                                     } else {
                                         $bgUrl = null;
                                     }
