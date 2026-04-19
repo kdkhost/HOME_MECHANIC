@@ -14,10 +14,13 @@ class GalleryCategory extends Model
     protected $fillable = [
         'name',
         'slug',
+        'description',
+        'active',
         'sort_order'
     ];
 
     protected $casts = [
+        'active'     => 'boolean',
         'sort_order' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
