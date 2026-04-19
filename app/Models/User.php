@@ -7,9 +7,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use App\Notifications\ResetPasswordCustom;
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
+    /**
+     * Enviar a notificação de redefinição de senha personalizada.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordCustom($token));
+    }
 
     /**
      * The attributes that are mass assignable.
