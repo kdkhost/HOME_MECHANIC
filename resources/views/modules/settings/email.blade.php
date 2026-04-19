@@ -72,14 +72,21 @@
                             <div class="form-group">
                                 <label>Senha SMTP</label>
                                 <div class="input-group">
-                                    <input type="password" class="form-control" name="mail_password" id="mail_password"
-                                           value="{{ $settings['mail_password'] ?? '' }}"
-                                           placeholder="••••••••"
+                                    <input type="password" class="form-control" 
+                                           name="mail_password" id="mail_password"
+                                           value=""
+                                           placeholder="{{ ($settings['mail_password_set'] ?? false) ? '••••••••' : 'Sua senha SMTP' }}"
                                            autocomplete="new-password">
-                                    <button type="button" class="btn btn-secondary" id="togglePassword" title="Mostrar/ocultar senha">
+                                    <button type="button" class="btn btn-outline-secondary" id="togglePassword" title="Mostrar/ocultar senha">
                                         <i class="fas fa-eye" id="eyeIcon"></i>
                                     </button>
                                 </div>
+                                @if($settings['mail_password_set'] ?? false)
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Senha já configurada no sistema. 
+                                        <span class="text-muted">Mantenha em branco para não alterar.</span>
+                                    </small>
+                                @endif
                             </div>
                         </div>
                     </div>
