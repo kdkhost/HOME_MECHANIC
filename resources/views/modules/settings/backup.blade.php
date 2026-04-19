@@ -7,8 +7,6 @@
 @endsection
 
 @section('styles')
-<link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
-<link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
 <style>
 /* Estilos IPs */
 .ip-tag {
@@ -31,11 +29,6 @@
     transition: color 0.2s;
 }
 .ip-tag .remove-ip:hover { color: white; }
-/* Estilos Filepond personalizados */
-.filepond--root { font-family: inherit; margin-bottom: 0; }
-.filepond--panel-root { background-color: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; }
-.filepond--drop-label { color: #6c757d; }
-.filepond--item-panel { background-color: var(--hm-primary); }
 </style>
 @endsection
 
@@ -106,7 +99,6 @@
                         </div>
 
                         <div class="col-md-12 mt-2">
-                            <div class="form-group mb-4">
                             <div class="form-group mb-4">
                                 <label>IPs com Acesso Liberado</label>
                                 
@@ -265,22 +257,115 @@
 
 @section('scripts')
 <script>
-// Rodar migrations
+$(function() {
+    // Inicializar Tags de IPs e Backups
+    renderIpTags();
+    loadBackups();
+
+    // ── Event Listeners para IPs ────────────────────────
+    $('#btnAddIp').on('click', function() {
+        addIpFromInput();
+    });
+
+    $('#ip_input').on('keypress', function(e) {
+        if (e.which === 13) { e.preventDefault(); addIpFromInput(); }
+    });
+
+    $('#btnMyIp').on('click', function() {
+        var myIp = $('#my_current_ip').text().trim();
+        if (myIp && myIp !== '127.0.0.1') {
+            addIp(myIp);
+            HMToast.success('Seu IP (' + myIp + ') foi adicionado!');
+        } else {
+            HMToast.warning('Não foi possível detectar seu IP público.');
+        }
+    });
+});
+
+// ── IP Manager ──────────────────────────────────────────
+function getIpList() {
+    var val = $('#maintenance_ips').val();
+    if (!val || !val.trim()) return [];
+    return val.split(',').map(function(ip) { return ip.trim(); }).filter(function(ip) { return ip.length > 0; });
+}
+
+function setIpList(ips) {
+    $('#maintenance_ips').val(ips.join(','));
+    renderIpTags();
+}
+
+function addIp(ip) {
+    ip = ip.trim();
+    if (!ip) return;
+
+    // Validação simples de IPv4 ou CIDR
+    var ipRegex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/;
+    if (!ipRegex.test(ip)) {
+        HMToast.error('IP inválido. Use formato IPv4 (ex: 192.168.0.1) ou CIDR (ex: 10.0.0.0/24).');
+        return;
+    }
+
+    var list = getIpList();
+    if (list.indexOf(ip) !== -1) {
+        HMToast.warning('Este IP já está na lista.');
+        return;
+    }
+
+    list.push(ip);
+    setIpList(list);
+}
+
+function removeIp(ip) {
+    var list = getIpList().filter(function(i) { return i !== ip; });
+    setIpList(list);
+}
+
+function addIpFromInput() {
+    var input = $('#ip_input');
+    var ip = input.val().trim();
+    if (ip) {
+        addIp(ip);
+        input.val('');
+        input.focus();
+    }
+}
+
+function renderIpTags() {
+    var container = $('#ip-tags-list');
+    container.empty();
+
+    var ips = getIpList();
+    if (ips.length === 0) {
+        container.html('<span class="text-muted" style="font-size:0.85rem;">Nenhum IP autorizado.</span>');
+        return;
+    }
+
+    ips.forEach(function(ip) {
+        var tag = $('<span class="ip-tag"></span>');
+        tag.text(ip);
+        var removeBtn = $('<span class="remove-ip" title="Remover">&times;</span>');
+        removeBtn.on('click', function() { removeIp(ip); });
+        tag.append(removeBtn);
+        container.append(tag);
+    });
+}
+
+// ── Migrations ──────────────────────────────────────────
 function runMigrations() {
     Swal.fire({
         title: 'Rodar Migrations?',
         html: '<div style="font-size:0.88rem;color:#64748b;">Isso executará todas as migrations pendentes no banco de dados.<br><strong>Recomendado após atualizar o sistema.</strong></div>',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: 'var(--hm-primary)',
+        confirmButtonColor: '#FF6B00',
         cancelButtonColor: '#64748b',
         confirmButtonText: '<i class="fas fa-play-circle me-1"></i> Executar',
         cancelButtonText: 'Cancelar',
-    }).then(r => {
+    }).then(function(r) {
         if (!r.isConfirmed) return;
 
-        const btn       = document.getElementById('btnMigrate');
-        const resultDiv = document.getElementById('migrateResult');
+        var btn       = document.getElementById('btnMigrate');
+        var resultDiv = document.getElementById('migrateResult');
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Executando...';
@@ -289,25 +374,22 @@ function runMigrations() {
         $.ajax({
             url: '{{ route("admin.system.migrate") }}',
             method: 'POST',
-            contentType: 'application/json',
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-            data: JSON.stringify({}),
-            success(data) {
-                const output = data.output ? `<pre style="font-size:0.78rem;margin-top:0.5rem;background:#f8fafc;padding:0.75rem;border-radius:6px;max-height:200px;overflow-y:auto;">${data.output}</pre>` : '';
+            success: function(data) {
+                var output = data.output ? '<pre style="font-size:0.78rem;margin-top:0.5rem;background:#f8fafc;padding:0.75rem;border-radius:6px;max-height:200px;overflow-y:auto;">' + data.output + '</pre>' : '';
                 resultDiv.innerHTML = data.success
-                    ? `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>${data.message}</strong>${output}</div>`
-                    : `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${data.message}</div>`;
+                    ? '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>' + data.message + '</strong>' + output + '</div>'
+                    : '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>' + data.message + '</div>';
                 resultDiv.style.display = 'block';
                 if (data.success) HMToast.success(data.message);
                 else HMToast.error(data.message);
             },
-            error(xhr) {
-                const msg = xhr.responseJSON?.message || 'Erro ao executar migrations.';
-                resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${msg}</div>`;
+            error: function(xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao executar migrations.';
+                resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>' + msg + '</div>';
                 resultDiv.style.display = 'block';
                 HMToast.error(msg);
             },
-            complete() {
+            complete: function() {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-play-circle me-1"></i> Rodar Migrations Pendentes';
             }
@@ -315,118 +397,111 @@ function runMigrations() {
     });
 }
 
-// Sobrescrever clearCacheType para mostrar resultado inline nesta página
+// ── Cache ────────────────────────────────────────────────
 window.clearCacheType = function(type) {
-    const labels = { all:'Limpar TODOS os caches', config:'Configuração', view:'Views', route:'Rotas', app:'App Cache' };
+    var labels = { all:'Limpar TODOS os caches', config:'Configuração', view:'Views', route:'Rotas', app:'App Cache' };
     Swal.fire({
         title: labels[type] || 'Limpar cache?',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: 'var(--hm-primary)',
+        confirmButtonColor: '#FF6B00',
         cancelButtonColor: '#64748b',
         confirmButtonText: '<i class="fas fa-broom me-1"></i> Limpar',
         cancelButtonText: 'Cancelar',
-    }).then(r => {
+    }).then(function(r) {
         if (!r.isConfirmed) return;
 
-        const resultDiv = document.getElementById('cacheResult');
+        var resultDiv = document.getElementById('cacheResult');
         resultDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i>Limpando cache...</div>';
         resultDiv.style.display = 'block';
 
         $.ajax({
             url: '{{ route("admin.system.clear-cache") }}',
             method: 'POST',
-            data: JSON.stringify({ type }),
+            data: JSON.stringify({ type: type }),
             contentType: 'application/json',
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-            success(data) {
-                const details = (data.details || []).join('<br>');
+            success: function(data) {
+                var details = (data.details || []).join('<br>');
                 resultDiv.innerHTML = data.success
-                    ? `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>Concluído!</strong><br>${details}</div>`
-                    : `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>${data.message}<br>${details}</div>`;
+                    ? '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><strong>Concluído!</strong><br>' + details + '</div>'
+                    : '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>' + data.message + '<br>' + details + '</div>';
                 if (data.success) HMToast.success(data.message);
                 else HMToast.warning(data.message);
             },
-            error(xhr) {
-                const msg = xhr.responseJSON?.message || 'Erro ao limpar cache.';
-                resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${msg}</div>`;
+            error: function(xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao limpar cache.';
+                resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>' + msg + '</div>';
                 HMToast.error(msg);
             }
         });
     });
 };
+
 // ── Backup Manager ───────────────────────────────────────
 function loadBackups() {
-    const list = document.getElementById('backupsList');
+    var list = document.getElementById('backupsList');
     $.ajax({
         url: '{{ route("admin.settings.backup.run") }}'.replace('run', 'list'),
         method: 'GET',
-        success(res) {
+        success: function(res) {
             if (!res.success || !res.data.length) {
                 list.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">Nenhum backup encontrado.</td></tr>';
                 return;
             }
-            list.innerHTML = res.data.map(b => `
-                <tr>
-                    <td><i class="fas fa-file-archive me-2 text-primary"></i> <strong>${b.name}</strong></td>
-                    <td><span class="badge bg-light text-dark border">${b.size}</span></td>
-                    <td>${b.date}</td>
-                    <td class="text-end">
-                        <div class="btn-group">
-                            <a href="${b.url}" class="btn btn-sm btn-outline-success" title="Download">
-                                <i class="fas fa-download"></i>
-                            </a>
-                            <button onclick="deleteBackup('${b.name}')" class="btn btn-sm btn-outline-danger" title="Excluir">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            list.innerHTML = res.data.map(function(b) {
+                return '<tr>' +
+                    '<td><i class="fas fa-file-archive me-2 text-primary"></i> <strong>' + b.name + '</strong></td>' +
+                    '<td><span class="badge bg-light text-dark border">' + b.size + '</span></td>' +
+                    '<td>' + b.date + '</td>' +
+                    '<td class="text-end"><div class="btn-group">' +
+                        '<a href="' + b.url + '" class="btn btn-sm btn-outline-success" title="Download"><i class="fas fa-download"></i></a>' +
+                        '<button onclick="deleteBackup(\'' + b.name + '\')" class="btn btn-sm btn-outline-danger" title="Excluir"><i class="fas fa-trash"></i></button>' +
+                    '</div></td></tr>';
+            }).join('');
         },
-        error() {
+        error: function() {
             list.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Erro ao carregar lista de backups.</td></tr>';
         }
     });
 }
 
 function runBackup(type) {
-    const labels = { all: 'Completo', db: 'Banco de Dados', files: 'Arquivos' };
+    var labels = { all: 'Completo', db: 'Banco de Dados', files: 'Arquivos' };
     Swal.fire({
-        title: `Gerar Backup ${labels[type]}?`,
+        title: 'Gerar Backup ' + (labels[type] || '') + '?',
         html: '<div style="font-size:0.88rem;color:#64748b;">Dependendo do tamanho do seu site, isso pode levar alguns segundos.</div>',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: 'var(--hm-primary)',
+        confirmButtonColor: '#FF6B00',
         confirmButtonText: '<i class="fas fa-play me-1"></i> Iniciar',
         cancelButtonText: 'Cancelar'
-    }).then(r => {
+    }).then(function(r) {
         if (!r.isConfirmed) return;
 
         Swal.fire({
             title: 'Gerando Backup...',
             html: 'Aguarde um momento, estamos compactando os dados.',
             allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
+            didOpen: function() { Swal.showLoading(); }
         });
 
         $.ajax({
             url: '{{ route("admin.settings.backup.run") }}',
             method: 'POST',
-            data: JSON.stringify({ type }),
+            data: JSON.stringify({ type: type }),
             contentType: 'application/json',
-            success(res) {
+            success: function(res) {
                 Swal.close();
                 if (res.success) {
-                    Swal.fire('✅ Pronto!', res.message, 'success');
+                    Swal.fire({ title: '✅ Pronto!', text: res.message, icon: 'success', confirmButtonColor: '#FF6B00' });
                     loadBackups();
                 } else {
-                    Swal.fire('❌ Erro', res.message, 'error');
+                    Swal.fire({ title: '❌ Erro', text: res.message, icon: 'error', confirmButtonColor: '#FF6B00' });
                 }
             },
-            error(xhr) {
+            error: function(xhr) {
                 Swal.close();
-                Swal.fire('❌ Erro Fatal', xhr.responseJSON?.message || 'Erro inesperado na geração do backup.', 'error');
+                Swal.fire({ title: '❌ Erro Fatal', text: (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro inesperado.', icon: 'error', confirmButtonColor: '#FF6B00' });
             }
         });
     });
@@ -435,21 +510,21 @@ function runBackup(type) {
 function deleteBackup(file) {
     Swal.fire({
         title: 'Excluir Backup?',
-        text: `Arquivo: ${file}`,
+        text: 'Arquivo: ' + file,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
         confirmButtonText: 'Sim, excluir',
         cancelButtonText: 'Cancelar'
-    }).then(r => {
+    }).then(function(r) {
         if (!r.isConfirmed) return;
 
         $.ajax({
             url: '{{ route("admin.settings.backup.delete") }}',
             method: 'DELETE',
-            data: JSON.stringify({ file }),
+            data: JSON.stringify({ file: file }),
             contentType: 'application/json',
-            success(res) {
+            success: function(res) {
                 if (res.success) {
                     HMToast.success(res.message);
                     loadBackups();
@@ -458,9 +533,6 @@ function deleteBackup(file) {
         });
     });
 }
-
-// Inicializar Tags e Backups
-renderIpTags();
-loadBackups();
 </script>
 @endsection
+
