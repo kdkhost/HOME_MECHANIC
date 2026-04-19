@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Galeria - HomeMechanic')
 @section('page-title', 'Galeria')
@@ -78,7 +78,7 @@
                     Categorias da Galeria
                 </h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#categoryModal">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
                         <i class="bi bi-plus"></i> Nova Categoria
                     </button>
                     <a href="{{ route('admin.gallery.photos') }}" class="btn btn-info ml-2">
@@ -116,7 +116,7 @@
                     </div>
                 </div>
 
-                <!-- Paginação -->
+                <!-- PaginaÃ§Ã£o -->
                 <div id="paginationContainer" class="d-flex justify-content-center mt-3"></div>
             </div>
         </div>
@@ -132,7 +132,7 @@
                     <i class="bi bi-folder-plus mr-2"></i>
                     <span id="modalTitle">Nova Categoria</span>
                 </h4>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -141,7 +141,7 @@
                     <div class="form-group">
                         <label for="name">Nome da Categoria <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="name" name="name" required maxlength="255">
-                        <small class="form-text text-muted">Nome que será exibido na galeria</small>
+                        <small class="form-text text-muted">Nome que serÃ¡ exibido na galeria</small>
                     </div>
 
                     <div class="form-group">
@@ -151,13 +151,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="sort_order">Ordem de Exibição</label>
+                        <label for="sort_order">Ordem de ExibiÃ§Ã£o</label>
                         <input type="number" class="form-control" id="sort_order" name="sort_order" min="0">
                         <small class="form-text text-muted">Deixe em branco para adicionar ao final</small>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check"></i> Salvar
                     </button>
@@ -243,7 +243,7 @@ class GalleryManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexão');
+            this.showError('Erro de conexÃ£o');
         }
     }
 
@@ -255,7 +255,7 @@ class GalleryManager {
                 <div class="text-center py-4">
                     <i class="bi bi-folder-x display-4 text-muted"></i>
                     <p class="text-muted mt-2">Nenhuma categoria encontrada</p>
-                    <button class="btn btn-primary" data-toggle="modal" data-target="#categoryModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
                         <i class="bi bi-plus"></i> Criar Primeira Categoria
                     </button>
                 </div>
@@ -332,7 +332,7 @@ class GalleryManager {
                      </li>`;
         }
         
-        // Páginas
+        // PÃ¡ginas
         for (let i = 1; i <= pagination.last_page; i++) {
             if (i === pagination.current_page) {
                 html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
@@ -343,10 +343,10 @@ class GalleryManager {
             }
         }
         
-        // Próximo
+        // PrÃ³ximo
         if (pagination.current_page < pagination.last_page) {
             html += `<li class="page-item">
-                       <a class="page-link" href="#" onclick="galleryManager.loadCategories(${pagination.current_page + 1})">Próximo</a>
+                       <a class="page-link" href="#" onclick="galleryManager.loadCategories(${pagination.current_page + 1})">PrÃ³ximo</a>
                      </li>`;
         }
         
@@ -400,7 +400,7 @@ class GalleryManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexão');
+            this.showError('Erro de conexÃ£o');
             this.loadCategories(this.currentPage);
         }
     }
@@ -422,11 +422,11 @@ class GalleryManager {
                 $('#modalTitle').text('Editar Categoria');
                 $('#categoryModal').modal('show');
             } else {
-                this.showError('Categoria não encontrada');
+                this.showError('Categoria nÃ£o encontrada');
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexão');
+            this.showError('Erro de conexÃ£o');
         }
     }
 
@@ -470,14 +470,14 @@ class GalleryManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexão');
+            this.showError('Erro de conexÃ£o');
         }
     }
 
     async deleteCategory(id) {
         const result = await Swal.fire({
-            title: 'Confirmar Exclusão',
-            text: 'Tem certeza que deseja excluir esta categoria? Todas as fotos da categoria também serão removidas.',
+            title: 'Confirmar ExclusÃ£o',
+            text: 'Tem certeza que deseja excluir esta categoria? Todas as fotos da categoria tambÃ©m serÃ£o removidas.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -507,7 +507,7 @@ class GalleryManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexão');
+            this.showError('Erro de conexÃ£o');
         }
     }
 

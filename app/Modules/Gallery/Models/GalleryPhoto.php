@@ -105,14 +105,16 @@ class GalleryPhoto extends Model
 
         try {
             $imagePath = $upload->getFullPath();
-            $imageInfo = getimagesize($imagePath);
-            
-            if ($imageInfo) {
-                return [
-                    'width' => $imageInfo[0],
-                    'height' => $imageInfo[1],
-                    'ratio' => round($imageInfo[0] / $imageInfo[1], 2)
-                ];
+            if (file_exists($imagePath)) {
+                $imageInfo = @getimagesize($imagePath);
+                
+                if ($imageInfo) {
+                    return [
+                        'width' => $imageInfo[0],
+                        'height' => $imageInfo[1],
+                        'ratio' => round($imageInfo[0] / $imageInfo[1], 2)
+                    ];
+                }
             }
         } catch (\Exception $e) {
             \Log::warning('Erro ao obter dimensões da imagem', [

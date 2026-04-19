@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Fotos da Galeria - Home Mechanic')
 @section('page-title', 'Fotos da Galeria')
@@ -115,10 +115,10 @@
                     @endif
                 </h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#photoModal">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#photoModal">
                         <i class="bi bi-plus"></i> Nova Foto
                     </button>
-                    <button type="button" class="btn btn-success ml-2" data-toggle="modal" data-target="#massUploadModal">
+                    <button type="button" class="btn btn-success ml-2" data-bs-toggle="modal" data-bs-target="#massUploadModal">
                         <i class="bi bi-clouds"></i> Upload em Massa
                     </button>
                     <a href="{{ route('admin.gallery.index') }}" class="btn btn-secondary ml-2">
@@ -160,9 +160,9 @@
                     <div class="col-md-2">
                         <select id="sortBy" class="form-control">
                             <option value="sort_order">Ordem</option>
-                            <option value="title">Título</option>
-                            <option value="created_at">Data de Criação</option>
-                            <option value="updated_at">Última Atualização</option>
+                            <option value="title">TÃ­tulo</option>
+                            <option value="created_at">Data de CriaÃ§Ã£o</option>
+                            <option value="updated_at">Ãšltima AtualizaÃ§Ã£o</option>
                         </select>
                     </div>
                     <div class="col-md-3 text-right">
@@ -184,7 +184,7 @@
                     </div>
                 </div>
 
-                <!-- Paginação -->
+                <!-- PaginaÃ§Ã£o -->
                 <div id="paginationContainer" class="d-flex justify-content-center mt-3"></div>
             </div>
         </div>
@@ -200,7 +200,7 @@
                     <i class="bi bi-image mr-2"></i>
                     <span id="modalTitle">Nova Foto</span>
                 </h4>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -209,7 +209,7 @@
                     <div class="row">
                         <div class="col-md-8">
                             <div class="form-group">
-                                <label for="title">Título da Foto <span class="text-danger">*</span></label>
+                                <label for="title">TÃ­tulo da Foto <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="title" name="title" required maxlength="255">
                             </div>
 
@@ -224,13 +224,13 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="description">Descrição</label>
+                                <label for="description">DescriÃ§Ã£o</label>
                                 <textarea class="form-control" id="description" name="description" rows="3" maxlength="1000"></textarea>
-                                <small class="form-text text-muted">Descrição opcional da foto (máx. 1000 caracteres)</small>
+                                <small class="form-text text-muted">DescriÃ§Ã£o opcional da foto (mÃ¡x. 1000 caracteres)</small>
                             </div>
 
                             <div class="form-group">
-                                <label for="sort_order">Ordem de Exibição</label>
+                                <label for="sort_order">Ordem de ExibiÃ§Ã£o</label>
                                 <input type="number" class="form-control" id="sort_order" name="sort_order" min="0">
                                 <small class="form-text text-muted">Deixe em branco para adicionar ao final</small>
                             </div>
@@ -240,7 +240,7 @@
                                     <input type="checkbox" class="custom-control-input" id="active" name="active" value="1" checked>
                                     <label class="custom-control-label" for="active">Foto Ativa</label>
                                 </div>
-                                <small class="form-text text-muted">Apenas fotos ativas são exibidas na galeria pública</small>
+                                <small class="form-text text-muted">Apenas fotos ativas sÃ£o exibidas na galeria pÃºblica</small>
                             </div>
                         </div>
 
@@ -248,19 +248,19 @@
                             <div class="form-group mb-4">
                                 <label class="form-label font-weight-bold">Imagem Principal <span class="text-danger">*</span></label>
                                 <x-filepond name="filename" id="photo_filename" required="true" />
-                                <small class="text-muted">Arraste a foto principal aqui (Máx: 10MB)</small>
+                                <small class="text-muted">Arraste a foto principal aqui (MÃ¡x: 10MB)</small>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label font-weight-bold">Thumbnail Personalizado</label>
                                 <x-filepond name="thumbnail" id="photo_thumbnail" />
-                                <small class="form-text text-muted">Opcional. Se vazio, será gerado automaticamente.</small>
+                                <small class="form-text text-muted">Opcional. Se vazio, serÃ¡ gerado automaticamente.</small>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check"></i> Salvar
                     </button>
@@ -276,7 +276,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title"><i class="bi bi-clouds mr-2"></i> Upload em Massa</h4>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <button type="button" class="close" data-bs-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -290,12 +290,12 @@
                 <div class="form-group">
                     <label>Fotos</label>
                     <x-filepond name="mass_photos[]" id="mass_photos" multiple="true" />
-                    <small class="text-muted">Arraste múltiplas fotos de uma vez.</small>
+                    <small class="text-muted">Arraste mÃºltiplas fotos de uma vez.</small>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary btn-block" onclick="photosManager.processMassUpload()">
-                    <i class="bi bi-check-circle"></i> Iniciar Importação
+                    <i class="bi bi-check-circle"></i> Iniciar ImportaÃ§Ã£o
                 </button>
             </div>
         </div>
@@ -394,7 +394,7 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexão');
+            this.showError('Erro de conexÃ£o');
         }
     }
 
@@ -406,7 +406,7 @@ class PhotosManager {
                 <div class="text-center py-4">
                     <i class="bi bi-image-alt display-4 text-muted"></i>
                     <p class="text-muted mt-2">Nenhuma foto encontrada</p>
-                    <button class="btn btn-primary" data-toggle="modal" data-target="#photoModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#photoModal">
                         <i class="bi bi-plus"></i> Adicionar Primeira Foto
                     </button>
                 </div>
@@ -497,7 +497,7 @@ class PhotosManager {
         
         if (pagination.current_page < pagination.last_page) {
             html += `<li class="page-item">
-                       <a class="page-link" href="#" onclick="photosManager.loadPhotos(${pagination.current_page + 1})">Próximo</a>
+                       <a class="page-link" href="#" onclick="photosManager.loadPhotos(${pagination.current_page + 1})">PrÃ³ximo</a>
                      </li>`;
         }
         
@@ -567,7 +567,7 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexão');
+            this.showError('Erro de conexÃ£o');
             this.loadPhotos(this.currentPage);
         }
     }
@@ -632,7 +632,7 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro ao processar solicitação');
+            this.showError('Erro ao processar solicitaÃ§Ã£o');
         }
     }
 
@@ -684,7 +684,7 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
+            Swal.fire('Erro', 'Falha na comunicaÃ§Ã£o com o servidor.', 'error');
         }
     }
 
@@ -693,8 +693,8 @@ class PhotosManager {
             this.editingId = id;
             $('#modalTitle').text('Editar Foto');
             
-            // Note: Usando a rota de photos com parâmetro search ou algo que retorne JSON da foto específica se não houver rota direta
-            // Para simplificar, assumimos que photos Manager já tem os dados ou que photos(Request, photo_id) funciona
+            // Note: Usando a rota de photos com parÃ¢metro search ou algo que retorne JSON da foto especÃ­fica se nÃ£o houver rota direta
+            // Para simplificar, assumimos que photos Manager jÃ¡ tem os dados ou que photos(Request, photo_id) funciona
             const response = await fetch(`{{ route('admin.gallery.photos') }}?photo_id=${id}`, {
                 headers: { 'Accept': 'application/json' }
             });
@@ -721,14 +721,14 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro ao buscar foto:', error);
-            this.showError('Não foi possível carregar os dados da foto.');
+            this.showError('NÃ£o foi possÃ­vel carregar os dados da foto.');
         }
     }
 
     async deletePhoto(id) {
         const result = await Swal.fire({
             title: 'Excluir foto?',
-            text: 'Esta ação não poderá ser desfeita.',
+            text: 'Esta aÃ§Ã£o nÃ£o poderÃ¡ ser desfeita.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
