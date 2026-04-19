@@ -1,0 +1,1 @@
+ERROR: SQLSTATE[HY000] [2002] Nenhuma conexão pôde ser feita porque a máquina de destino as recusou ativamente (Connection: mysql, SQL: select `email` from `users`)

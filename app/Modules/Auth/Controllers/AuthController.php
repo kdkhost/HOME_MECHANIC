@@ -253,8 +253,21 @@ class AuthController extends Controller
             'email.email' => 'Informe um endereço de e-mail válido.'
         ]);
 
+        $email = trim($request->input('email'));
+        
+        Log::info('Iniciando solicitação de recuperação de senha', [
+            'email' => $email,
+            'ip' => $request->ip()
+        ]);
+
         try {
-            $status = Password::sendResetLink($request->only('email'));
+            $status = Password::sendResetLink(['email' => $email]);
+            
+            Log::info('Status retornado pelo Password Broker', [
+                'email' => $email,
+                'status' => $status,
+                'is_sent' => $status === Password::RESET_LINK_SENT
+            ]);
 
             if ($status === Password::RESET_LINK_SENT) {
                 return response()->json([
@@ -263,9 +276,12 @@ class AuthController extends Controller
                 ]);
             }
 
+            // Converter status para mensagem legível traduzida
+            $message = __($status);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Não conseguimos encontrar um usuário com esse endereço de e-mail.'
+                'message' => $message
             ], 422);
         } catch (\Exception $e) {
             Log::error('Erro ao enviar e-mail de recuperação: ' . $e->getMessage(), [

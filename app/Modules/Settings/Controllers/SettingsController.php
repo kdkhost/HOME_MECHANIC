@@ -110,7 +110,7 @@ class SettingsController extends Controller
         // Nunca exibir a senha real — apenas indicar se está preenchida
         if (!empty($settings['mail_password'])) {
             $settings['mail_password_set'] = true;
-            $settings['mail_password']     = '';
+            $settings['mail_password']     = '********';
         }
         return view('modules.settings.email', compact('settings'));
     }
@@ -241,8 +241,8 @@ class SettingsController extends Controller
             'mail_from_name'    => $request->input('mail_from_name'),
         ];
 
-        // Só atualiza a senha se foi preenchida
-        if ($request->filled('mail_password')) {
+        // Só atualiza a senha se foi preenchida e não for o placeholder de exibição
+        if ($request->filled('mail_password') && $request->input('mail_password') !== '********') {
             $data['mail_password'] = $request->input('mail_password');
         }
 

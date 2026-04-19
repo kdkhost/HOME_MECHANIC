@@ -74,7 +74,7 @@
                                 <div class="input-group">
                                     <input type="password" class="form-control" 
                                            name="mail_password" id="mail_password"
-                                           value=""
+                                           value="{{ $settings['mail_password'] ?? '' }}"
                                            placeholder="{{ ($settings['mail_password_set'] ?? false) ? '••••••••' : 'Sua senha SMTP' }}"
                                            autocomplete="new-password">
                                     <button type="button" class="btn btn-outline-secondary" id="togglePassword" title="Mostrar/ocultar senha">

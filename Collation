@@ -1,0 +1,30 @@
+
+Deprecated: Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\Mysql::ATTR_SSL_CA instead in G:\Tudo\HOME_MECHANIC\vendor\laravel\framework\config\database.php on line 61
+
+Deprecated: Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\Mysql::ATTR_SSL_CA instead in G:\Tudo\HOME_MECHANIC\vendor\laravel\framework\config\database.php on line 81
+
+Deprecated: Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\Mysql::ATTR_SSL_CA instead in G:\Tudo\HOME_MECHANIC\config\database.php on line 58
+
+Deprecated: Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\Mysql::ATTR_SSL_CA instead in G:\Tudo\HOME_MECHANIC\config\database.php on line 78
+
+   InvalidArgumentException 
+
+  Unexpected end of input
+
+  at vendor\psy\psysh\src\Shell.php:1475
+    1471▕ 
+    1472▕         if (!$this->hasValidCode()) {
+    1473▕             $this->popCodeStack();
+    1474▕ 
+  ➜ 1475▕             throw new \InvalidArgumentException('Unexpected end of input');
+    1476▕         }
+    1477▕     }
+    1478▕ 
+    1479▕     /**
+
+  1   vendor\psy\psysh\src\Shell.php:2173
+      Psy\Shell::setCode("echo DB::select(\SHOW")
+
+  2   vendor\laravel\tinker\src\Console\TinkerCommand.php:77
+      Psy\Shell::execute("echo DB::select(\SHOW")
+
