@@ -435,6 +435,64 @@
     </div>
 </div>
 
+{{-- Ferramentas de Manutenção --}}
+<div class="row g-3 mt-1">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <span class="card-title"><i class="fas fa-wrench"></i> Ferramentas de Manutenção</span>
+                <button class="btn btn-sm btn-outline-danger" onclick="dashClearAll()" id="btnClearAll">
+                    <i class="fas fa-broom me-1"></i> Limpar Tudo
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6 col-md-3">
+                        <button class="qa-btn w-100 border-0" onclick="dashClearType('config')" id="btnClearConfig">
+                            <i class="fas fa-sliders-h"></i> Config Cache
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <button class="qa-btn w-100 border-0" onclick="dashClearType('view')" id="btnClearViews">
+                            <i class="fas fa-eye"></i> Views Cache
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <button class="qa-btn w-100 border-0" onclick="dashClearType('route')" id="btnClearRoutes">
+                            <i class="fas fa-route"></i> Route Cache
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <button class="qa-btn w-100 border-0" onclick="dashClearType('app')" id="btnClearApp">
+                            <i class="fas fa-database"></i> App Cache
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <button class="qa-btn w-100 border-0" onclick="dashRunMigrations()" id="btnMigrate">
+                            <i class="fas fa-database"></i> Migrations
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.settings.backup') }}" class="qa-btn w-100">
+                            <i class="fas fa-shield-alt"></i> Backup
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.settings.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-cogs"></i> Configurações
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('admin.documentation.index') }}" class="qa-btn w-100">
+                            <i class="fas fa-book"></i> Documentação
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -543,6 +601,101 @@ function refreshQuickStats() {
             if (res.visits_today !== undefined) $('#kpi-visits-today').text(res.visits_today);
             if (res.online_now   !== undefined) $('#kpi-online').text(res.online_now);
         }
+    });
+}
+
+// ── Ferramentas de Manutenção (Dashboard) ─────────────────
+function dashClearType(type) {
+    var labels = { config: 'Configuração', view: 'Views Compiladas', route: 'Rotas', app: 'Cache de Aplicação' };
+    Swal.fire({
+        title: 'Limpar ' + (labels[type] || type) + '?',
+        text: 'O cache selecionado será limpo.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#FF6B00',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fas fa-broom"></i> Limpar',
+        cancelButtonText: 'Cancelar',
+    }).then(function(r) {
+        if (r.isConfirmed) _execCacheClear(type);
+    });
+}
+
+function dashClearAll() {
+    Swal.fire({
+        title: 'Limpar TODOS os caches?',
+        html: '<div style="font-size:0.88rem;color:#64748b;margin-top:0.5rem;">Serão limpos:<br>✅ Cache de aplicação<br>✅ Views compiladas<br>✅ Configurações<br>✅ Rotas</div>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#FF6B00',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fas fa-broom"></i> Limpar tudo',
+        cancelButtonText: 'Cancelar',
+    }).then(function(r) {
+        if (r.isConfirmed) _execCacheClear('all');
+    });
+}
+
+function _execCacheClear(type) {
+    Swal.fire({ title: 'Limpando...', text: 'Aguarde enquanto os caches são limpos.', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+    $.ajax({
+        url: '{{ route("admin.system.clear-cache") }}',
+        method: 'POST',
+        data: JSON.stringify({ type: type }),
+        contentType: 'application/json',
+        success: function(data) {
+            var details = (data.details || []).join('<br>');
+            Swal.fire({
+                title: data.success ? '✅ Cache limpo!' : '⚠️ Concluído com erros',
+                html: details || data.message,
+                icon: data.success ? 'success' : 'warning',
+                confirmButtonColor: '#FF6B00',
+            });
+            if (data.success) HMToast.success(data.message);
+            else HMToast.warning(data.message);
+        },
+        error: function(xhr) {
+            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao limpar cache.';
+            Swal.fire({ title: 'Erro', text: msg, icon: 'error', confirmButtonColor: '#FF6B00' });
+            HMToast.error(msg);
+        }
+    });
+}
+
+function dashRunMigrations() {
+    Swal.fire({
+        title: 'Rodar Migrations?',
+        text: 'Isso aplicará todas as migrations pendentes no banco de dados.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#FF6B00',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fas fa-database"></i> Executar',
+        cancelButtonText: 'Cancelar',
+    }).then(function(r) {
+        if (!r.isConfirmed) return;
+        Swal.fire({ title: 'Executando...', text: 'Aguarde enquanto as migrations são aplicadas.', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+        $.ajax({
+            url: '{{ route("admin.system.migrate") }}',
+            method: 'POST',
+            success: function(data) {
+                Swal.fire({
+                    title: data.success ? '✅ Migrations executadas!' : '❌ Erro nas Migrations',
+                    html: '<pre style="text-align:left;font-size:0.8rem;max-height:300px;overflow:auto;background:#f8f9fa;padding:1rem;border-radius:8px;">' + (data.output || data.message) + '</pre>',
+                    icon: data.success ? 'success' : 'error',
+                    confirmButtonColor: '#FF6B00',
+                });
+                if (data.success) HMToast.success(data.message);
+                else HMToast.error(data.message);
+            },
+            error: function(xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao executar migrations.';
+                Swal.fire({ title: 'Erro', text: msg, icon: 'error', confirmButtonColor: '#FF6B00' });
+                HMToast.error(msg);
+            }
+        });
     });
 }
 </script>
