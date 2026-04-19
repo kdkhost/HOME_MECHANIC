@@ -18,6 +18,7 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         Route::post('/email/test', [SettingsController::class, 'testEmail'])->name('email.test');
 
         // Backups (Ações)
+        Route::get('/backup/list',       [\App\Modules\Settings\Controllers\BackupController::class, 'list'])->name('backup.list');
         Route::post('/backup/run',      [\App\Modules\Settings\Controllers\BackupController::class, 'create'])->name('backup.run');
         Route::get('/backup/download',  [\App\Modules\Settings\Controllers\BackupController::class, 'download'])->name('backup.download');
         Route::delete('/backup/delete', [\App\Modules\Settings\Controllers\BackupController::class, 'destroy'])->name('backup.delete');

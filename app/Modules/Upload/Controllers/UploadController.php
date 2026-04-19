@@ -29,15 +29,26 @@ class UploadController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validar se arquivo foi enviado
-            if (!$request->hasFile('file')) {
+            // Validar se arquivo foi enviado (FilePond pode usar nomes variados de input)
+            $file = $request->file('file');
+            
+            if (!$file) {
+                // Tenta recuperar o primeiro arquivo enviado no request
+                $allFiles = $request->allFiles();
+                if (!empty($allFiles)) {
+                    $file = reset($allFiles);
+                    if (is_array($file)) {
+                        $file = reset($file); // Se for enviado como array (ex: files[])
+                    }
+                }
+            }
+
+            if (!$file) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Nenhum arquivo foi enviado.'
                 ], 400);
             }
-
-            $file = $request->file('file');
 
             // Validar MIME type e tamanho
             $validation = $this->mimeValidator->validate($file);
@@ -94,14 +105,23 @@ class UploadController extends Controller
     {
         try {
             // Validar se arquivos foram enviados
-            if (!$request->hasFile('files')) {
+            $files = $request->file('files');
+
+            if (!$files) {
+                $allFiles = $request->allFiles();
+                if (!empty($allFiles)) {
+                    $keys = array_keys($allFiles);
+                    $firstKey = reset($keys);
+                    $files = $allFiles[$firstKey];
+                }
+            }
+
+            if (empty($files)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Nenhum arquivo foi enviado.'
                 ], 400);
             }
-
-            $files = $request->file('files');
             
             // Validar se é array
             if (!is_array($files)) {

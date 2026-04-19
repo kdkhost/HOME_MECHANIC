@@ -441,7 +441,7 @@ window.clearCacheType = function(type) {
 function loadBackups() {
     var list = document.getElementById('backupsList');
     $.ajax({
-        url: '{{ route("admin.settings.backup.run") }}'.replace('run', 'list'),
+        url: '{{ route("admin.settings.backup.list") }}',
         method: 'GET',
         success: function(res) {
             if (!res.success || !res.data.length) {
