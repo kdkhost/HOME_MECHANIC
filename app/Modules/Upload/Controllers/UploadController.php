@@ -99,7 +99,7 @@ class UploadController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro interno no servidor. Tente novamente.',
+                'message' => 'Erro interno: ' . $e->getMessage(),
                 'code' => 'INTERNAL_ERROR'
             ], 500);
         }
@@ -160,7 +160,7 @@ class UploadController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro interno no servidor. Tente novamente.'
+                'message' => 'Erro interno: ' . $e->getMessage()
             ], 500);
         }
     }
