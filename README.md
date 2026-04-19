@@ -225,12 +225,15 @@ mysqldump -u usuario -p homemechanic > backup_$(date +%Y%m%d).sql
 mysql -u usuario -p homemechanic < backup_20260415.sql
 ```
 
-### Limpeza de Cache
+### Limpeza de Cache & População de Dados
 ```bash
 php artisan cache:clear
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
+
+# Popular base com conteúdo Premium (Serviços e Galeria)
+php artisan db:seed --class=PremiumContentSeeder
 ```
 
 ### Otimização para Produção

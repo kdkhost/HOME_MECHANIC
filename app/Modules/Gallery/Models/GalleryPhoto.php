@@ -75,6 +75,11 @@ class GalleryPhoto extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
+        // Suporte para URLs externas direto no campo filename
+        if ($this->filename && str_starts_with($this->filename, 'http')) {
+            return $this->filename;
+        }
+
         $upload = $this->getMainUpload();
         return $upload ? $upload->url : null;
     }

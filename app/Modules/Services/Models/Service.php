@@ -46,6 +46,12 @@ class Service extends Model
     public function getCoverImageUrlAttribute(): ?string
     {
         if (!$this->cover_image) return null;
+        
+        // Se for uma URL externa, retorna direto
+        if (str_starts_with($this->cover_image, 'http')) {
+            return $this->cover_image;
+        }
+
         return '/' . ltrim($this->cover_image, '/');
     }
 
