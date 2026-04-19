@@ -72,6 +72,8 @@
             text-align: center;
             position: relative;
             overflow: hidden;
+            height: 100%;
+            min-height: 100%;
         }
 
         .login-left::before {
@@ -117,6 +119,10 @@
 
         .login-right {
             padding: 3rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .form-control {

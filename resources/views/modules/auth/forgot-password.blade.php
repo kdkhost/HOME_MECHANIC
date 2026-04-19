@@ -66,6 +66,8 @@
             text-align: center;
             position: relative;
             overflow: hidden;
+            height: 100%;
+            min-height: 100%;
         }
 
         .logo {
@@ -82,7 +84,13 @@
             box-shadow: 0 10px 30px rgba(255, 107, 0, 0.3);
         }
 
-        .login-right { padding: 3rem; }
+        .login-right {
+            padding: 3rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
         .form-control {
             border: 2px solid #e9ecef;
