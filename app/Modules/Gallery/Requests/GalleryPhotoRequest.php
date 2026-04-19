@@ -22,8 +22,8 @@ class GalleryPhotoRequest extends FormRequest
         return [
             'category_id' => 'required|integer|exists:gallery_categories,id',
             'title' => 'required|string|max:255',
-            'filename' => 'required|string|max:36', // UUID
-            'thumbnail' => 'nullable|string|max:36', // UUID
+            'filename' => 'required|string|max:255', // UUID ou Path
+            'thumbnail' => 'nullable|string|max:255', // UUID ou Path
             'description' => 'nullable|string|max:1000',
             'sort_order' => 'nullable|integer|min:0',
             'active' => 'boolean'

@@ -484,6 +484,15 @@ class GalleryController extends Controller
                     $upload = $this->uploadService->getByUuid($data['filename']);
                     if ($upload) {
                         $this->uploadService->attachToModel($upload, GalleryPhoto::class, $photo->id);
+                        $photo->update(['filename' => $upload->path]);
+                    }
+                }
+
+                if (!empty($data['thumbnail']) && $data['thumbnail'] !== $data['filename']) {
+                    $thumbnailUpload = $this->uploadService->getByUuid($data['thumbnail']);
+                    if ($thumbnailUpload) {
+                        $this->uploadService->attachToModel($thumbnailUpload, GalleryPhoto::class, $photo->id);
+                        $photo->update(['thumbnail' => $thumbnailUpload->path]);
                     }
                 }
             }

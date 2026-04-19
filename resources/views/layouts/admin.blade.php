@@ -473,6 +473,7 @@
                         return res.success ? res.data.uuid : null;
                     }
                 },
+                load: '{{ route("admin.upload.load") }}?load=',
                 revert: (uniqueFileId, load, error) => {
                     $.ajax({
                         url: '{{ route("admin.upload.destroy", "") }}/' + uniqueFileId,

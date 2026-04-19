@@ -250,6 +250,42 @@ class UploadController extends Controller
     }
 
     /**
+     * Carregar arquivo para o FilePond (Preview de arquivos locais)
+     */
+    public function load(Request $request)
+    {
+        $source = $request->input('load');
+        
+        if (!$source) {
+            return response('Source not provided', 400);
+        }
+
+        try {
+            // Tenta buscar por UUID
+            $upload = $this->uploadService->getByUuid($source);
+            $path = $upload ? public_path($upload->path) : public_path(ltrim($source, '/'));
+
+            if (!file_exists($path)) {
+                // Tenta buscar por path se o source for o path
+                $uploadByPath = Upload::where('path', ltrim($source, '/'))->first();
+                if ($uploadByPath) {
+                    $path = public_path($uploadByPath->path);
+                }
+            }
+
+            if (file_exists($path) && !is_dir($path)) {
+                return response()->file($path);
+            }
+
+            return response('File not found: ' . $path, 404);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao carregar arquivo no FilePond', ['source' => $source, 'error' => $e->getMessage()]);
+            return response('Error loading file', 500);
+        }
+    }
+
+    /**
      * Listar uploads do usuário
      */
     public function index(Request $request)

@@ -55,7 +55,9 @@ class GalleryPhoto extends Model
             return null;
         }
 
-        return Upload::where('uuid', $this->filename)->first();
+        return Upload::where('uuid', $this->filename)
+            ->orWhere('path', $this->filename)
+            ->first();
     }
 
     /**
@@ -67,7 +69,9 @@ class GalleryPhoto extends Model
             return null;
         }
 
-        return Upload::where('uuid', $this->thumbnail)->first();
+        return Upload::where('uuid', $this->thumbnail)
+            ->orWhere('path', $this->thumbnail)
+            ->first();
     }
 
     /**
@@ -75,13 +79,24 @@ class GalleryPhoto extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-        // Suporte para URLs externas direto no campo filename
-        if ($this->filename && str_starts_with($this->filename, 'http')) {
+        if (!$this->filename) return null;
+        
+        // Suporte para URLs externas
+        if (str_starts_with($this->filename, 'http')) {
             return $this->filename;
         }
 
         $upload = $this->getMainUpload();
-        return $upload ? $upload->url : null;
+        if ($upload) {
+            return $upload->url;
+        }
+
+        // Fallback: se o filename parece um caminho relativo válido
+        if (str_contains($this->filename, '/') && file_exists(public_path($this->filename))) {
+            return asset($this->filename);
+        }
+
+        return null;
     }
 
     /**

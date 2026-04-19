@@ -12,6 +12,7 @@ Route::prefix('admin/upload')->name('admin.upload.')->middleware(['auth'])->grou
     Route::get('/', [UploadController::class, 'index'])->name('index');
     Route::get('/config', [UploadController::class, 'getConfig'])->name('config');
     Route::get('/statistics', [UploadController::class, 'statistics'])->name('statistics');
+    Route::get('/load', [UploadController::class, 'load'])->name('load');
     
     // Operações em uploads específicos
     Route::get('/{uuid}', [UploadController::class, 'show'])->name('show');
