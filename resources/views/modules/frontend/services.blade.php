@@ -82,23 +82,52 @@
             @foreach($services as $i => $s)
             <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ ($loop->index % 3) * 80 }}">
                 <div class="service-full-card h-100">
-                    @if($s->cover_image)
-                    <div class="service-full-img-wrap">
-                        @php
-                            $imgUrl = $s->cover_image;
-                            if (!str_starts_with($imgUrl, 'http')) {
-                                $imgUrl = '/' . ltrim($imgUrl, '/');
+                    @php
+                        // Garantir que sempre tenha uma imagem
+                        $imgUrl = $s->cover_image;
+                        if (empty($imgUrl)) {
+                            // Imagens fallback por tipo de servico
+                            $titleLower = strtolower($s->title);
+                            if (str_contains($titleLower, 'oleo') || str_contains($titleLower, 'filtro')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'freio') || str_contains($titleLower, 'suspensao')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'diagnostico') || str_contains($titleLower, 'scanner')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'ar condicionado')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'eletrica') || str_contains($titleLower, 'bateria')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'motor') || str_contains($titleLower, 'mecanica')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'funilaria') || str_contains($titleLower, 'pintura')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'injecao')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'cambio') || str_contains($titleLower, 'transmissao')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1449130016994-a5ef73008ef5?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'revisao')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'tuning') || str_contains($titleLower, 'stage') || str_contains($titleLower, 'remap')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'carbono') || str_contains($titleLower, 'ceramico')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'estetica') || str_contains($titleLower, 'polimento') || str_contains($titleLower, 'vitrificacao')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1600712242805-5f7d787c568d?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'som') || str_contains($titleLower, 'audio') || str_contains($titleLower, 'multimidia')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1541447270888-83e8494f9c08?w=800&h=500&fit=crop';
+                            } elseif (str_contains($titleLower, 'camera') || str_contains($titleLower, 'sensor') || str_contains($titleLower, 'led')) {
+                                $imgUrl = 'https://images.unsplash.com/photo-1562969289-4c36f93d40c0?w=800&h=500&fit=crop';
+                            } else {
+                                $imgUrl = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop';
                             }
-                        @endphp
-                        <img src="{{ $imgUrl }}" alt="{{ $s->title }}" class="service-full-img">
-                    </div>
-                    @else
+                        } elseif (!str_starts_with($imgUrl, 'http')) {
+                            $imgUrl = '/' . ltrim($imgUrl, '/');
+                        }
+                    @endphp
                     <div class="service-full-img-wrap">
-                        <div style="width:100%;height:300px;background:linear-gradient(135deg,#1a1a1a,#222);display:flex;align-items:center;justify-content:center;">
-                            <i class="bi {{ $s->icon ?? 'bi-tools' }}" style="font-size:4rem;color:var(--orange);opacity:0.6;"></i>
-                        </div>
+                        <img src="{{ $imgUrl }}" alt="{{ $s->title }}" class="service-full-img" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop'">
                     </div>
-                    @endif
                     <div class="service-full-body">
                         <div class="service-full-icon"><i class="bi {{ $s->icon ?? 'bi-tools' }}"></i></div>
                         <div class="service-full-title">{{ $s->title }}</div>
