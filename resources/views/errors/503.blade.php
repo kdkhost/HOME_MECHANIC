@@ -116,8 +116,8 @@
         }
 
         .logo-img {
-            max-width: 280px;
-            max-height: 80px;
+            max-width: 380px;
+            max-height: 120px;
             margin-bottom: 2rem;
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
         }
