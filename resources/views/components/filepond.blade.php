@@ -11,6 +11,7 @@
 @php
     $id = $id ?? $name;
     $uid = 'fp_' . str_replace(['-', '.', '[', ']'], '_', $id) . '_' . uniqid();
+    $fileTypes = array_map('trim', explode(',', $acceptedFileTypes));
 @endphp
 
 <div class="filepond-container">
@@ -30,7 +31,7 @@
         var opts_{{ $uid }} = {
             allowMultiple: {{ $multiple ? 'true' : 'false' }},
             maxFileSize: @json($maxFileSize),
-            acceptedFileTypes: @json(array_map('trim', explode(',', $acceptedFileTypes))),
+            acceptedFileTypes: @json($fileTypes),
         };
 
         @if($value)
