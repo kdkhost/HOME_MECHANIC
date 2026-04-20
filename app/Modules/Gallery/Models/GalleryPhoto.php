@@ -80,23 +80,25 @@ class GalleryPhoto extends Model
     public function getImageUrlAttribute(): ?string
     {
         if (!$this->filename) return null;
-        
+
         // Suporte para URLs externas
         if (str_starts_with($this->filename, 'http')) {
             return $this->filename;
         }
 
+        // Se parece um caminho relativo (contém /), usar asset() diretamente
+        if (str_contains($this->filename, '/')) {
+            return asset($this->filename);
+        }
+
+        // Tentar buscar por UUID no Upload
         $upload = $this->getMainUpload();
         if ($upload) {
             return $upload->url;
         }
 
-        // Fallback: se o filename parece um caminho relativo válido
-        if (str_contains($this->filename, '/') && file_exists(public_path($this->filename))) {
-            return asset($this->filename);
-        }
-
-        return null;
+        // Fallback: tentar como path direto
+        return asset($this->filename);
     }
 
     /**
@@ -104,8 +106,29 @@ class GalleryPhoto extends Model
      */
     public function getThumbnailUrlAttribute(): ?string
     {
-        $upload = $this->getThumbnailUpload();
-        return $upload ? $upload->url : ($this->getMainUpload()?->thumbnail_url);
+        // Se tem thumbnail personalizado
+        if ($this->thumbnail) {
+            if (str_starts_with($this->thumbnail, 'http')) {
+                return $this->thumbnail;
+            }
+            if (str_contains($this->thumbnail, '/')) {
+                return asset($this->thumbnail);
+            }
+            $upload = $this->getThumbnailUpload();
+            if ($upload) {
+                return $upload->url;
+            }
+            return asset($this->thumbnail);
+        }
+
+        // Fallback: thumbnail do upload principal
+        $mainUpload = $this->getMainUpload();
+        if ($mainUpload && $mainUpload->thumbnail_url) {
+            return $mainUpload->thumbnail_url;
+        }
+
+        // Fallback final: usar a imagem principal
+        return $this->image_url;
     }
 
     /**

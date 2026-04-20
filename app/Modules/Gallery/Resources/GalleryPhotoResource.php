@@ -24,6 +24,8 @@ class GalleryPhotoResource extends JsonResource
             'active' => $this->active,
             'image_url' => $this->image_url,
             'thumbnail_url' => $this->thumbnail_url,
+            'filename_source' => $this->filename ? ltrim($this->filename, '/') : null,
+            'thumbnail_source' => $this->thumbnail ? ltrim($this->thumbnail, '/') : null,
             'image_dimensions' => $this->image_dimensions,
             'has_valid_image' => $this->has_valid_image,
             'previous_photo_id' => $this->previous_photo_id,

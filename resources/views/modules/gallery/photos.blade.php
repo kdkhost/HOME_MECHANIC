@@ -692,9 +692,7 @@ class PhotosManager {
         try {
             this.editingId = id;
             $('#modalTitle').text('Editar Foto');
-            
-            // Note: Usando a rota de photos com parâmetro search ou algo que retorne JSON da foto específica se não houver rota direta
-            // Para simplificar, assumimos que photos Manager já tem os dados ou que photos(Request, photo_id) funciona
+
             const response = await fetch(`{{ route('admin.gallery.photos') }}?photo_id=${id}`, {
                 headers: { 'Accept': 'application/json' }
             });
@@ -708,13 +706,18 @@ class PhotosManager {
                 $('#sort_order').val(photo.sort_order);
                 $('#active').prop('checked', !!photo.active);
 
-                if (photo.image_url) {
+                // Carregar imagem existente no FilePond via server.load
+                if (photo.filename_source) {
                     const pond = FilePond.find(document.getElementById('photo_filename'));
-                    if (pond) pond.addFile(photo.image_url);
+                    if (pond) {
+                        pond.addFile({ source: photo.filename_source, options: { type: 'local' } });
+                    }
                 }
-                if (photo.thumbnail_url) {
+                if (photo.thumbnail_source) {
                     const pond = FilePond.find(document.getElementById('photo_thumbnail'));
-                    if (pond) pond.addFile(photo.thumbnail_url);
+                    if (pond) {
+                        pond.addFile({ source: photo.thumbnail_source, options: { type: 'local' } });
+                    }
                 }
 
                 $('#photoModal').modal('show');
