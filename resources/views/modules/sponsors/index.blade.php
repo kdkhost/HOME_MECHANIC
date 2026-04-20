@@ -292,11 +292,15 @@ function editSponsor(id) {
             document.getElementById('sponsorSpeed').value = s.speed;
             document.getElementById('sponsorActive').checked = s.is_active;
 
-            if (s.logo) {
-                document.getElementById('logoPreview').querySelector('img').src = '/' + s.logo.replace(/^\//, '');
-                document.getElementById('logoPreview').classList.remove('d-none');
-            } else {
-                document.getElementById('logoPreview').classList.add('d-none');
+            // Carregar logo existente no FilePond se houver
+            var fpInput = document.getElementById('sponsorLogo');
+            if (fpInput && s.logo) {
+                var pond = FilePond.find(fpInput);
+                if (pond) {
+                    pond.removeFiles();
+                    var logoUrl = s.logo.startsWith('http') ? s.logo : '/' + s.logo.replace(/^\//, '');
+                    pond.addFile(logoUrl);
+                }
             }
 
             bootstrap.Modal.getOrCreateInstance(document.getElementById('sponsorModal')).show();
