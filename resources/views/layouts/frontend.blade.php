@@ -888,8 +888,23 @@
 
 {{-- Floating Buttons --}}
 @php
-    $whatsappNum = preg_replace('/\D/', '', $siteSettings['whatsapp'] ?? '');
-    $phoneNum = preg_replace('/\D/', '', $siteSettings['contact_phone'] ?? $whatsappNum);
+    // Remove tudo exceto numeros e adiciona codigo do pais 55 se nao tiver
+    $whatsappRaw = preg_replace('/\D/', '', $siteSettings['whatsapp'] ?? '');
+    $phoneRaw = preg_replace('/\D/', '', $siteSettings['contact_phone'] ?? '');
+    
+    // Adiciona 55 se o numero nao começar com 55 e tiver pelo menos 10 digitos
+    if (!empty($whatsappRaw) && !str_starts_with($whatsappRaw, '55') && strlen($whatsappRaw) >= 10) {
+        $whatsappNum = '55' . $whatsappRaw;
+    } else {
+        $whatsappNum = $whatsappRaw;
+    }
+    
+    if (!empty($phoneRaw) && !str_starts_with($phoneRaw, '55') && strlen($phoneRaw) >= 10) {
+        $phoneNum = '55' . $phoneRaw;
+    } else {
+        $phoneNum = $phoneRaw ?: $whatsappNum;
+    }
+    
     $isMobile = preg_match('/Android|iPhone|iPad|iPod|Mobile/i', $_SERVER['HTTP_USER_AGENT'] ?? '');
 @endphp
 
@@ -919,7 +934,7 @@
             @endif
 
             @if(!empty($phoneNum))
-            <a href="tel:{{ $phoneNum }}" class="contact-option call">
+            <a href="tel:+{{ $phoneNum }}" class="contact-option call">
                 <i class="bi bi-telephone-fill"></i>
                 <div>
                     <span>Ligar Agora</span>
@@ -928,7 +943,7 @@
             </a>
 
             @if($isMobile)
-            <a href="sms:{{ $phoneNum }}" class="contact-option sms">
+            <a href="sms:+{{ $phoneNum }}" class="contact-option sms">
                 <i class="bi bi-chat-text-fill"></i>
                 <div>
                     <span>Enviar SMS</span>

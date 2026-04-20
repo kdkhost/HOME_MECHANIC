@@ -237,10 +237,16 @@
                     <h4 style="font-family:var(--font-head); font-size:1.3rem; font-weight:700; margin-bottom:0.5rem;">
                         Atendimento <span style="color:var(--orange);">Imediato</span>
                     </h4>
+                    @php
+                        $whatsappContact = preg_replace('/\D/', '', $siteSettings['whatsapp'] ?? '');
+                        if (!empty($whatsappContact) && !str_starts_with($whatsappContact, '55') && strlen($whatsappContact) >= 10) {
+                            $whatsappContact = '55' . $whatsappContact;
+                        }
+                    @endphp
                     <p style="color:var(--gray); font-size:0.88rem; margin-bottom:1.5rem;">
                         Para respostas rápidas, fale diretamente com nossa equipe pelo WhatsApp.
                     </p>
-                    <a href="https://wa.me/{{ preg_replace('/\D/','',$siteSettings['whatsapp'] ?? '5511999999999') }}" target="_blank" class="btn-orange w-100" style="justify-content:center; background:linear-gradient(135deg,#128C7E,#25D366) !important; border-color:transparent !important; box-shadow:0 4px 16px rgba(37,211,102,0.3) !important;">
+                    <a href="https://wa.me/{{ $whatsappContact ?: '5511999999999' }}" target="_blank" class="btn-orange w-100" style="justify-content:center; background:linear-gradient(135deg,#128C7E,#25D366) !important; border-color:transparent !important; box-shadow:0 4px 16px rgba(37,211,102,0.3) !important;">
                         <i class="bi bi-whatsapp"></i> Chamar no WhatsApp
                     </a>
                     <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.06);">
