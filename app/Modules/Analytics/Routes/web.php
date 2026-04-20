@@ -8,4 +8,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/analytics/data', [AnalyticsController::class, 'getData'])->name('analytics.data');
     Route::get('/analytics/visitors', [AnalyticsController::class, 'getVisitors'])->name('analytics.visitors');
     Route::get('/analytics/pages', [AnalyticsController::class, 'getPages'])->name('analytics.pages');
+    Route::get('/analytics/chart', [AnalyticsController::class, 'chartData'])->name('analytics.chart');
+    Route::get('/analytics/online', [AnalyticsController::class, 'onlineVisitors'])->name('analytics.online');
+    Route::get('/analytics/report', [AnalyticsController::class, 'report'])->name('analytics.report');
+    Route::post('/analytics/cleanup', [AnalyticsController::class, 'cleanup'])->name('analytics.cleanup');
 });

@@ -31,7 +31,7 @@ class AnalyticsController extends Controller
                         'total_visits' => DB::table('analytics')->where('is_bot', false)->count(),
                         'unique_visits' => DB::table('analytics')->where('is_bot', false)->where('is_unique', true)->count(),
                         'online_now' => DB::table('analytics')->where('created_at', '>=', now()->subMinutes(5))->where('is_bot', false)->distinct('session_id')->count(),
-                        'avg_time' => DB::table('analytics')->where('is_bot', false)->avg('time_on_page') ?? 0
+                        'avg_time' => DB::table('analytics')->where('is_bot', false)->avg('duration') ?? 0
                     ];
                 }
             } catch (\Exception $e) {
