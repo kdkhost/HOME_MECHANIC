@@ -66,30 +66,53 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Obter dados via AJAX
+     * Obter dados via AJAX (tempo real)
      */
     public function getData(Request $request)
     {
         try {
-            $period = $request->input('period', 30);
-            
-            $data = [
-                'visits' => ['labels' => [], 'datasets' => []],
-                'devices' => ['labels' => [], 'datasets' => []],
-                'browsers' => ['labels' => [], 'data' => []],
-                'countries' => ['labels' => [], 'data' => []],
-                'pages' => ['labels' => [], 'data' => []],
+            $period = (int) $request->input('period', 30);
+            $today = now();
+
+            $stats = [
+                'total_visits' => 0,
+                'unique_visits' => 0,
+                'online_now' => 0,
+                'avg_time' => 0,
+                'today_visits' => 0,
+                'today_unique' => 0,
             ];
-            
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ]);
+
+            try {
+                if (DB::getSchemaBuilder()->hasTable('analytics')) {
+                    $startDate = now()->subDays($period);
+                    $stats = [
+                        'total_visits' => DB::table('analytics')->where('is_bot', false)->where('created_at', '>=', $startDate)->count(),
+                        'unique_visits' => DB::table('analytics')->where('is_bot', false)->where('is_unique', true)->where('created_at', '>=', $startDate)->count(),
+                        'online_now' => DB::table('analytics')->where('created_at', '>=', now()->subMinutes(5))->where('is_bot', false)->distinct('session_id')->count(),
+                        'avg_time' => round((float)(DB::table('analytics')->where('is_bot', false)->avg('duration') ?? 0)),
+                        'today_visits' => DB::table('analytics')->where('is_bot', false)->whereDate('created_at', $today)->count(),
+                        'today_unique' => DB::table('analytics')->where('is_bot', false)->where('is_unique', true)->whereDate('created_at', $today)->count(),
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::warning('Erro ao obter stats analytics', ['error' => $e->getMessage()]);
+            }
+
+            $data = [
+                'stats' => $stats,
+                'visits' => $this->getVisitsChartData($period),
+                'devices' => $this->getDevicesChartData($period),
+                'browsers' => $this->getBrowsersChartData($period),
+                'countries' => $this->getCountriesChartData($period),
+                'pages' => $this->getPagesChartData($period),
+                'referrers' => $this->getReferrersChartData($period),
+            ];
+
+            return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao carregar dados'
-            ], 500);
+            Log::error('Erro ao carregar dados analytics', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Erro ao carregar dados'], 500);
         }
     }
 
@@ -289,8 +312,9 @@ class AnalyticsController extends Controller
     public function cleanup(Request $request)
     {
         try {
-            $daysToKeep = $request->input('days', 365);
-            $deletedCount = $this->analyticsService->cleanupOldData($daysToKeep);
+            $daysToKeep = (int) $request->input('days', 365);
+            $cutoffDate = now()->subDays($daysToKeep);
+            $deletedCount = DB::table('analytics')->where('created_at', '<', $cutoffDate)->delete();
 
             Log::info('Limpeza de analytics executada', [
                 'days_to_keep' => $daysToKeep,
