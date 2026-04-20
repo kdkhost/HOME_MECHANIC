@@ -89,8 +89,8 @@
 
         <div class="gallery-masonry" data-aos="fade-up" data-aos-delay="100">
             @forelse($photos as $p)
-            <div class="gallery-item mix cat-{{ $p->category_id }}" onclick="openLightbox('{{ asset($p->image_path) }}')">
-                <img src="{{ asset($p->image_path) }}" alt="{{ $p->title }}" loading="lazy">
+            <div class="gallery-item mix cat-{{ $p->category_id }}" onclick="openLightbox('{{ $p->image_url }}')">
+                <img src="{{ $p->image_url }}" alt="{{ $p->title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop'">
                 <div class="gallery-overlay">
                     <div class="gallery-overlay-title">{{ $p->title }}</div>
                     <div class="gallery-overlay-sub">{{ $p->category ? $p->category->name : '' }}</div>

@@ -520,7 +520,7 @@
         <div class="gallery-grid" data-aos="fade-up" data-aos-delay="150">
             @forelse($galleryPhotos as $photo)
             <div class="gallery-item">
-                <img src="{{ asset($photo->image_path) }}" alt="{{ $photo->title }}">
+                <img src="{{ $photo->image_url }}" alt="{{ $photo->title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop'">
                 <div class="gallery-overlay"><span>{{ $photo->title }}</span></div>
             </div>
             @empty
