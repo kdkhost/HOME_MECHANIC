@@ -32,6 +32,9 @@
             allowMultiple: {{ $multiple ? 'true' : 'false' }},
             maxFileSize: @json($maxFileSize),
             acceptedFileTypes: @json($fileTypes),
+            server: null, // Desativa upload automatico - envia com o formulario
+            instantUpload: false,
+            allowProcess: false
         };
 
         @if($value)
