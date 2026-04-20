@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') — HomeMechanic Admin</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo $__env->yieldContent('title', 'Dashboard'); ?> — HomeMechanic Admin</title>
 
     <!-- Fonts -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css">
@@ -15,13 +15,13 @@
     <!-- Font Awesome (compatibilidade) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- AdminLTE 4 -->
-    <link rel="stylesheet" href="{{ asset('css/adminlte4.min.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/adminlte4.min.css')); ?>">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <!-- Toastify -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Custom -->
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/admin.css')); ?>">
 
     <!-- FilePond -->
     <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
@@ -32,7 +32,7 @@
         .filepond--item-panel { background-color: var(--hm-primary); }
     </style>
 
-    @yield('styles')
+    <?php echo $__env->yieldContent('styles'); ?>
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 
@@ -52,7 +52,7 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-md-block">
-                    <a href="{{ route('admin.dashboard.index') }}" class="nav-link">
+                    <a href="<?php echo e(route('admin.dashboard.index')); ?>" class="nav-link">
                         <i class="bi bi-house-fill me-1"></i> Dashboard
                     </a>
                 </li>
@@ -112,28 +112,28 @@
                             <span style="font-weight:700; font-size:0.85rem;">Atalhos Rápidos</span>
                         </div>
                         <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:0.5rem;">
-                            <a href="{{ route('admin.services.index') }}" class="shortcut-item">
+                            <a href="<?php echo e(route('admin.services.index')); ?>" class="shortcut-item">
                                 <i class="fas fa-tools"></i><span>Serviços</span>
                             </a>
-                            <a href="{{ route('admin.gallery.index') }}" class="shortcut-item">
+                            <a href="<?php echo e(route('admin.gallery.index')); ?>" class="shortcut-item">
                                 <i class="fas fa-images"></i><span>Galeria</span>
                             </a>
-                            <a href="{{ route('admin.blog.index') }}" class="shortcut-item">
+                            <a href="<?php echo e(route('admin.blog.index')); ?>" class="shortcut-item">
                                 <i class="fas fa-newspaper"></i><span>Blog</span>
                             </a>
-                            <a href="{{ route('admin.contact.index') }}" class="shortcut-item">
+                            <a href="<?php echo e(route('admin.contact.index')); ?>" class="shortcut-item">
                                 <i class="fas fa-envelope"></i><span>Mensagens</span>
                             </a>
-                            <a href="{{ route('admin.seo.index') }}" class="shortcut-item">
+                            <a href="<?php echo e(route('admin.seo.index')); ?>" class="shortcut-item">
                                 <i class="fas fa-search"></i><span>SEO</span>
                             </a>
-                            <a href="{{ route('admin.analytics.index') }}" class="shortcut-item">
+                            <a href="<?php echo e(route('admin.analytics.index')); ?>" class="shortcut-item">
                                 <i class="fas fa-chart-line"></i><span>Analytics</span>
                             </a>
-                            <a href="{{ route('admin.users.index') }}" class="shortcut-item">
+                            <a href="<?php echo e(route('admin.users.index')); ?>" class="shortcut-item">
                                 <i class="fas fa-users"></i><span>Usuários</span>
                             </a>
-                            <a href="{{ route('admin.settings.index') }}" class="shortcut-item">
+                            <a href="<?php echo e(route('admin.settings.index')); ?>" class="shortcut-item">
                                 <i class="fas fa-cog"></i><span>Config.</span>
                             </a>
                         </div>
@@ -151,44 +151,45 @@
                 <li class="nav-item dropdown user-menu">
                     <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
                         <div class="nav-avatar">
-                            @if(Auth::user()->avatar)
-                                <img src="{{ '/' . ltrim(Auth::user()->avatar, '/') }}"
+                            <?php if(Auth::user()->avatar): ?>
+                                <img src="<?php echo e('/' . ltrim(Auth::user()->avatar, '/')); ?>"
                                      style="width:32px;height:32px;border-radius:8px;object-fit:cover;"
                                      onerror="this.style.display='none'"
                                      alt="">
-                            @else
-                                {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
-                            @endif
+                            <?php else: ?>
+                                <?php echo e(strtoupper(substr(Auth::user()->name ?? 'A', 0, 1))); ?>
+
+                            <?php endif; ?>
                         </div>
                         <div class="d-none d-md-block text-start lh-sm">
-                            <div style="font-size:0.84rem; font-weight:600; color:var(--hm-text);">{{ Auth::user()->name ?? 'Admin' }}</div>
-                            <div style="font-size:0.72rem; color:var(--hm-text-muted);">{{ Auth::user()->role === 'admin' ? 'Administrador' : 'Usuário' }}</div>
+                            <div style="font-size:0.84rem; font-weight:600; color:var(--hm-text);"><?php echo e(Auth::user()->name ?? 'Admin'); ?></div>
+                            <div style="font-size:0.72rem; color:var(--hm-text-muted);"><?php echo e(Auth::user()->role === 'admin' ? 'Administrador' : 'Usuário'); ?></div>
                         </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" style="min-width:220px; border-radius:12px; overflow:hidden; padding:0;">
                         <li class="px-3 py-2" style="border-bottom:1px solid var(--hm-border); background:#f8fafc;">
-                            <div style="font-weight:700; font-size:0.88rem;">{{ Auth::user()->name ?? 'Admin' }}</div>
-                            <div style="font-size:0.75rem; color:var(--hm-text-muted);">{{ Auth::user()->email ?? '' }}</div>
+                            <div style="font-weight:700; font-size:0.88rem;"><?php echo e(Auth::user()->name ?? 'Admin'); ?></div>
+                            <div style="font-size:0.75rem; color:var(--hm-text-muted);"><?php echo e(Auth::user()->email ?? ''); ?></div>
                         </li>
                         <li>
-                            <a href="{{ Auth::id() ? route('admin.users.edit', Auth::id()) : '#' }}" class="dropdown-item">
+                            <a href="<?php echo e(route('admin.users.edit', Auth::id())); ?>" class="dropdown-item">
                                 <i class="fas fa-user-edit me-2"></i> Meu Perfil
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('admin.settings.index') }}" class="dropdown-item">
+                            <a href="<?php echo e(route('admin.settings.index')); ?>" class="dropdown-item">
                                 <i class="fas fa-cog me-2"></i> Configurações
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('home') }}" class="dropdown-item" target="_blank">
+                            <a href="<?php echo e(route('home')); ?>" class="dropdown-item" target="_blank">
                                 <i class="fas fa-external-link-alt me-2"></i> Ver Site
                             </a>
                         </li>
                         <li><hr class="dropdown-divider m-0"></li>
                         <li>
-                            <form method="POST" action="{{ route('admin.logout') }}">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('admin.logout')); ?>">
+                                <?php echo csrf_field(); ?>
                                 <button type="submit" class="dropdown-item text-danger">
                                     <i class="fas fa-sign-out-alt me-2"></i> Sair
                                 </button>
@@ -207,7 +208,7 @@
 
         <!--begin::Brand-->
         <div class="sidebar-brand">
-            <a href="{{ route('admin.dashboard.index') }}" class="brand-link">
+            <a href="<?php echo e(route('admin.dashboard.index')); ?>" class="brand-link">
                 <i class="fas fa-tools" style="color:var(--hm-primary);font-size:1.3rem;margin-right:0.5rem;"></i>
                 <span class="brand-text fw-bold" style="color:var(--hm-primary);">HomeMechanic</span>
             </a>
@@ -222,23 +223,23 @@
                     <!-- User panel -->
                     <li class="nav-item px-3 py-2 mb-1" style="border-bottom:1px solid rgba(255,255,255,0.07);">
                         <div class="d-flex align-items-center gap-2">
-                            @if(Auth::user()->avatar)
-                                <img src="{{ '/' . ltrim(Auth::user()->avatar, '/') }}"
+                            <?php if(Auth::user()->avatar): ?>
+                                <img src="<?php echo e('/' . ltrim(Auth::user()->avatar, '/')); ?>"
                                      style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0;"
                                      onerror="this.outerHTML='<i class=\'bi bi-person-circle fs-3\' style=\'color:var(--hm-primary);\'></i>'"
                                      alt="">
-                            @else
+                            <?php else: ?>
                                 <i class="bi bi-person-circle fs-3" style="color:var(--hm-primary);"></i>
-                            @endif
+                            <?php endif; ?>
                             <div>
-                                <div class="text-white fw-semibold" style="font-size:0.88rem;">{{ Auth::user()->name ?? 'Administrador' }}</div>
-                                <small class="text-muted">{{ Auth::user()->email ?? '' }}</small>
+                                <div class="text-white fw-semibold" style="font-size:0.88rem;"><?php echo e(Auth::user()->name ?? 'Administrador'); ?></div>
+                                <small class="text-muted"><?php echo e(Auth::user()->email ?? ''); ?></small>
                             </div>
                         </div>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.dashboard.index') }}" class="nav-link {{ request()->routeIs('admin.dashboard.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.dashboard.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.dashboard.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-speedometer2"></i>
                             <p>Dashboard</p>
                         </a>
@@ -247,42 +248,42 @@
                     <li class="nav-header">CONTEÚDO</li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.services.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.services.*') ? 'active' : ''); ?>">
                             <i class="nav-icon fas fa-tools"></i>
                             <p>Serviços</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.gallery.index') }}" class="nav-link {{ request()->routeIs('admin.gallery.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.gallery.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.gallery.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-images"></i>
                             <p>Galeria</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.testimonials.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.testimonials.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-star"></i>
                             <p>Depoimentos</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.blog.index') }}" class="nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.blog.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.blog.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-newspaper"></i>
                             <p>Blog</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.contact.index') }}" class="nav-link {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.contact.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.contact.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-envelope"></i>
                             <p>Mensagens</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.upload.index') }}" class="nav-link {{ request()->routeIs('admin.upload.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.upload.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.upload.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-cloud-upload"></i>
                             <p>Upload de Arquivos</p>
                         </a>
@@ -291,21 +292,21 @@
                     <li class="nav-header">MARKETING</li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.seo.index') }}" class="nav-link {{ request()->routeIs('admin.seo.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.seo.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.seo.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-search"></i>
                             <p>SEO</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.analytics.index') }}" class="nav-link {{ request()->routeIs('admin.analytics.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.analytics.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.analytics.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-graph-up"></i>
                             <p>Analytics</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.sponsors.index') }}" class="nav-link {{ request()->routeIs('admin.sponsors.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.sponsors.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.sponsors.*') ? 'active' : ''); ?>">
                             <i class="nav-icon fas fa-handshake"></i>
                             <p>Patrocinadores</p>
                         </a>
@@ -313,39 +314,39 @@
 
                     <li class="nav-header">SISTEMA</li>
 
-                    <li class="nav-item {{ request()->routeIs('admin.settings.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                    <li class="nav-item <?php echo e(request()->routeIs('admin.settings.*') ? 'menu-open' : ''); ?>">
+                        <a href="#" class="nav-link <?php echo e(request()->routeIs('admin.settings.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-gear"></i>
                             <p>Configurações <i class="nav-arrow bi bi-chevron-right ms-auto"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
+                                <a href="<?php echo e(route('admin.settings.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.settings.index') ? 'active' : ''); ?>">
                                     <i class="nav-icon bi bi-circle"></i><p>Geral</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                        <a href="{{ route('admin.settings.frontend') }}" class="nav-link {{ request()->routeIs('admin.settings.frontend') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.settings.frontend')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.settings.frontend') ? 'active' : ''); ?>">
                                     <i class="nav-icon bi bi-circle"></i><p>Conteúdo do Site</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.settings.seo') }}" class="nav-link {{ request()->routeIs('admin.settings.seo') ? 'active' : '' }}">
+                                <a href="<?php echo e(route('admin.settings.seo')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.settings.seo') ? 'active' : ''); ?>">
                                     <i class="nav-icon bi bi-circle"></i><p>SEO</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.settings.email') }}" class="nav-link {{ request()->routeIs('admin.settings.email') ? 'active' : '' }}">
+                                <a href="<?php echo e(route('admin.settings.email')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.settings.email') ? 'active' : ''); ?>">
                                     <i class="nav-icon bi bi-circle"></i><p>E-mail (SMTP)</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.settings.backup') }}" class="nav-link {{ request()->routeIs('admin.settings.backup') ? 'active' : '' }}">
+                                <a href="<?php echo e(route('admin.settings.backup')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.settings.backup') ? 'active' : ''); ?>">
                                     <i class="nav-icon bi bi-circle"></i><p>Backup / Manutenção</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.settings.recaptcha') }}" class="nav-link {{ request()->routeIs('admin.settings.recaptcha') ? 'active' : '' }}">
+                                <a href="<?php echo e(route('admin.settings.recaptcha')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.settings.recaptcha') ? 'active' : ''); ?>">
                                     <i class="nav-icon bi bi-circle"></i><p>reCAPTCHA / Segurança</p>
                                 </a>
                             </li>
@@ -353,14 +354,14 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.users.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.users.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-people"></i>
                             <p>Usuários</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.documentation.index') }}" class="nav-link {{ request()->routeIs('admin.documentation.*') ? 'active' : '' }}">
+                        <a href="<?php echo e(route('admin.documentation.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.documentation.*') ? 'active' : ''); ?>">
                             <i class="nav-icon bi bi-book"></i>
                             <p>Documentação</p>
                         </a>
@@ -381,17 +382,17 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        <h3 class="mb-0">@yield('page-title', 'Dashboard')</h3>
+                        <h3 class="mb-0"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h3>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item">
-                                <a href="{{ route('admin.dashboard.index') }}"><i class="bi bi-house"></i></a>
+                                <a href="<?php echo e(route('admin.dashboard.index')); ?>"><i class="bi bi-house"></i></a>
                             </li>
                             <li class="breadcrumb-item">
-                                <a href="{{ route('admin.dashboard.index') }}">Dashboard</a>
+                                <a href="<?php echo e(route('admin.dashboard.index')); ?>">Dashboard</a>
                             </li>
-                            @yield('breadcrumb')
+                            <?php echo $__env->yieldContent('breadcrumb'); ?>
                         </ol>
                     </div>
                 </div>
@@ -403,20 +404,20 @@
         <div class="app-content">
             <div class="container-fluid">
 
-                @if(session('success'))
-                    {{-- toast disparado via JS --}}
-                @endif
-                @if(session('error'))
-                    {{-- toast disparado via JS --}}
-                @endif
-                @if(session('warning'))
-                    {{-- toast disparado via JS --}}
-                @endif
-                @if(session('info'))
-                    {{-- toast disparado via JS --}}
-                @endif
+                <?php if(session('success')): ?>
+                    
+                <?php endif; ?>
+                <?php if(session('error')): ?>
+                    
+                <?php endif; ?>
+                <?php if(session('warning')): ?>
+                    
+                <?php endif; ?>
+                <?php if(session('info')): ?>
+                    
+                <?php endif; ?>
 
-                @yield('content')
+                <?php echo $__env->yieldContent('content'); ?>
 
             </div>
         </div>
@@ -427,10 +428,11 @@
 
     <!--begin::Footer-->
     <footer class="app-footer">
-        <strong>Copyright &copy; {{ date('Y') }} <a href="https://homemechanic.com.br">HomeMechanic</a>.</strong>
+        <strong>Copyright &copy; <?php echo e(date('Y')); ?> <a href="https://homemechanic.com.br">HomeMechanic</a>.</strong>
         Todos os direitos reservados.
         <div class="float-end d-none d-sm-inline-block">
-          <a href="https://kdkhost.com.br">KdkHost</a> - Laravel {{ app()->version() }} | PHP {{ PHP_MAJOR_VERSION }}.{{ PHP_MINOR_VERSION }}
+          <a href="https://kdkhost.com.br">KdkHost</a> - Laravel <?php echo e(app()->version()); ?> | PHP <?php echo e(PHP_MAJOR_VERSION); ?>.<?php echo e(PHP_MINOR_VERSION); ?>
+
         </div>
     </footer>
     <!--end::Footer-->
@@ -441,12 +443,12 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/browser/overlayscrollbars.browser.es5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ asset('js/adminlte4.min.js') }}"></script>
+<script src="<?php echo e(asset('js/adminlte4.min.js')); ?>"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="{{ asset('js/admin.js') }}"></script>
-<script src="{{ asset('js/hm-masks.js') }}"></script>
+<script src="<?php echo e(asset('js/admin.js')); ?>"></script>
+<script src="<?php echo e(asset('js/hm-masks.js')); ?>"></script>
 
 <!-- FilePond -->
 <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
@@ -472,18 +474,18 @@
             credits: false,
             server: {
                 process: {
-                    url: '{{ route("admin.upload.store") }}',
+                    url: '<?php echo e(route("admin.upload.store")); ?>',
                     method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    headers: { 'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>' },
                     onload: (response) => {
                         const res = JSON.parse(response);
                         return res.success ? res.data.uuid : null;
                     }
                 },
-                load: '{{ route("admin.upload.load") }}?load=',
+                load: '<?php echo e(route("admin.upload.load")); ?>?load=',
                 revert: (uniqueFileId, load, error) => {
                     $.ajax({
-                        url: '{{ route("admin.upload.destroy", "") }}/' + uniqueFileId,
+                        url: '<?php echo e(route("admin.upload.destroy", "")); ?>/' + uniqueFileId,
                         method: 'DELETE',
                         success: () => load(),
                         error: () => error('Erro ao excluir')
@@ -496,18 +498,18 @@
 
 <script>
     // ── Flash messages → HMToast ─────────────────────────────
-    @if(session('success'))
-        document.addEventListener('DOMContentLoaded', () => HMToast.success(@json(session('success'))));
-    @endif
-    @if(session('error'))
-        document.addEventListener('DOMContentLoaded', () => HMToast.error(@json(session('error'))));
-    @endif
-    @if(session('warning'))
-        document.addEventListener('DOMContentLoaded', () => HMToast.warning(@json(session('warning'))));
-    @endif
-    @if(session('info'))
-        document.addEventListener('DOMContentLoaded', () => HMToast.info(@json(session('info'))));
-    @endif
+    <?php if(session('success')): ?>
+        document.addEventListener('DOMContentLoaded', () => HMToast.success(<?php echo json_encode(session('success'), 15, 512) ?>));
+    <?php endif; ?>
+    <?php if(session('error')): ?>
+        document.addEventListener('DOMContentLoaded', () => HMToast.error(<?php echo json_encode(session('error'), 15, 512) ?>));
+    <?php endif; ?>
+    <?php if(session('warning')): ?>
+        document.addEventListener('DOMContentLoaded', () => HMToast.warning(<?php echo json_encode(session('warning'), 15, 512) ?>));
+    <?php endif; ?>
+    <?php if(session('info')): ?>
+        document.addEventListener('DOMContentLoaded', () => HMToast.info(<?php echo json_encode(session('info'), 15, 512) ?>));
+    <?php endif; ?>
 
     // ── OverlayScrollbars ─────────────────────────────────────
     if (typeof OverlayScrollbarsGlobal !== 'undefined') {
@@ -534,7 +536,7 @@
     }, 5000);
 
     // ── Limpar Cache ──────────────────────────────────────────
-    const CLEAR_CACHE_URL = '{{ route("admin.system.clear-cache") }}';
+    const CLEAR_CACHE_URL = '<?php echo e(route("admin.system.clear-cache")); ?>';
 
     function runClearCache(type) {
         type = type || 'all';
@@ -635,6 +637,7 @@
     });
 </script>
 
-@yield('scripts')
+<?php echo $__env->yieldContent('scripts'); ?>
 </body>
 </html>
+<?php /**PATH G:\Tudo\HOME_MECHANIC\resources\views\layouts\admin.blade.php ENDPATH**/ ?>
