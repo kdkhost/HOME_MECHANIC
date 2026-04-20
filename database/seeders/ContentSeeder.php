@@ -133,56 +133,102 @@ class ContentSeeder extends Seeder
     {
         $userId = DB::table('users')->value('id') ?? 1;
 
+        // Criar categorias primeiro
+        $categories = [
+            ['name' => 'Manutencao', 'description' => 'Dicas e guias de manutencao preventiva'],
+            ['name' => 'Seguranca', 'description' => 'Seguranca veicular e cuidados importantes'],
+            ['name' => 'Economia', 'description' => 'Como economizar com seu veiculo'],
+            ['name' => 'Tecnologia', 'description' => 'Novidades e tecnologia automotiva'],
+        ];
+
+        $categoryIds = [];
+        foreach ($categories as $i => $cat) {
+            $slug = Str::slug($cat['name']);
+            $existing = DB::table('blog_categories')->where('slug', $slug)->first();
+            if ($existing) {
+                $categoryIds[$cat['name']] = $existing->id;
+            } else {
+                $categoryIds[$cat['name']] = DB::table('blog_categories')->insertGetId([
+                    'name'        => $cat['name'],
+                    'slug'        => $slug,
+                    'description' => $cat['description'],
+                    'sort_order'  => $i + 1,
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ]);
+            }
+        }
+
         $posts = [
             [
                 'title'   => 'Quando trocar o oleo do motor? Guia completo',
                 'excerpt' => 'Descubra o intervalo ideal para troca de oleo e os sinais de que esta na hora de fazer a manutencao.',
                 'content' => '<p>A troca de oleo e uma das manutencoes mais importantes do seu veiculo. Um oleo velho ou contaminado pode causar desgaste prematuro do motor e ate danos irreversiveis.</p><h2>Intervalo recomendado</h2><p>Para a maioria dos veiculos modernos, o intervalo ideal e:</p><ul><li><strong>Oleo mineral:</strong> a cada 5.000 km ou 6 meses</li><li><strong>Oleo semissintetico:</strong> a cada 7.500 km ou 8 meses</li><li><strong>Oleo sintetico:</strong> a cada 10.000 km ou 12 meses</li></ul><h2>Sinais de que o oleo precisa ser trocado</h2><ul><li>Oleo escuro e com cheiro de queimado</li><li>Barulho excessivo no motor</li><li>Luz do oleo acesa no painel</li><li>Motor aquecendo mais que o normal</li></ul><p>Nao negligencie esta manutencao! Agende ja sua revisao conosco.</p>',
+                'category' => 'Manutencao',
+                'cover_image' => 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => '5 sinais de que os freios do seu carro precisam de atencao',
                 'excerpt' => 'Aprenda a identificar quando os freios estao pedindo manutencao antes que vire um problema grave.',
                 'content' => '<p>Os freios sao o principal item de seguranca do seu veiculo. Ignorar sinais de desgaste pode colocar voce e sua familia em risco.</p><h2>Sinais de alerta</h2><ol><li><strong>Ruido ao frear:</strong> chiados ou rangidos indicam pastilhas gastas</li><li><strong>Vibracao no pedal:</strong> pode indicar disco empenado</li><li><strong>Carro puxando para um lado:</strong> desgaste irregular ou pinca travada</li><li><strong>Pedal macio ou esponjoso:</strong> ar no sistema ou fluido velho</li><li><strong>Luz de freio no painel:</strong> verificacao imediata necessaria</li></ol><p>Se identificou algum destes sinais, nao espere! Traga seu veiculo para uma inspecao gratuita.</p>',
+                'category' => 'Seguranca',
+                'cover_image' => 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => 'Bateria automotiva: como aumentar a vida util',
                 'excerpt' => 'Dicas praticas para fazer sua bateria durar mais e evitar surpresas desagradaveis.',
                 'content' => '<p>A bateria e responsavel por dar partida no motor e alimentar todos os sistemas eletronicos quando o veiculo esta desligado. Uma bateria saudavel dura em media de 2 a 4 anos.</p><h2>Dicas para prolongar a vida util</h2><ul><li>Evite deixar farois ou som ligados com o motor desligado</li><li>Faca viagens mais longas periodicamente para recarregar a bateria</li><li>Mantenha os terminais limpos e sem oxidacao</li><li>Verifique o nivel de agua da bateria (se aplicavel)</li><li>Faca testes de carga a cada 6 meses</li></ul><h2>Quando trocar?</h2><p>Se o motor demora para pegar ou se os farois ficam fracos com o motor desligado, e hora de verificar a bateria.</p>',
+                'category' => 'Manutencao',
+                'cover_image' => 'https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => 'Pneus: como escolher o modelo ideal para seu carro',
                 'excerpt' => 'Entenda as medidas, tipos e quando trocar os pneus do seu veiculo.',
                 'content' => '<p>Os pneus sao o unico ponto de contato entre seu veiculo e o solo. Escolher o modelo correto e fundamental para seguranca e economia.</p><h2>Entendendo as medidas</h2><p>A medida 195/55 R16 significa:</p><ul><li><strong>195:</strong> largura do pneu em mm</li><li><strong>55:</strong> relacao entre altura e largura (%)</li><li><strong>R16:</strong> diametro da roda em polegadas</li></ul><h2>Quando trocar?</h2><p>Troque quando o indicador TWI estiver nivelado com a banda de rodagem, ou a cada 5 anos independente do desgaste.</p>',
+                'category' => 'Seguranca',
+                'cover_image' => 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => 'Manutencao preventiva: economia e seguranca',
                 'excerpt' => 'Entenda porque a manutencao preventiva e o melhor investimento para seu veiculo.',
                 'content' => '<p>Muitos motoristas so levam o carro a oficina quando algo quebra. Esse habito pode custar caro e colocar vidas em risco.</p><h2>Vantagens da manutencao preventiva</h2><ul><li><strong>Economia:</strong> prevenir e ate 5x mais barato que consertar</li><li><strong>Seguranca:</strong> componentes em dia significam menos riscos</li><li><strong>Valorizacao:</strong> veiculo com manutencao em dia vale mais na revenda</li><li><strong>Confiabilidade:</strong> menos chances de ficar na mao</li></ul><h2>Checklist basico</h2><p>A cada 10.000 km verifique: oleo, filtros, freios, pneus, correias e fluidos. Parece muito? Nos fazemos tudo em um unico dia!</p>',
+                'category' => 'Manutencao',
+                'cover_image' => 'https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => 'Ar condicionado automotivo: cuidados essenciais no verao',
                 'excerpt' => 'Saiba como manter seu ar condicionado funcionando perfeitamente nos dias mais quentes.',
                 'content' => '<p>Com as temperaturas subindo, o ar condicionado se torna indispensavel. Porem, um sistema mal cuidado pode causar problemas de saude e gastos desnecessarios.</p><h2>Cuidados essenciais</h2><ul><li>Troque o filtro de cabine a cada 10.000 km</li><li>Faca higienizacao do sistema a cada 6 meses</li><li>Verifique o nivel de gas refrigerante anualmente</li><li>Ligue o ar por pelo menos 10 minutos por semana, mesmo no inverno</li></ul><h2>Sinais de problema</h2><p>Mau cheiro, ar fraco ou barulhos estranhos indicam que esta na hora de trazer o veiculo para avaliacao.</p>',
+                'category' => 'Manutencao',
+                'cover_image' => 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => 'Correia dentada: o perigo silencioso',
                 'excerpt' => 'Entenda porque a troca da correia dentada nao pode ser adiada e os riscos de ignorar.',
                 'content' => '<p>A correia dentada e uma das pecas mais criticas do motor. Sua funcao e sincronizar o virabrequim com o comando de valvulas. Se ela romper, o prejuizo pode ser catastrofico.</p><h2>Intervalo de troca</h2><p>Geralmente entre 40.000 km e 60.000 km, dependendo do fabricante. Consulte o manual do seu veiculo.</p><h2>O que acontece se romper?</h2><p>Em motores interferentes (maioria dos carros nacionais), o rompimento causa colisao entre pistoes e valvulas, resultando em retifica do motor — um reparo que pode custar milhares de reais.</p><p><strong>Nao arrisque!</strong> Se esta proximo do intervalo, agende a troca agora.</p>',
+                'category' => 'Tecnologia',
+                'cover_image' => 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => 'Economia de combustivel: 8 dicas que realmente funcionam',
                 'excerpt' => 'Reduza seus gastos com combustivel sem comprometer o desempenho do veiculo.',
                 'content' => '<p>Com o preco dos combustiveis cada vez mais alto, economizar faz toda a diferenca no orcamento mensal.</p><h2>Dicas comprovadas</h2><ol><li>Mantenha os pneus calibrados corretamente</li><li>Evite aceleracoes bruscas</li><li>Use a marcha adequada para cada velocidade</li><li>Desligue o ar condicionado em trajetos curtos</li><li>Faca revisoes periodicas do motor</li><li>Nao carregue peso desnecessario no porta-malas</li><li>Planeje rotas para evitar congestionamentos</li><li>Mantenha os filtros de ar e combustivel limpos</li></ol><p>Seguindo estas dicas, e possivel economizar ate 20% no consumo mensal!</p>',
+                'category' => 'Economia',
+                'cover_image' => 'https://images.unsplash.com/photo-1449965408869-e5e4c5f3d5e6?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => 'Suspensao: entenda os tipos e quando fazer manutencao',
                 'excerpt' => 'Conheca os diferentes tipos de suspensao e aprenda a identificar problemas.',
                 'content' => '<p>A suspensao e responsavel pelo conforto, estabilidade e seguranca na conducao. Um sistema desgastado aumenta a distancia de frenagem e compromete o controle do veiculo.</p><h2>Tipos de suspensao</h2><ul><li><strong>MacPherson:</strong> mais comum em carros populares</li><li><strong>Multilink:</strong> oferece melhor conforto e estabilidade</li><li><strong>Eixo rigido:</strong> comum em picapes e utilitarios</li></ul><h2>Sinais de desgaste</h2><ul><li>Barulhos ao passar em buracos</li><li>Carro inclinando nas curvas</li><li>Desgaste irregular dos pneus</li><li>Direcao pesada ou com folga</li></ul>',
+                'category' => 'Tecnologia',
+                'cover_image' => 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop',
             ],
             [
                 'title'   => 'Como preparar seu carro para viagens longas',
                 'excerpt' => 'Checklist completo para garantir uma viagem segura e sem imprevistos.',
                 'content' => '<p>Antes de pegar a estrada, e fundamental verificar se seu veiculo esta em condicoes de encarar a viagem com seguranca.</p><h2>Checklist pre-viagem</h2><ul><li>Verificar nivel de oleo do motor</li><li>Conferir nivel do fluido de arrefecimento</li><li>Testar todos os farois e lanternas</li><li>Verificar estado e calibragem dos pneus (inclusive o estepe)</li><li>Conferir funcionamento dos freios</li><li>Verificar palhetas do limpador</li><li>Testar bateria</li><li>Levar triangulo, macaco e chave de roda</li></ul><p>Recomendamos fazer uma revisao completa pelo menos uma semana antes da viagem. Agende conosco!</p>',
+                'category' => 'Seguranca',
+                'cover_image' => 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=500&fit=crop',
             ],
         ];
 
@@ -190,14 +236,16 @@ class ContentSeeder extends Seeder
             $slug = Str::slug($data['title']);
             if (DB::table('posts')->where('slug', $slug)->exists()) continue;
 
+            $catId = $categoryIds[$data['category']] ?? null;
+
             DB::table('posts')->insert([
                 'user_id'      => $userId,
-                'category_id'  => null,
+                'category_id'  => $catId,
                 'title'        => $data['title'],
                 'slug'         => $slug,
                 'excerpt'      => $data['excerpt'],
                 'content'      => $data['content'],
-                'cover_image'  => null,
+                'cover_image'  => $data['cover_image'],
                 'status'       => 'published',
                 'featured'     => $i < 3,
                 'published_at' => now()->subDays(10 - $i),
