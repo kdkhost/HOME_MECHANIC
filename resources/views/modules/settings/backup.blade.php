@@ -235,17 +235,57 @@
             </div>
         </div>
 
-        <!-- Informações do Sistema -->
+        <!-- Configurações do Sistema -->
         <div class="card">
             <div class="card-header">
-                <span class="card-title"><i class="fas fa-info-circle"></i> Informações do Sistema</span>
+                <span class="card-title"><i class="fas fa-cogs"></i> Configurações do Sistema</span>
             </div>
-            <div class="card-body p-0">
+            <div class="card-body">
+                <form id="formSystemConfig" method="POST" action="{{ route('admin.settings.update') }}">
+                    @csrf
+                    <input type="hidden" name="section" value="system">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold">Ambiente</label>
+                            <select name="app_env" class="form-control">
+                                <option value="local" {{ config('app.env') === 'local' ? 'selected' : '' }}>Local (Desenvolvimento)</option>
+                                <option value="production" {{ config('app.env') === 'production' ? 'selected' : '' }}>Produção</option>
+                                <option value="staging" {{ config('app.env') === 'staging' ? 'selected' : '' }}>Staging (Homologação)</option>
+                            </select>
+                            <small class="text-muted">Em <strong>Produção</strong>, erros são ocultados e o cache é otimizado.</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold">Modo Debug</label>
+                            <div class="custom-control custom-switch custom-switch-lg mt-2">
+                                <input type="checkbox" class="custom-control-input" id="app_debug" name="app_debug" value="1"
+                                       {{ config('app.debug') ? 'checked' : '' }}>
+                                <label class="custom-control-label" for="app_debug">Ativado</label>
+                            </div>
+                            <small class="text-muted">Exibe detalhes de erro. <strong>Desative em produção!</strong></small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold">Fuso Horário</label>
+                            <select name="app_timezone" class="form-control">
+                                @foreach(['America/Sao_Paulo','America/Manaus','America/Belem','America/Fortaleza','America/Recife','America/Bahia','America/Cuiaba','America/Porto_Velho','America/Rio_Branco','UTC'] as $tz)
+                                    <option value="{{ $tz }}" {{ config('app.timezone') === $tz ? 'selected' : '' }}>{{ $tz }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Data/Hora atual: <strong>{{ now()->format('d/m/Y H:i:s') }}</strong></small>
+                        </div>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Configurações</button>
+                        </div>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <h6 class="font-weight-bold mb-3"><i class="fas fa-info-circle me-1"></i> Informações do Servidor</h6>
                 <table class="table table-bordered mb-0" style="font-size:0.87rem;">
                     <tr><td class="font-weight-bold" width="35%">Versão PHP</td><td>{{ PHP_VERSION }}</td></tr>
                     <tr><td class="font-weight-bold">Versão Laravel</td><td>{{ app()->version() }}</td></tr>
                     <tr>
-                        <td class="font-weight-bold">Ambiente</td>
+                        <td class="font-weight-bold">Ambiente Atual</td>
                         <td>
                             @if(app()->environment('production'))
                                 <span class="badge badge-success">Produção</span>

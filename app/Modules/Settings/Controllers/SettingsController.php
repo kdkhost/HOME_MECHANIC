@@ -142,6 +142,9 @@ class SettingsController extends Controller
                 case 'maintenance':
                     $this->updateMaintenance($request);
                     break;
+                case 'system':
+                    $this->updateSystem($request);
+                    break;
                 default:
                     return back()->with('error', 'Seção inválida.');
             }
@@ -308,6 +311,66 @@ class SettingsController extends Controller
         Log::info('Manutenção desativada automaticamente pelo temporizador');
 
         return response()->json(['success' => true, 'message' => 'Manutenção desativada. O site está no ar!']);
+    }
+
+    /**
+     * Atualizar configuracoes do sistema (ambiente, debug, fuso horario)
+     */
+    private function updateSystem(Request $request): void
+    {
+        $env = $request->input('app_env');
+        $debug = $request->boolean('app_debug');
+        $timezone = $request->input('app_timezone');
+
+        $allowedEnv = ['local', 'production', 'staging'];
+        $allowedTz = ['America/Sao_Paulo','America/Manaus','America/Belem','America/Fortaleza','America/Recife','America/Bahia','America/Cuiaba','America/Porto_Velho','America/Rio_Branco','UTC'];
+
+        if (!in_array($env, $allowedEnv)) {
+            throw new \Exception('Ambiente inválido.');
+        }
+        if (!in_array($timezone, $allowedTz)) {
+            throw new \Exception('Fuso horário inválido.');
+        }
+
+        $this->setEnvValue('APP_ENV', $env);
+        $this->setEnvValue('APP_DEBUG', $debug ? 'true' : 'false');
+        $this->setEnvValue('APP_TIMEZONE', $timezone);
+
+        // Atualizar config em runtime para refletir imediatamente
+        config(['app.env' => $env]);
+        config(['app.debug' => $debug]);
+        config(['app.timezone' => $timezone]);
+        date_default_timezone_set($timezone);
+
+        Log::info('Configurações do sistema atualizadas', [
+            'env' => $env,
+            'debug' => $debug ? 'true' : 'false',
+            'timezone' => $timezone,
+        ]);
+    }
+
+    /**
+     * Modificar um valor no arquivo .env
+     */
+    private function setEnvValue(string $key, string $value): void
+    {
+        $envPath = base_path('.env');
+
+        if (!file_exists($envPath)) {
+            throw new \Exception('Arquivo .env não encontrado.');
+        }
+
+        $content = file_get_contents($envPath);
+
+        // Se a chave existe, substituir
+        if (preg_match("/^{$key}=/m", $content)) {
+            $content = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $content);
+        } else {
+            // Se nao existe, adicionar no final
+            $content .= "\n{$key}={$value}";
+        }
+
+        file_put_contents($envPath, $content);
     }
 
     // ── Test SMTP ──────────────────────────────────────────
