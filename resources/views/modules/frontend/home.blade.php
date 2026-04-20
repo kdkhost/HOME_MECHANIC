@@ -426,7 +426,13 @@
             <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ $loop->index * 80 }}">
                 <div class="service-card">
                     <div class="service-img-wrap">
-                        <img src="{{ $s->banner ? asset($s->banner) : 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' }}" alt="{{ $s->title }}" class="service-img">
+                        @php
+                            $svcImg = $s->cover_image;
+                            if ($svcImg && !str_starts_with($svcImg, 'http')) {
+                                $svcImg = asset($svcImg);
+                            }
+                        @endphp
+                        <img src="{{ $svcImg ?? 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' }}" alt="{{ $s->title }}" class="service-img">
                     </div>
                     <div class="service-body">
                         <div class="service-icon"><i class="{{ empty($s->icon) ? 'bi bi-tools' : $s->icon }}"></i></div>

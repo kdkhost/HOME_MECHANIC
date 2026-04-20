@@ -84,7 +84,13 @@
                 <div class="service-full-card h-100">
                     @if($s->cover_image)
                     <div class="service-full-img-wrap">
-                        <img src="{{ '/' . ltrim($s->cover_image, '/') }}" alt="{{ $s->title }}" class="service-full-img">
+                        @php
+                            $imgUrl = $s->cover_image;
+                            if (!str_starts_with($imgUrl, 'http')) {
+                                $imgUrl = '/' . ltrim($imgUrl, '/');
+                            }
+                        @endphp
+                        <img src="{{ $imgUrl }}" alt="{{ $s->title }}" class="service-full-img">
                     </div>
                     @else
                     <div class="service-full-img-wrap">
