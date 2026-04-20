@@ -10,12 +10,12 @@ class SponsorSeeder extends Seeder
 {
     public function run(): void
     {
-        // Logos reais de marcas via CDN confiaveis
+        // Logos via placehold.co com cores das marcas (evita hotlink block)
         $sponsors = [
             [
                 'name' => 'Castrol',
                 'website' => 'https://www.castrol.com',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Castrol_logo.svg/200px-Castrol_logo.svg.png',
+                'logo' => 'https://placehold.co/400x200/FF0000/FFFFFF/png?text=CASTROL&font=roboto',
                 'description' => 'Lubrificantes de alta performance',
                 'animation' => 'fade',
                 'speed' => 'normal',
@@ -24,7 +24,7 @@ class SponsorSeeder extends Seeder
             [
                 'name' => 'Bosch',
                 'website' => 'https://www.bosch.com.br',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Bosch_logo.svg/200px-Bosch_logo.svg.png',
+                'logo' => 'https://placehold.co/400x200/003399/FFFFFF/png?text=BOSCH&font=roboto',
                 'description' => 'Pecas e componentes automotivos',
                 'animation' => 'slide',
                 'speed' => 'normal',
@@ -33,7 +33,7 @@ class SponsorSeeder extends Seeder
             [
                 'name' => 'Michelin',
                 'website' => 'https://www.michelin.com.br',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Michelin_Logo.svg/200px-Michelin_Logo.svg.png',
+                'logo' => 'https://placehold.co/400x200/0055A4/FFFFFF/png?text=MICHELIN&font=roboto',
                 'description' => 'Pneus de alta performance',
                 'animation' => 'zoom',
                 'speed' => 'slow',
@@ -42,7 +42,7 @@ class SponsorSeeder extends Seeder
             [
                 'name' => 'Continental',
                 'website' => 'https://www.continental.com',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Continental_AG_logo.svg/200px-Continental_AG_logo.svg.png',
+                'logo' => 'https://placehold.co/400x200/FFA500/000000/png?text=CONTINENTAL&font=roboto',
                 'description' => 'Tecnologia automotiva',
                 'animation' => 'flip',
                 'speed' => 'normal',
@@ -51,7 +51,7 @@ class SponsorSeeder extends Seeder
             [
                 'name' => 'Mobil 1',
                 'website' => 'https://www.mobil.com.br',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Mobil_1_logo.svg/200px-Mobil_1_logo.svg.png',
+                'logo' => 'https://placehold.co/400x200/CC0000/FFFFFF/png?text=MOBIL+1&font=roboto',
                 'description' => 'Oleo lubrificante sintetico',
                 'animation' => 'bounce',
                 'speed' => 'fast',
@@ -60,7 +60,7 @@ class SponsorSeeder extends Seeder
             [
                 'name' => 'Pirelli',
                 'website' => 'https://www.pirelli.com',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Pirelli_logo.svg/200px-Pirelli_logo.svg.png',
+                'logo' => 'https://placehold.co/400x200/FFCC00/000000/png?text=PIRELLI&font=roboto',
                 'description' => 'Pneus esportivos',
                 'animation' => 'fade',
                 'speed' => 'fast',
@@ -69,7 +69,7 @@ class SponsorSeeder extends Seeder
             [
                 'name' => 'Shell',
                 'website' => 'https://www.shell.com.br',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Shell_logo.svg/200px-Shell_logo.svg.png',
+                'logo' => 'https://placehold.co/400x200/FBCE07/000000/png?text=SHELL&font=roboto',
                 'description' => 'Combustiveis e lubrificantes',
                 'animation' => 'slide',
                 'speed' => 'slow',
@@ -78,7 +78,7 @@ class SponsorSeeder extends Seeder
             [
                 'name' => 'NGK',
                 'website' => 'https://www.ngk.com.br',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/NGK_Spark_Plug_logo.svg/200px-NGK_Spark_Plug_logo.svg.png',
+                'logo' => 'https://placehold.co/400x200/003399/FFFFFF/png?text=NGK&font=roboto',
                 'description' => 'Velas e componentes de ignicao',
                 'animation' => 'zoom',
                 'speed' => 'normal',
