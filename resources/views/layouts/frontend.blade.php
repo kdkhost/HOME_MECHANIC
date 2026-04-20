@@ -1154,6 +1154,36 @@
     });
 </script>
 
+<script>
+// Analytics heartbeat - tracking de duracao de visita
+(function() {
+    var startTime = Date.now();
+    var csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) return;
+    csrfToken = csrfToken.content;
+
+    function sendHeartbeat() {
+        var elapsed = Math.round((Date.now() - startTime) / 1000);
+        if (elapsed <= 0) return;
+        fetch('/analytics/heartbeat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+            body: JSON.stringify({ elapsed: elapsed }),
+            keepalive: true
+        }).catch(function() {});
+    }
+
+    // Enviar heartbeat a cada 30s
+    setInterval(sendHeartbeat, 30000);
+
+    // Enviar ao sair da pagina
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') sendHeartbeat();
+    });
+    window.addEventListener('beforeunload', sendHeartbeat);
+})();
+</script>
+
 @yield('scripts')
 </body>
 </html>

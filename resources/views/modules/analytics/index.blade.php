@@ -167,7 +167,10 @@
 
 <!-- Visitantes Recentes -->
 <div class="card mb-4">
-    <div class="card-header"><span class="card-title"><i class="fas fa-users"></i> Visitantes Recentes</span></div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="card-title"><i class="fas fa-users"></i> Visitantes Recentes</span>
+        <span class="text-muted" style="font-size:0.78rem;" id="visitorsInfo"></span>
+    </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-sm table-hover visitors-table mb-0">
@@ -176,6 +179,7 @@
             </table>
         </div>
     </div>
+    <div class="card-footer py-2" id="visitorsPagination" style="display:none;"></div>
 </div>
 @endsection
 
@@ -183,6 +187,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
 let currentPeriod = 7;
+let currentVisitorsPage = 1;
 let visitsChart = null, devicesChart = null, browsersChart = null, countriesChart = null;
 let dataTimer = null, visitorsTimer = null;
 
@@ -391,19 +396,24 @@ function loadData() {
     });
 }
 
-function loadVisitors() {
+function loadVisitors(page) {
+    if (page === undefined) page = currentVisitorsPage;
+    currentVisitorsPage = page;
     $.ajax({
         url: VISITORS_URL,
+        data: { page: page },
         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         success: function(res) {
             if (!res.success || !res.data) return;
             var visitors = res.data;
             if (!visitors.length) {
                 $('#visitorsTable').html('<tr><td colspan="5" class="text-center text-muted py-3">Nenhum visitante registrado</td></tr>');
+                $('#visitorsPagination').hide();
+                $('#visitorsInfo').text('');
                 return;
             }
             var html = '';
-            visitors.slice(0, 50).forEach(function(v) {
+            visitors.forEach(function(v) {
                 var dt = new Date(v.created_at);
                 var timeStr = dt.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
                 var icon = v.device_type === 'mobile' ? 'fa-mobile-alt' : (v.device_type === 'tablet' ? 'fa-tablet-alt' : 'fa-desktop');
@@ -414,6 +424,25 @@ function loadVisitors() {
                     + '<td>' + timeStr + '</td></tr>';
             });
             $('#visitorsTable').html(html);
+
+            // Paginacao
+            var p = res.pagination;
+            if (p && p.last_page > 1) {
+                $('#visitorsInfo').text(p.total + ' visitantes - Pag. ' + p.current_page + '/' + p.last_page);
+                var pagHtml = '<nav><ul class="pagination pagination-sm mb-0 justify-content-center">';
+                pagHtml += '<li class="page-item' + (p.current_page <= 1 ? ' disabled' : '') + '"><a class="page-link" href="#" onclick="loadVisitors(' + (p.current_page - 1) + ');return false;">&laquo;</a></li>';
+                var startP = Math.max(1, p.current_page - 2);
+                var endP = Math.min(p.last_page, p.current_page + 2);
+                for (var i = startP; i <= endP; i++) {
+                    pagHtml += '<li class="page-item' + (i === p.current_page ? ' active' : '') + '"><a class="page-link" href="#" onclick="loadVisitors(' + i + ');return false;">' + i + '</a></li>';
+                }
+                pagHtml += '<li class="page-item' + (p.current_page >= p.last_page ? ' disabled' : '') + '"><a class="page-link" href="#" onclick="loadVisitors(' + (p.current_page + 1) + ');return false;">&raquo;</a></li>';
+                pagHtml += '</ul></nav>';
+                $('#visitorsPagination').html(pagHtml).show();
+            } else {
+                $('#visitorsPagination').hide();
+                if (p) $('#visitorsInfo').text(p.total + ' visitantes');
+            }
         }
     });
 }

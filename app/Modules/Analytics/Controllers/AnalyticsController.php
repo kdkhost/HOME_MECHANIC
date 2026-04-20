@@ -16,52 +16,40 @@ class AnalyticsController extends Controller
     public function index(Request $request)
     {
         try {
-            // Dados básicos para a view (sem dependência do AnalyticsService)
             $stats = [
-                'total_visits' => 0, // Placeholder
-                'unique_visits' => 0, // Placeholder
-                'online_now' => 0, // Placeholder
-                'avg_time' => 0 // Placeholder
+                'total_visits' => 0,
+                'unique_visits' => 0,
+                'online_now' => 0,
+                'avg_time' => 0
             ];
-            
-            // Tentar obter dados reais se a tabela analytics existir
+
             try {
                 if (DB::getSchemaBuilder()->hasTable('analytics')) {
                     $stats = [
                         'total_visits' => DB::table('analytics')->where('is_bot', false)->count(),
                         'unique_visits' => DB::table('analytics')->where('is_bot', false)->where('is_unique', true)->count(),
                         'online_now' => DB::table('analytics')->where('created_at', '>=', now()->subMinutes(5))->where('is_bot', false)->distinct('session_id')->count(),
-                        'avg_time' => DB::table('analytics')->where('is_bot', false)->avg('duration') ?? 0
+                        'avg_time' => round((float)(DB::table('analytics')->where('is_bot', false)->whereNotNull('duration')->avg('duration') ?? 0))
                     ];
                 }
             } catch (\Exception $e) {
-                // Se a tabela não existir, usar valores padrão
-                Log::info('Tabela analytics não existe ainda', ['error' => $e->getMessage()]);
+                Log::info('Tabela analytics nao existe ainda', ['error' => $e->getMessage()]);
             }
-            
+
             if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'data' => $stats
-                ]);
+                return response()->json(['success' => true, 'data' => $stats]);
             }
 
             return view('modules.analytics.index', compact('stats'));
 
         } catch (\Exception $e) {
-            Log::error('Erro ao carregar analytics', [
-                'error' => $e->getMessage(),
-                'user_id' => Auth::id()
-            ]);
+            Log::error('Erro ao carregar analytics', ['error' => $e->getMessage(), 'user_id' => Auth::id()]);
 
             if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erro interno no servidor.'
-                ], 500);
+                return response()->json(['success' => false, 'message' => 'Erro interno no servidor.'], 500);
             }
 
-            return back()->with('error', 'Erro ao carregar estatísticas.');
+            return back()->with('error', 'Erro ao carregar estatisticas.');
         }
     }
 
@@ -90,7 +78,7 @@ class AnalyticsController extends Controller
                         'total_visits' => DB::table('analytics')->where('is_bot', false)->where('created_at', '>=', $startDate)->count(),
                         'unique_visits' => DB::table('analytics')->where('is_bot', false)->where('is_unique', true)->where('created_at', '>=', $startDate)->count(),
                         'online_now' => DB::table('analytics')->where('created_at', '>=', now()->subMinutes(5))->where('is_bot', false)->distinct('session_id')->count(),
-                        'avg_time' => round((float)(DB::table('analytics')->where('is_bot', false)->avg('duration') ?? 0)),
+                        'avg_time' => round((float)(DB::table('analytics')->where('is_bot', false)->whereNotNull('duration')->where('created_at', '>=', $startDate)->avg('duration') ?? 0)),
                         'today_visits' => DB::table('analytics')->where('is_bot', false)->whereDate('created_at', $today)->count(),
                         'today_unique' => DB::table('analytics')->where('is_bot', false)->where('is_unique', true)->whereDate('created_at', $today)->count(),
                     ];
@@ -117,49 +105,55 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Obter visitantes
+     * Obter visitantes com paginacao
      */
     public function getVisitors(Request $request)
     {
         try {
+            $page = (int) $request->input('page', 1);
+            $perPage = 20;
             $visitors = [];
-            
-            // Tentar obter dados reais se a tabela existir
+            $total = 0;
+
             try {
                 if (DB::getSchemaBuilder()->hasTable('analytics')) {
+                    $total = DB::table('analytics')->where('is_bot', false)->count();
                     $visitors = DB::table('analytics')
                         ->select('ip_address', 'country', 'city', 'device_type', 'browser', 'created_at')
                         ->where('is_bot', false)
                         ->orderBy('created_at', 'desc')
-                        ->limit(100)
+                        ->offset(($page - 1) * $perPage)
+                        ->limit($perPage)
                         ->get()
                         ->toArray();
                 }
             } catch (\Exception $e) {
-                // Tabela não existe
+                // Tabela nao existe
             }
-            
+
             return response()->json([
                 'success' => true,
-                'data' => $visitors
+                'data' => $visitors,
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                    'last_page' => max(1, (int) ceil($total / $perPage)),
+                ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao carregar visitantes'
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Erro ao carregar visitantes'], 500);
         }
     }
 
     /**
-     * Obter páginas mais visitadas
+     * Obter paginas mais visitadas
      */
     public function getPages(Request $request)
     {
         try {
             $pages = [];
-            
-            // Tentar obter dados reais se a tabela existir
+
             try {
                 if (DB::getSchemaBuilder()->hasTable('analytics')) {
                     $pages = DB::table('analytics')
@@ -172,67 +166,52 @@ class AnalyticsController extends Controller
                         ->toArray();
                 }
             } catch (\Exception $e) {
-                // Tabela não existe
+                // Tabela nao existe
             }
-            
-            return response()->json([
-                'success' => true,
-                'data' => $pages
-            ]);
+
+            return response()->json(['success' => true, 'data' => $pages]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao carregar páginas'
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Erro ao carregar paginas'], 500);
         }
     }
 
     /**
-     * Relatório detalhado
+     * Relatorio detalhado
      */
     public function report(Request $request)
     {
         try {
             $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
             $endDate = $request->input('end_date', now()->format('Y-m-d'));
-            $groupBy = $request->input('group_by', 'day'); // day, week, month
+            $groupBy = $request->input('group_by', 'day');
 
             $data = $this->generateReport($startDate, $endDate, $groupBy);
 
             if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'data' => $data
-                ]);
+                return response()->json(['success' => true, 'data' => $data]);
             }
 
             return view('modules.analytics.report', compact('data', 'startDate', 'endDate', 'groupBy'));
 
         } catch (\Exception $e) {
-            Log::error('Erro ao gerar relatório', [
-                'error' => $e->getMessage(),
-                'user_id' => Auth::id()
-            ]);
+            Log::error('Erro ao gerar relatorio', ['error' => $e->getMessage(), 'user_id' => Auth::id()]);
 
             if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erro interno no servidor.'
-                ], 500);
+                return response()->json(['success' => false, 'message' => 'Erro interno no servidor.'], 500);
             }
 
-            return back()->with('error', 'Erro ao gerar relatório.');
+            return back()->with('error', 'Erro ao gerar relatorio.');
         }
     }
 
     /**
-     * Dados para gráficos
+     * Dados para graficos
      */
     public function chartData(Request $request)
     {
         try {
-            $type = $request->input('type', 'visits'); // visits, devices, browsers, countries
-            $period = $request->input('period', '30'); // 7, 30, 90 dias
+            $type = $request->input('type', 'visits');
+            $period = $request->input('period', '30');
 
             $data = match ($type) {
                 'visits' => $this->getVisitsChartData($period),
@@ -244,22 +223,11 @@ class AnalyticsController extends Controller
                 default => []
             };
 
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ]);
+            return response()->json(['success' => true, 'data' => $data]);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao obter dados do gráfico', [
-                'error' => $e->getMessage(),
-                'type' => $request->input('type'),
-                'user_id' => Auth::id()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao carregar dados do gráfico.'
-            ], 500);
+            Log::error('Erro ao obter dados do grafico', ['error' => $e->getMessage(), 'type' => $request->input('type'), 'user_id' => Auth::id()]);
+            return response()->json(['success' => false, 'message' => 'Erro ao carregar dados do grafico.'], 500);
         }
     }
 
@@ -269,40 +237,65 @@ class AnalyticsController extends Controller
     public function onlineVisitors(Request $request)
     {
         try {
-            // Considerar visitantes dos últimos 5 minutos como "online"
-            $onlineCount = DB::table('analytics')
-                ->where('created_at', '>=', now()->subMinutes(5))
-                ->where('is_bot', false)
-                ->distinct('session_id')
-                ->count();
+            $onlineCount = 0;
+            $recentPages = [];
 
-            // Últimas páginas visitadas
-            $recentPages = DB::table('analytics')
-                ->select('url', 'created_at', 'country', 'device_type')
-                ->where('created_at', '>=', now()->subMinutes(30))
-                ->where('is_bot', false)
-                ->orderBy('created_at', 'desc')
-                ->limit(20)
-                ->get();
+            if (DB::getSchemaBuilder()->hasTable('analytics')) {
+                $onlineCount = DB::table('analytics')
+                    ->where('created_at', '>=', now()->subMinutes(5))
+                    ->where('is_bot', false)
+                    ->distinct('session_id')
+                    ->count();
+
+                $recentPages = DB::table('analytics')
+                    ->select('url', 'created_at', 'country', 'device_type')
+                    ->where('created_at', '>=', now()->subMinutes(30))
+                    ->where('is_bot', false)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(20)
+                    ->get();
+            }
 
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'online_count' => $onlineCount,
-                    'recent_pages' => $recentPages
-                ]
+                'data' => ['online_count' => $onlineCount, 'recent_pages' => $recentPages]
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao obter visitantes online', [
-                'error' => $e->getMessage(),
-                'user_id' => Auth::id()
-            ]);
+            Log::error('Erro ao obter visitantes online', ['error' => $e->getMessage(), 'user_id' => Auth::id()]);
+            return response()->json(['success' => false, 'message' => 'Erro ao carregar visitantes online.'], 500);
+        }
+    }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao carregar visitantes online.'
-            ], 500);
+    /**
+     * Heartbeat - atualizar duracao da visita (rota publica)
+     */
+    public function heartbeat(Request $request)
+    {
+        try {
+            $sessionId = session()->getId();
+            $elapsed = (int) $request->input('elapsed', 0);
+
+            if ($elapsed <= 0 || !DB::getSchemaBuilder()->hasTable('analytics')) {
+                return response()->json(['success' => true]);
+            }
+
+            $visit = DB::table('analytics')
+                ->where('session_id', $sessionId)
+                ->where('is_bot', false)
+                ->where('created_at', '>=', now()->subMinutes(30))
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            if ($visit) {
+                DB::table('analytics')
+                    ->where('id', $visit->id)
+                    ->update(['duration' => $elapsed]);
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => true]);
         }
     }
 
@@ -316,47 +309,30 @@ class AnalyticsController extends Controller
             $cutoffDate = now()->subDays($daysToKeep);
             $deletedCount = DB::table('analytics')->where('created_at', '<', $cutoffDate)->delete();
 
-            Log::info('Limpeza de analytics executada', [
-                'days_to_keep' => $daysToKeep,
-                'deleted_count' => $deletedCount,
-                'user_id' => Auth::id()
-            ]);
+            Log::info('Limpeza de analytics executada', ['days_to_keep' => $daysToKeep, 'deleted_count' => $deletedCount, 'user_id' => Auth::id()]);
 
-            return response()->json([
-                'success' => true,
-                'message' => "Limpeza concluída. {$deletedCount} registros removidos.",
-                'deleted_count' => $deletedCount
-            ]);
+            return response()->json(['success' => true, 'message' => "Limpeza concluida. {$deletedCount} registros removidos.", 'deleted_count' => $deletedCount]);
 
         } catch (\Exception $e) {
-            Log::error('Erro na limpeza de analytics', [
-                'error' => $e->getMessage(),
-                'user_id' => Auth::id()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro na limpeza dos dados.'
-            ], 500);
+            Log::error('Erro na limpeza de analytics', ['error' => $e->getMessage(), 'user_id' => Auth::id()]);
+            return response()->json(['success' => false, 'message' => 'Erro na limpeza dos dados.'], 500);
         }
     }
 
     /**
-     * Gerar relatório personalizado
+     * Gerar relatorio personalizado
      */
     private function generateReport(string $startDate, string $endDate, string $groupBy): array
     {
         $start = \Carbon\Carbon::parse($startDate)->startOfDay();
         $end = \Carbon\Carbon::parse($endDate)->endOfDay();
 
-        // Formato de agrupamento
         $dateFormat = match ($groupBy) {
             'week' => '%Y-%u',
             'month' => '%Y-%m',
             default => '%Y-%m-%d'
         };
 
-        // Visitas por período
         $visitsByPeriod = DB::table('analytics')
             ->select(DB::raw("DATE_FORMAT(created_at, '{$dateFormat}') as period"), DB::raw('COUNT(*) as visits'))
             ->where('is_bot', false)
@@ -365,7 +341,6 @@ class AnalyticsController extends Controller
             ->orderBy('period')
             ->get();
 
-        // Visitas únicas por período
         $uniqueVisitsByPeriod = DB::table('analytics')
             ->select(DB::raw("DATE_FORMAT(created_at, '{$dateFormat}') as period"), DB::raw('COUNT(*) as unique_visits'))
             ->where('is_bot', false)
@@ -376,11 +351,7 @@ class AnalyticsController extends Controller
             ->get();
 
         return [
-            'period' => [
-                'start' => $start->format('d/m/Y'),
-                'end' => $end->format('d/m/Y'),
-                'group_by' => $groupBy
-            ],
+            'period' => ['start' => $start->format('d/m/Y'), 'end' => $end->format('d/m/Y'), 'group_by' => $groupBy],
             'visits_by_period' => $visitsByPeriod,
             'unique_visits_by_period' => $uniqueVisitsByPeriod,
             'summary' => [
@@ -393,142 +364,191 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Dados do gráfico de visitas
+     * Dados do grafico de visitas - preenche todos os dias
      */
     private function getVisitsChartData(int $days): array
     {
-        $startDate = now()->subDays($days);
-        
-        $data = DB::table('analytics')
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as visits'), DB::raw('COUNT(CASE WHEN is_unique = 1 THEN 1 END) as unique_visits'))
-            ->where('is_bot', false)
-            ->where('created_at', '>=', $startDate)
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('analytics')) {
+                return ['labels' => [], 'datasets' => []];
+            }
 
-        return [
-            'labels' => $data->pluck('date')->map(fn($date) => \Carbon\Carbon::parse($date)->format('d/m'))->toArray(),
-            'datasets' => [
-                [
-                    'label' => 'Visitas Totais',
-                    'data' => $data->pluck('visits')->toArray(),
-                    'borderColor' => '#FF6B00',
-                    'backgroundColor' => 'rgba(255, 107, 0, 0.1)',
-                    'tension' => 0.4
-                ],
-                [
-                    'label' => 'Visitas Únicas',
-                    'data' => $data->pluck('unique_visits')->toArray(),
-                    'borderColor' => '#0D0D0D',
-                    'backgroundColor' => 'rgba(13, 13, 13, 0.1)',
-                    'tension' => 0.4
+            $startDate = now()->subDays($days);
+
+            // Preencher todos os dias no intervalo com 0
+            $allDays = [];
+            for ($i = $days; $i >= 0; $i--) {
+                $date = now()->subDays($i)->format('Y-m-d');
+                $allDays[$date] = ['visits' => 0, 'unique_visits' => 0];
+            }
+
+            $data = DB::table('analytics')
+                ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as visits'), DB::raw('COUNT(CASE WHEN is_unique = 1 THEN 1 END) as unique_visits'))
+                ->where('is_bot', false)
+                ->where('created_at', '>=', $startDate)
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            foreach ($data as $row) {
+                if (isset($allDays[$row->date])) {
+                    $allDays[$row->date] = ['visits' => (int)$row->visits, 'unique_visits' => (int)$row->unique_visits];
+                }
+            }
+
+            return [
+                'labels' => array_map(fn($date) => \Carbon\Carbon::parse($date)->format('d/m'), array_keys($allDays)),
+                'datasets' => [
+                    [
+                        'label' => 'Visitas Totais',
+                        'data' => array_column($allDays, 'visits'),
+                        'borderColor' => '#FF6B00',
+                        'backgroundColor' => 'rgba(255, 107, 0, 0.1)',
+                        'tension' => 0.4
+                    ],
+                    [
+                        'label' => 'Visitas Unicas',
+                        'data' => array_column($allDays, 'unique_visits'),
+                        'borderColor' => '#0D0D0D',
+                        'backgroundColor' => 'rgba(13, 13, 13, 0.1)',
+                        'tension' => 0.4
+                    ]
                 ]
-            ]
-        ];
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Erro getVisitsChartData', ['error' => $e->getMessage()]);
+            return ['labels' => [], 'datasets' => []];
+        }
     }
 
     /**
-     * Dados do gráfico de dispositivos
+     * Dados do grafico de dispositivos
      */
     private function getDevicesChartData(int $days): array
     {
-        $startDate = now()->subDays($days);
-        
-        $data = DB::table('analytics')
-            ->select('device_type', DB::raw('COUNT(*) as count'))
-            ->where('is_bot', false)
-            ->where('created_at', '>=', $startDate)
-            ->groupBy('device_type')
-            ->orderByDesc('count')
-            ->get();
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('analytics')) {
+                return ['labels' => [], 'datasets' => []];
+            }
+            $startDate = now()->subDays($days);
+            $data = DB::table('analytics')
+                ->select('device_type', DB::raw('COUNT(*) as count'))
+                ->where('is_bot', false)
+                ->where('created_at', '>=', $startDate)
+                ->groupBy('device_type')
+                ->orderByDesc('count')
+                ->get();
 
-        $colors = ['#FF6B00', '#0D0D0D', '#1A1A1A', '#FF8C42', '#2D2D2D'];
+            $colors = ['#FF6B00', '#0D0D0D', '#1A1A1A', '#FF8C42', '#2D2D2D'];
 
-        return [
-            'labels' => $data->pluck('device_type')->map(fn($type) => ucfirst($type))->toArray(),
-            'datasets' => [
-                [
-                    'data' => $data->pluck('count')->toArray(),
-                    'backgroundColor' => array_slice($colors, 0, $data->count()),
-                    'borderWidth' => 2,
-                    'borderColor' => '#fff'
+            return [
+                'labels' => $data->pluck('device_type')->map(fn($type) => ucfirst($type))->toArray(),
+                'datasets' => [
+                    [
+                        'data' => $data->pluck('count')->toArray(),
+                        'backgroundColor' => array_slice($colors, 0, $data->count()),
+                        'borderWidth' => 2,
+                        'borderColor' => '#fff'
+                    ]
                 ]
-            ]
-        ];
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Erro getDevicesChartData', ['error' => $e->getMessage()]);
+            return ['labels' => [], 'datasets' => []];
+        }
     }
 
     /**
-     * Dados do gráfico de navegadores
+     * Dados do grafico de navegadores
      */
     private function getBrowsersChartData(int $days): array
     {
-        $startDate = now()->subDays($days);
-        
-        $data = DB::table('analytics')
-            ->select('browser', DB::raw('COUNT(*) as count'))
-            ->where('is_bot', false)
-            ->where('created_at', '>=', $startDate)
-            ->groupBy('browser')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get();
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('analytics')) {
+                return ['labels' => [], 'data' => []];
+            }
+            $startDate = now()->subDays($days);
+            $data = DB::table('analytics')
+                ->select('browser', DB::raw('COUNT(*) as count'))
+                ->where('is_bot', false)
+                ->where('created_at', '>=', $startDate)
+                ->groupBy('browser')
+                ->orderByDesc('count')
+                ->limit(10)
+                ->get();
 
-        return [
-            'labels' => $data->pluck('browser')->toArray(),
-            'data' => $data->pluck('count')->toArray()
-        ];
+            return [
+                'labels' => $data->pluck('browser')->toArray(),
+                'data' => $data->pluck('count')->toArray()
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Erro getBrowsersChartData', ['error' => $e->getMessage()]);
+            return ['labels' => [], 'data' => []];
+        }
     }
 
     /**
-     * Dados do gráfico de países
+     * Dados do grafico de paises
      */
     private function getCountriesChartData(int $days): array
     {
-        $startDate = now()->subDays($days);
-        
-        $data = DB::table('analytics')
-            ->select('country', DB::raw('COUNT(*) as count'))
-            ->where('is_bot', false)
-            ->whereNotNull('country')
-            ->where('created_at', '>=', $startDate)
-            ->groupBy('country')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get();
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('analytics')) {
+                return ['labels' => [], 'data' => []];
+            }
+            $startDate = now()->subDays($days);
+            $data = DB::table('analytics')
+                ->select('country', DB::raw('COUNT(*) as count'))
+                ->where('is_bot', false)
+                ->whereNotNull('country')
+                ->where('created_at', '>=', $startDate)
+                ->groupBy('country')
+                ->orderByDesc('count')
+                ->limit(10)
+                ->get();
 
-        return [
-            'labels' => $data->pluck('country')->toArray(),
-            'data' => $data->pluck('count')->toArray()
-        ];
+            return [
+                'labels' => $data->pluck('country')->toArray(),
+                'data' => $data->pluck('count')->toArray()
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Erro getCountriesChartData', ['error' => $e->getMessage()]);
+            return ['labels' => [], 'data' => []];
+        }
     }
 
     /**
-     * Dados das páginas mais visitadas
+     * Dados das paginas mais visitadas
      */
     private function getPagesChartData(int $days): array
     {
-        $startDate = now()->subDays($days);
-        
-        $data = DB::table('analytics')
-            ->select('url', DB::raw('COUNT(*) as count'))
-            ->where('is_bot', false)
-            ->where('created_at', '>=', $startDate)
-            ->groupBy('url')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get();
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('analytics')) {
+                return ['labels' => [], 'data' => []];
+            }
+            $startDate = now()->subDays($days);
+            $data = DB::table('analytics')
+                ->select('url', DB::raw('COUNT(*) as count'))
+                ->where('is_bot', false)
+                ->where('created_at', '>=', $startDate)
+                ->groupBy('url')
+                ->orderByDesc('count')
+                ->limit(10)
+                ->get();
 
-        // Simplificar URLs para exibição
-        $labels = $data->pluck('url')->map(function ($url) {
-            $path = parse_url($url, PHP_URL_PATH);
-            return $path === '/' ? 'Página Inicial' : basename($path);
-        })->toArray();
+            $labels = $data->pluck('url')->map(function ($url) {
+                $path = parse_url($url, PHP_URL_PATH);
+                return $path === '/' ? 'Pagina Inicial' : basename($path);
+            })->toArray();
 
-        return [
-            'labels' => $labels,
-            'data' => $data->pluck('count')->toArray()
-        ];
+            return [
+                'labels' => $labels,
+                'data' => $data->pluck('count')->toArray()
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Erro getPagesChartData', ['error' => $e->getMessage()]);
+            return ['labels' => [], 'data' => []];
+        }
     }
 
     /**
@@ -536,27 +556,33 @@ class AnalyticsController extends Controller
      */
     private function getReferrersChartData(int $days): array
     {
-        $startDate = now()->subDays($days);
-        
-        $data = DB::table('analytics')
-            ->select('referer', DB::raw('COUNT(*) as count'))
-            ->where('is_bot', false)
-            ->whereNotNull('referer')
-            ->where('created_at', '>=', $startDate)
-            ->groupBy('referer')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get();
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('analytics')) {
+                return ['labels' => [], 'data' => []];
+            }
+            $startDate = now()->subDays($days);
+            $data = DB::table('analytics')
+                ->select('referer', DB::raw('COUNT(*) as count'))
+                ->where('is_bot', false)
+                ->whereNotNull('referer')
+                ->where('created_at', '>=', $startDate)
+                ->groupBy('referer')
+                ->orderByDesc('count')
+                ->limit(10)
+                ->get();
 
-        // Simplificar referenciadores para exibição
-        $labels = $data->pluck('referer')->map(function ($referer) {
-            $host = parse_url($referer, PHP_URL_HOST);
-            return $host ?: 'Direto';
-        })->toArray();
+            $labels = $data->pluck('referer')->map(function ($referer) {
+                $host = parse_url($referer, PHP_URL_HOST);
+                return $host ?: 'Direto';
+            })->toArray();
 
-        return [
-            'labels' => $labels,
-            'data' => $data->pluck('count')->toArray()
-        ];
+            return [
+                'labels' => $labels,
+                'data' => $data->pluck('count')->toArray()
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Erro getReferrersChartData', ['error' => $e->getMessage()]);
+            return ['labels' => [], 'data' => []];
+        }
     }
 }
