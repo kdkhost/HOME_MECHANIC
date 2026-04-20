@@ -28,14 +28,23 @@ class UploadService
         if ($this->imageManager) return $this->imageManager;
 
         try {
-            // Tenta Imagick primeiro (mais robusto)
-            if (extension_loaded('imagick')) {
+            // v3/v4: construtor aceita objeto Driver
+            if (extension_loaded('imagick') && class_exists(\Intervention\Image\Drivers\Imagick\Driver::class)) {
                 return $this->imageManager = new ImageManager(new \Intervention\Image\Drivers\Imagick\Driver());
             }
-            // Fallback para GD
-            return $this->imageManager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
-        } catch (\Exception $e) {
-            Log::warning('Falha ao inicializar driver de imagem: ' . $e->getMessage());
+            if (class_exists(\Intervention\Image\Drivers\Gd\Driver::class)) {
+                return $this->imageManager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao inicializar driver v3/v4: ' . $e->getMessage());
+        }
+
+        try {
+            // v2: construtor aceita array de config
+            $driver = extension_loaded('imagick') ? 'imagick' : 'gd';
+            return $this->imageManager = new ImageManager(['driver' => $driver]);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao inicializar driver v2: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -87,7 +96,7 @@ class UploadService
 
             return $upload;
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Erro ao armazenar arquivo', [
                 'error' => $e->getMessage(), 'file' => $file->getClientOriginalName(),
             ]);
@@ -114,13 +123,24 @@ class UploadService
             $thumbnailFullPath = public_path($thumbnailPath);
 
             $manager = $this->getManager();
-            $image = $manager->read($originalFullPath);
-            $image->scaleDown(width: 400, height: 300);
-            $image->save($thumbnailFullPath, quality: 85);
+
+            // Compativel com Intervention Image v2 (make) e v3/v4 (read)
+            if (method_exists($manager, 'read')) {
+                $image = $manager->read($originalFullPath);
+                $image->scaleDown(width: 400, height: 300);
+                $image->save($thumbnailFullPath, quality: 85);
+            } elseif (method_exists($manager, 'make')) {
+                $image = $manager->make($originalFullPath);
+                $image->fit(400, 300);
+                $image->save($thumbnailFullPath, 85);
+            } else {
+                Log::warning('Intervention Image: nenhum metodo de leitura disponivel');
+                return null;
+            }
 
             return $thumbnailPath;
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning('Erro ao criar thumbnail', ['error' => $e->getMessage()]);
             return null;
         }
