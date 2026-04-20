@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
@@ -63,6 +64,8 @@ class BackupController extends Controller
             // Limpar backups antigos (manter apenas os $maxBackups mais recentes)
             $this->cleanupOldBackups();
 
+            Log::info("Backup gerado com sucesso: {$filename} (" . size_format(filesize($zipPath)) . ")");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Backup concluído com sucesso!',
@@ -74,6 +77,7 @@ class BackupController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erro ao gerar backup: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao gerar backup: ' . $e->getMessage()
@@ -160,38 +164,67 @@ class BackupController extends Controller
     {
         $tables = DB::select('SHOW TABLES');
         $dbName = config('database.connections.mysql.database');
-        $tablesCol = "Tables_in_{$dbName}";
-        
+
+        // Detectar dinamicamente o nome da coluna retornado por SHOW TABLES
+        $tablesCol = null;
+        if (!empty($tables)) {
+            $firstRow = (array) $tables[0];
+            $tablesCol = array_key_first($firstRow);
+        }
+        if (!$tablesCol) {
+            $tablesCol = "Tables_in_{$dbName}";
+        }
+
         $output = "-- HomeMechanic SQL Dump\n";
         $output .= "-- Gerado em: " . date('Y-m-d H:i:s') . "\n\n";
         $output .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
         foreach ($tables as $table) {
             $tableName = $table->$tablesCol;
-            
-            // Estrutura
-            $showCreate = DB::select("SHOW CREATE TABLE `{$tableName}`");
-            $output .= "\n-- Estrutura da tabela `{$tableName}`\n";
-            $output .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
-            $output .= $showCreate[0]->{'Create Table'} . ";\n\n";
 
-            // Dados
-            $rows = DB::table($tableName)->get();
-            if ($rows->count() > 0) {
-                $output .= "-- Dados da tabela `{$tableName}`\n";
-                foreach ($rows as $row) {
-                    $rowArray = (array)$row;
-                    $keys = array_keys($rowArray);
-                    $values = array_values($rowArray);
-                    
-                    $escapedValues = array_map(function($v) {
-                        if (is_null($v)) return "NULL";
-                        return "'" . addslashes($v) . "'";
-                    }, $values);
+            // Pular views e tabelas do sistema
+            if (str_starts_with($tableName, 'v_') || str_starts_with($tableName, 'sys_')) {
+                continue;
+            }
 
-                    $output .= "INSERT INTO `{$tableName}` (`" . implode("`, `", $keys) . "`) VALUES (" . implode(", ", $escapedValues) . ");\n";
+            try {
+                // Estrutura
+                $showCreate = DB::select("SHOW CREATE TABLE `{$tableName}`");
+                $createCol = 'Create Table';
+                // Se for view, o nome da coluna e diferente
+                if (!property_exists($showCreate[0], $createCol)) {
+                    $createCol = 'Create View';
                 }
-                $output .= "\n";
+                if (!property_exists($showCreate[0], $createCol)) {
+                    continue; // Pular se nao conseguir obter estrutura
+                }
+
+                $output .= "\n-- Estrutura da tabela `{$tableName}`\n";
+                $output .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
+                $output .= $showCreate[0]->$createCol . ";\n\n";
+
+                // Dados (apenas para tabelas, nao views)
+                if ($createCol === 'Create Table') {
+                    $rows = DB::table($tableName)->get();
+                    if ($rows->count() > 0) {
+                        $output .= "-- Dados da tabela `{$tableName}`\n";
+                        foreach ($rows as $row) {
+                            $rowArray = (array)$row;
+                            $keys = array_keys($rowArray);
+                            $values = array_values($rowArray);
+
+                            $escapedValues = array_map(function($v) {
+                                if (is_null($v)) return "NULL";
+                                return "'" . addslashes($v) . "'";
+                            }, $values);
+
+                            $output .= "INSERT INTO `{$tableName}` (`" . implode("`, `", $keys) . "`) VALUES (" . implode(", ", $escapedValues) . ");\n";
+                        }
+                        $output .= "\n";
+                    }
+                }
+            } catch (\Exception $e) {
+                $output .= "-- ERRO ao exportar tabela `{$tableName}`: {$e->getMessage()}\n\n";
             }
         }
 

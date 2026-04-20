@@ -509,6 +509,7 @@ function runBackup(type) {
             method: 'POST',
             data: JSON.stringify({ type: type }),
             contentType: 'application/json',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
             success: function(res) {
                 Swal.close();
                 if (res.success) {
@@ -543,6 +544,7 @@ function deleteBackup(file) {
             method: 'DELETE',
             data: JSON.stringify({ file: file }),
             contentType: 'application/json',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
             success: function(res) {
                 if (res.success) {
                     HMToast.success(res.message);
