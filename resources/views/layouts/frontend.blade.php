@@ -7,6 +7,10 @@
     <title>@yield('title', 'HomeMechanic — Tuning & Performance de Luxo')</title>
     <meta name="description" content="@yield('description', 'Especialistas em tuning, performance e manutenção de carros de luxo. Lamborghini, Ferrari, Porsche, McLaren e muito mais.')">
 
+    @if(!empty($siteSettings['site_favicon']))
+    <link rel="icon" href="{{ str_starts_with($siteSettings['site_favicon'], 'http') ? $siteSettings['site_favicon'] : asset(ltrim($siteSettings['site_favicon'], '/')) }}" type="image/x-icon">
+    @endif
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -773,7 +777,11 @@
 
 <!-- Preloader -->
 <div id="preloader">
-    <div class="pre-logo">HOME<span style="color:#fff">MECHANIC</span></div>
+    @if(!empty($siteSettings['site_logo']))
+        <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="max-height:60px;object-fit:contain;">
+    @else
+        <div class="pre-logo">HOME<span style="color:#fff">MECHANIC</span></div>
+    @endif
     <div class="pre-bar"><span></span></div>
 </div>
 
@@ -783,7 +791,11 @@
 <!-- ── Mobile Drawer ──────────────────────────────────── -->
 <div class="mobile-drawer" id="mobileDrawer">
     <div class="drawer-header">
-        <div class="drawer-brand">HOME<span>MECHANIC</span></div>
+        @if(!empty($siteSettings['site_logo']))
+            <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="max-height:36px;object-fit:contain;">
+        @else
+            <div class="drawer-brand">HOME<span>MECHANIC</span></div>
+        @endif
         <button class="drawer-close" onclick="closeDrawer()" aria-label="Fechar menu">
             <i class="bi bi-x-lg"></i>
         </button>
@@ -825,8 +837,12 @@
 <nav class="navbar navbar-expand-lg" id="navbar">
     <div class="container">
         <a class="navbar-brand nav-brand" href="{{ route('home') }}">
-            <div class="brand-icon"><i class="bi bi-tools"></i></div>
-            HOME<span>MECHANIC</span>
+            @if(!empty($siteSettings['site_logo']))
+                <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="max-height:40px;object-fit:contain;">
+            @else
+                <div class="brand-icon"><i class="bi bi-tools"></i></div>
+                HOME<span>MECHANIC</span>
+            @endif
         </a>
 
         {{-- Hamburguer mobile --}}
@@ -969,7 +985,11 @@
     <div class="container">
         <div class="row g-5 pb-5">
             <div class="col-lg-4">
-                <div class="footer-brand mb-3">{{ strtoupper($siteSettings['site_name'] ?? 'HOMEMECHANIC') }}</div>
+                @if(!empty($siteSettings['site_logo']))
+                    <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="max-height:50px;object-fit:contain;margin-bottom:0.75rem;">
+                @else
+                    <div class="footer-brand mb-3">{{ strtoupper($siteSettings['site_name'] ?? 'HOMEMECHANIC') }}</div>
+                @endif
                 <p class="footer-text mb-4">{{ $siteSettings['site_desc'] ?? 'Especialistas em tuning, performance e manutenção de carros de luxo.' }}</p>
                 <div class="social-links">
                     @if(!empty($siteSettings['social_instagram']))

@@ -231,7 +231,7 @@
 <div class="row g-3 mb-4">
     {{-- Gráfico visitas --}}
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <span class="card-title"><i class="fas fa-chart-area"></i> Visitas — Últimos 7 dias</span>
                 <div class="card-tools">
@@ -249,10 +249,14 @@
     {{-- Atividade recente --}}
     <div class="col-lg-4">
         <div class="card h-100">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="card-title"><i class="fas fa-history"></i> Atividade Recente</span>
+                <button class="btn btn-sm" onclick="refreshActivity()" title="Atualizar" style="padding:0.15rem 0.4rem;">
+                    <i class="fas fa-sync-alt" id="activityRefreshIcon" style="font-size:0.75rem;"></i>
+                </button>
             </div>
-            <div class="card-body" style="max-height:280px;overflow-y:auto;padding-top:0.5rem!important;">
+            <div class="card-body" id="activityCardBody" style="max-height:280px;overflow-y:auto;padding-top:0.5rem!important;">
+                <div id="activityList">
                 @forelse($data['recent_activity'] as $act)
                 <div class="activity-item">
                     <div class="activity-dot"></div>
@@ -267,6 +271,7 @@
                     <p>Nenhuma atividade registrada</p>
                 </div>
                 @endforelse
+                </div>
             </div>
         </div>
     </div>

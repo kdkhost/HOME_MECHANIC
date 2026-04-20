@@ -41,6 +41,19 @@ class DashboardController extends Controller
     }
 
     /**
+     * Obter atividade recente via AJAX (tempo real)
+     */
+    public function getRecentActivityAjax(Request $request)
+    {
+        $activities = $this->getRecentActivity();
+
+        return response()->json([
+            'success' => true,
+            'data' => $activities,
+        ]);
+    }
+
+    /**
      * Obter estatísticas rápidas
      */
     public function getQuickStats(Request $request)

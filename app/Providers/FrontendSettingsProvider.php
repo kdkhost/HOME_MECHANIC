@@ -14,6 +14,16 @@ class FrontendSettingsProvider extends ServiceProvider
             try {
                 $s = Setting::group('general');
                 $f = Setting::group('frontend');
+
+                // Resolver UUIDs do FilePond para paths reais
+                $resolveUpload = function (?string $val): string {
+                    if (!$val) return '';
+                    if (str_starts_with($val, 'http') || str_contains($val, '/')) return $val;
+                    // Possivel UUID — buscar path na tabela uploads
+                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $val)->first();
+                    return $upload?->path ?? '';
+                };
+
                 return [
                     'site_name'        => $s['site_name']        ?? 'HomeMechanic',
                     'site_desc'        => $s['site_description']  ?? 'Tuning & Performance de Luxo',
@@ -28,6 +38,9 @@ class FrontendSettingsProvider extends ServiceProvider
                         $s['address_state']    ?? '',
                     ]))),
                     'address_full'     => $s['address']           ?? '',
+                    // Logo e Favicon
+                    'site_logo'        => $resolveUpload($s['site_logo'] ?? ''),
+                    'site_favicon'     => $resolveUpload($s['site_favicon'] ?? ''),
                     // Redes sociais
                     'social_instagram' => $s['social_instagram']  ?? '',
                     'social_facebook'  => $s['social_facebook']   ?? '',
@@ -57,6 +70,7 @@ class FrontendSettingsProvider extends ServiceProvider
                     'site_name' => 'HomeMechanic', 'site_desc' => 'Tuning & Performance de Luxo',
                     'phone' => '(11) 99999-9999', 'whatsapp' => '5511999999999',
                     'email' => 'contato@homemechanic.com.br', 'address' => '', 'address_full' => '',
+                    'site_logo' => '', 'site_favicon' => '',
                     'social_instagram' => '', 'social_facebook' => '', 'social_youtube' => '',
                     'social_twitter' => '', 'social_tiktok' => '', 'social_linkedin' => '',
                     'hero_title' => 'HOME MECHANIC', 'hero_subtitle' => '', 'hero_badge_text' => '',

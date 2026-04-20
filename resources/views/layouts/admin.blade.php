@@ -6,6 +6,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — HomeMechanic Admin</title>
 
+    @php
+        $favicon = \App\Models\Setting::get('site_favicon', '');
+        if ($favicon && !str_starts_with($favicon, 'http') && !str_contains($favicon, '/')) {
+            $upload = \App\Modules\Upload\Models\Upload::where('uuid', $favicon)->first();
+            $favicon = $upload?->path ?? '';
+        }
+    @endphp
+    @if($favicon)
+    <link rel="icon" href="{{ str_starts_with($favicon, 'http') ? $favicon : asset(ltrim($favicon, '/')) }}" type="image/x-icon">
+    @endif
+
     <!-- Fonts -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css">
     <!-- OverlayScrollbars -->
@@ -208,8 +219,19 @@
         <!--begin::Brand-->
         <div class="sidebar-brand">
             <a href="{{ route('admin.dashboard.index') }}" class="brand-link">
-                <i class="fas fa-tools" style="color:var(--hm-primary);font-size:1.3rem;margin-right:0.5rem;"></i>
-                <span class="brand-text fw-bold" style="color:var(--hm-primary);">HomeMechanic</span>
+                @php
+                    $adminLogo = \App\Models\Setting::get('site_logo', '');
+                    if ($adminLogo && !str_starts_with($adminLogo, 'http') && !str_contains($adminLogo, '/')) {
+                        $uploadLogo = \App\Modules\Upload\Models\Upload::where('uuid', $adminLogo)->first();
+                        $adminLogo = $uploadLogo?->path ?? '';
+                    }
+                @endphp
+                @if($adminLogo)
+                    <img src="{{ str_starts_with($adminLogo, 'http') ? $adminLogo : asset(ltrim($adminLogo, '/')) }}" alt="HomeMechanic" style="max-height:33px;object-fit:contain;">
+                @else
+                    <i class="fas fa-tools" style="color:var(--hm-primary);font-size:1.3rem;margin-right:0.5rem;"></i>
+                    <span class="brand-text fw-bold" style="color:var(--hm-primary);">HomeMechanic</span>
+                @endif
             </a>
         </div>
         <!--end::Brand-->
