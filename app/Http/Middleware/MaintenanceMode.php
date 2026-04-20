@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Upload\Models\Upload;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,13 +47,18 @@ class MaintenanceMode
                     $mTimer   = $settings['maintenance_timer'] ?? null;
                     $mBg      = $settings['maintenance_bg_image'] ?? null;
                     
+                    // Resolver UUIDs do FilePond para paths reais
+                    $mBg = $this->resolvePath($mBg);
+                    $siteLogo    = $this->resolvePath($settings['site_logo'] ?? '');
+                    $siteFavicon = $this->resolvePath($settings['site_favicon'] ?? '');
+                    
                     // Dados de Empresa
                     $contactData = [
                         'phone'    => $settings['contact_phone'] ?? '',
                         'whatsapp' => $settings['whatsapp'] ?? '',
                         'email'    => $settings['contact_email'] ?? '',
-                        'favicon'  => $settings['site_favicon'] ?? '',
-                        'logo'     => $settings['site_logo'] ?? ''
+                        'favicon'  => $siteFavicon,
+                        'logo'     => $siteLogo,
                     ];
                     
                     // Outras rotas são bloqueadas e recebem a tela de manutenção
@@ -71,5 +77,24 @@ class MaintenanceMode
         }
         
         return $next($request);
+    }
+
+    /**
+     * Resolver path: se for UUID do FilePond, buscar path real na tabela uploads
+     */
+    private function resolvePath(?string $value): ?string
+    {
+        if (!$value) return null;
+
+        // URL externa — retorna direto
+        if (str_starts_with($value, 'http')) return $value;
+
+        // UUID do FilePond (sem barra) — resolver para path real
+        if (!str_contains($value, '/')) {
+            $upload = Upload::where('uuid', $value)->first();
+            return $upload ? $upload->path : null;
+        }
+
+        return $value;
     }
 }

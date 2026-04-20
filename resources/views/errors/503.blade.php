@@ -7,7 +7,7 @@
     <title>{{ $title ?? 'Sistema em Manutenção' }}</title>
     
     @if(!empty($contact['favicon']))
-        <link rel="icon" href="{{ asset('storage/' . $contact['favicon']) }}" type="image/x-icon">
+        <link rel="icon" href="{{ str_starts_with($contact['favicon'], 'http') ? $contact['favicon'] : asset(ltrim($contact['favicon'], '/')) }}" type="image/x-icon">
     @endif
 
     {{-- Fonts --}}
@@ -53,7 +53,7 @@
             z-index: 1;
             /* Se houver bg_image configurado, usa ele. Senão usa gradient */
             @if(!empty($bg))
-                background: url('{{ asset('storage/' . $bg) }}') no-repeat center center;
+                background: url('{{ str_starts_with($bg, 'http') ? $bg : asset(ltrim($bg, '/')) }}') no-repeat center center;
                 background-size: cover;
             @else
                 background: linear-gradient(135deg, #0D0D0D 0%, #2C2C2C 100%);
@@ -229,7 +229,7 @@
     <div class="maintenance-glass">
         {{-- Logo --}}
         @if(!empty($contact['logo']))
-            <img src="{{ asset('storage/' . $contact['logo']) }}" alt="Logo" class="logo-img">
+            <img src="{{ str_starts_with($contact['logo'], 'http') ? $contact['logo'] : asset(ltrim($contact['logo'], '/')) }}" alt="Logo" class="logo-img">
         @else
             <i class="bi bi-tools" style="font-size: 4rem; color: var(--hm-primary); margin-bottom:1rem; display:inline-block;"></i>
         @endif

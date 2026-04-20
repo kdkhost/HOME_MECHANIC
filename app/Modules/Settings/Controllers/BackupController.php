@@ -12,6 +12,7 @@ use ZipArchive;
 class BackupController extends Controller
 {
     protected $backupPath = 'backups';
+    protected $maxBackups = 30; // Manter no maximo 30 backups
 
     public function __construct()
     {
@@ -58,6 +59,9 @@ class BackupController extends Controller
             }
 
             $zip->close();
+
+            // Limpar backups antigos (manter apenas os $maxBackups mais recentes)
+            $this->cleanupOldBackups();
 
             return response()->json([
                 'success' => true,
@@ -130,6 +134,23 @@ class BackupController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'Arquivo não encontrado.'], 404);
+    }
+
+    /**
+     * Limpar backups antigos, mantendo apenas os $maxBackups mais recentes
+     */
+    private function cleanupOldBackups(): void
+    {
+        $files = collect(Storage::files($this->backupPath))
+            ->filter(fn($f) => str_ends_with($f, '.zip'))
+            ->sortByDesc(fn($f) => Storage::lastModified($f));
+
+        if ($files->count() > $this->maxBackups) {
+            $toDelete = $files->skip($this->maxBackups);
+            foreach ($toDelete as $file) {
+                Storage::delete($file);
+            }
+        }
     }
 
     /**
