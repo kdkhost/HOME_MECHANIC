@@ -6,6 +6,7 @@
     'acceptedFileTypes' => 'image/*',
     'maxFileSize' => '2MB',
     'value' => null,
+    'serverUpload' => true,
 ])
 
 @php
@@ -32,9 +33,11 @@
             allowMultiple: {{ $multiple ? 'true' : 'false' }},
             maxFileSize: @json($maxFileSize),
             acceptedFileTypes: @json($fileTypes),
+            @if(!$serverUpload)
             server: null, // Desativa upload automatico - envia com o formulario
             instantUpload: false,
             allowProcess: false
+            @endif
         };
 
         @if($value)
