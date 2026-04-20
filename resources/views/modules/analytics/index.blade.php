@@ -21,6 +21,40 @@
     .chart-container { position:relative; height:300px; max-height:300px; overflow:hidden; }
     .chart-container-sm { position:relative; height:250px; max-height:250px; overflow:hidden; }
     #devicesChart { max-height:250px !important; }
+
+    /* Animações de atualização em tempo real */
+    .refreshing { animation: pulse-refresh 0.5s ease; }
+    @keyframes pulse-refresh {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .value-changed {
+        animation: highlight-change 1s ease;
+        color: #28a745 !important;
+    }
+    @keyframes highlight-change {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); color: #28a745; }
+        100% { transform: scale(1); }
+    }
+    .pulse-highlight {
+        animation: card-pulse 1.5s ease;
+    }
+    @keyframes card-pulse {
+        0%, 100% { box-shadow: none; }
+        50% { box-shadow: 0 0 30px rgba(40, 167, 69, 0.5); }
+    }
+    #lastUpdate {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    #lastUpdate:hover {
+        color: var(--hm-primary) !important;
+    }
+    #lastUpdate::after {
+        content: ' ↻';
+        font-size: 0.9em;
+    }
 </style>
 @endsection
 
@@ -160,9 +194,10 @@ $(document).ready(function() {
     loadData();
     loadVisitors();
 
-    // Auto-refresh: dados a cada 60s, visitantes a cada 30s
-    dataTimer = setInterval(loadData, 60000);
-    visitorsTimer = setInterval(loadVisitors, 30000);
+    // Auto-refresh mais frequente para tempo real
+    // Dados gerais: 30s | Visitantes online: 10s (tempo real)
+    dataTimer = setInterval(loadData, 30000);
+    visitorsTimer = setInterval(loadVisitors, 10000);
 
     // Seletor de periodo
     $('.period-btn').on('click', function() {
@@ -171,7 +206,44 @@ $(document).ready(function() {
         currentPeriod = $(this).data('period');
         loadData();
     });
+
+    // Forcar atualizacao ao clicar no indicador de tempo real
+    $('#lastUpdate').on('click', function() {
+        loadData();
+        loadVisitors();
+        showRefreshIndicator();
+    });
 });
+
+function showRefreshIndicator() {
+    var badge = $('.live-dot').parent();
+    badge.addClass('refreshing');
+    setTimeout(() => badge.removeClass('refreshing'), 500);
+}
+
+// Animar mudanca de valor
+function animateValue(id, newValue, duration = 600) {
+    var el = $('#' + id);
+    var oldValue = parseInt(el.text().replace(/\D/g, '')) || 0;
+    if (oldValue === newValue) return;
+
+    var start = performance.now();
+    var animate = function(currentTime) {
+        var elapsed = currentTime - start;
+        var progress = Math.min(elapsed / duration, 1);
+        var easeProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        var current = Math.floor(oldValue + (newValue - oldValue) * easeProgress);
+        el.text(numFmt(current));
+        if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+
+    // Destacar mudanca visualmente
+    if (newValue !== oldValue) {
+        el.addClass('value-changed');
+        setTimeout(() => el.removeClass('value-changed'), 1000);
+    }
+}
 
 // Limpar timers ao sair da pagina
 $(window).on('beforeunload', function() {
@@ -260,13 +332,22 @@ function loadData() {
             if (!res.success) return;
             var d = res.data;
 
-            // Atualizar cards
-            $('#statTotal').text(numFmt(d.stats.total_visits));
-            $('#statUnique').text(numFmt(d.stats.unique_visits));
-            $('#statOnline').text(numFmt(d.stats.online_now));
-            $('#statAvg').text(numFmt(d.stats.avg_time));
-            $('#statToday').text(numFmt(d.stats.today_visits));
-            $('#statTodayUnique').text(numFmt(d.stats.today_unique));
+            // Atualizar cards com animacao
+            animateValue('statTotal', d.stats.total_visits);
+            animateValue('statUnique', d.stats.unique_visits);
+            animateValue('statOnline', d.stats.online_now, 800); // mais lento para online
+            animateValue('statAvg', d.stats.avg_time);
+            animateValue('statToday', d.stats.today_visits);
+            animateValue('statTodayUnique', d.stats.today_unique);
+
+            // Destacar contador de online se mudou significativamente
+            var oldOnline = parseInt($('#statOnline').data('last')) || 0;
+            var newOnline = d.stats.online_now;
+            if (Math.abs(newOnline - oldOnline) >= 2) {
+                $('#statOnline').closest('.analytics-card').addClass('pulse-highlight');
+                setTimeout(() => $('#statOnline').closest('.analytics-card').removeClass('pulse-highlight'), 1500);
+            }
+            $('#statOnline').data('last', newOnline);
 
             // Grafico de visitas
             if (visitsChart && d.visits && d.visits.labels) {
