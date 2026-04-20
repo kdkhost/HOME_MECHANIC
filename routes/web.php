@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
 use App\Modules\Frontend\Controllers\FrontendController;
+use App\Http\Controllers\UploadController;
 
 // Rota raiz — verifica instalação e redireciona
 Route::get('/', function () {
@@ -20,3 +21,9 @@ Route::get('/blog',          [FrontendController::class, 'blog'])->name('blog');
 Route::get('/blog/{slug}',   [FrontendController::class, 'blogPost'])->name('blog.post');
 Route::get('/contato',       [FrontendController::class, 'contact'])->name('contact');
 Route::post('/contato',      [FrontendController::class, 'sendContact'])->name('contact.send');
+
+// Upload FilePond (admin)
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::post('/upload/filepond', [UploadController::class, 'filepond'])->name('upload.filepond');
+    Route::delete('/upload/filepond', [UploadController::class, 'revert'])->name('upload.filepond.revert');
+});

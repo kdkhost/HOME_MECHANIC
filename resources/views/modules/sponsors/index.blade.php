@@ -119,7 +119,7 @@
                         <div class="col-md-4">
                             <div class="form-group mb-3">
                                 <label>Logo</label>
-                                <x-filepond name="logo" id="sponsorLogo" :serverUpload="false" />
+                                <x-filepond name="logo" id="sponsorLogo" server-url="{{ route('admin.upload.filepond') }}" />
                                 <small class="text-muted">Formato: PNG, SVG ou JPG com fundo transparente recomendado.</small>
                             </div>
                             <div id="logoPreview" class="text-center mb-3 d-none">
