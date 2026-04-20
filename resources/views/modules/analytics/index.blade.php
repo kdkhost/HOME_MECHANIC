@@ -17,6 +17,10 @@
     @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .visitors-table td { font-size:0.82rem; padding:0.4rem 0.6rem; vertical-align:middle; }
     .visitors-table th { font-size:0.78rem; padding:0.4rem 0.6rem; background:#f8f9fa; }
+    /* Limitar altura dos graficos para evitar crescimento infinito */
+    .chart-container { position:relative; height:300px; max-height:300px; overflow:hidden; }
+    .chart-container-sm { position:relative; height:250px; max-height:250px; overflow:hidden; }
+    #devicesChart { max-height:250px !important; }
 </style>
 @endsection
 
@@ -74,13 +78,13 @@
     <div class="col-lg-8 mb-3">
         <div class="card h-100">
             <div class="card-header"><span class="card-title"><i class="fas fa-chart-area"></i> Visitas</span></div>
-            <div class="card-body"><canvas id="visitsChart" height="100"></canvas></div>
+            <div class="card-body chart-container"><canvas id="visitsChart"></canvas></div>
         </div>
     </div>
     <div class="col-lg-4 mb-3">
         <div class="card h-100">
             <div class="card-header"><span class="card-title"><i class="fas fa-mobile-alt"></i> Dispositivos</span></div>
-            <div class="card-body d-flex align-items-center justify-content-center"><canvas id="devicesChart"></canvas></div>
+            <div class="card-body chart-container-sm d-flex align-items-center justify-content-center"><canvas id="devicesChart"></canvas></div>
         </div>
     </div>
 </div>
@@ -90,13 +94,13 @@
     <div class="col-lg-6 mb-3">
         <div class="card h-100">
             <div class="card-header"><span class="card-title"><i class="fas fa-globe"></i> Navegadores</span></div>
-            <div class="card-body"><canvas id="browsersChart" height="90"></canvas></div>
+            <div class="card-body chart-container-sm"><canvas id="browsersChart"></canvas></div>
         </div>
     </div>
     <div class="col-lg-6 mb-3">
         <div class="card h-100">
             <div class="card-header"><span class="card-title"><i class="fas fa-flag"></i> Paises</span></div>
-            <div class="card-body"><canvas id="countriesChart" height="90"></canvas></div>
+            <div class="card-body chart-container-sm"><canvas id="countriesChart"></canvas></div>
         </div>
     </div>
 </div>
@@ -145,7 +149,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
 let currentPeriod = 7;
-let visitsChart, devicesChart, browsersChart, countriesChart;
+let visitsChart = null, devicesChart = null, browsersChart = null, countriesChart = null;
+let dataTimer = null, visitorsTimer = null;
 
 const DATA_URL = @json(route('admin.analytics.data'));
 const VISITORS_URL = @json(route('admin.analytics.visitors'));
@@ -155,9 +160,9 @@ $(document).ready(function() {
     loadData();
     loadVisitors();
 
-    // Auto-refresh: dados a cada 30s, visitantes a cada 15s
-    setInterval(loadData, 30000);
-    setInterval(loadVisitors, 15000);
+    // Auto-refresh: dados a cada 60s, visitantes a cada 30s
+    dataTimer = setInterval(loadData, 60000);
+    visitorsTimer = setInterval(loadVisitors, 30000);
 
     // Seletor de periodo
     $('.period-btn').on('click', function() {
@@ -168,54 +173,82 @@ $(document).ready(function() {
     });
 });
 
+// Limpar timers ao sair da pagina
+$(window).on('beforeunload', function() {
+    if (dataTimer) clearInterval(dataTimer);
+    if (visitorsTimer) clearInterval(visitorsTimer);
+});
+
 function initCharts() {
     var defaultFont = { family: "'Source Sans 3', sans-serif", size: 12 };
     Chart.defaults.font = defaultFont;
 
-    visitsChart = new Chart(document.getElementById('visitsChart'), {
-        type: 'line',
-        data: { labels: [], datasets: [] },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'top' } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-            animation: { duration: 600 }
-        }
-    });
+    // Destruir graficos existentes antes de criar novos
+    destroyCharts();
 
-    devicesChart = new Chart(document.getElementById('devicesChart'), {
-        type: 'doughnut',
-        data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF6B00','#0D0D0D','#17a2b8','#ffc107','#6f42c1'] }] },
-        options: {
-            responsive: true, maintainAspectRatio: true,
-            plugins: { legend: { position: 'bottom', labels: { padding: 15 } } },
-            animation: { duration: 600 }
-        }
-    });
+    var ctxVisits = document.getElementById('visitsChart');
+    if (ctxVisits) {
+        visitsChart = new Chart(ctxVisits, {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                animation: { duration: 400 }
+            }
+        });
+    }
 
-    browsersChart = new Chart(document.getElementById('browsersChart'), {
-        type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Acessos', data: [], backgroundColor: '#FF6B00', borderRadius: 6 }] },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
-            animation: { duration: 600 }
-        }
-    });
+    var ctxDevices = document.getElementById('devicesChart');
+    if (ctxDevices) {
+        devicesChart = new Chart(ctxDevices, {
+            type: 'doughnut',
+            data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF6B00','#0D0D0D','#17a2b8','#ffc107','#6f42c1'] }] },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { position: 'bottom', labels: { padding: 15 } } },
+                animation: { duration: 400 }
+            }
+        });
+    }
 
-    countriesChart = new Chart(document.getElementById('countriesChart'), {
-        type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Acessos', data: [], backgroundColor: '#17a2b8', borderRadius: 6 }] },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
-            animation: { duration: 600 }
-        }
-    });
+    var ctxBrowsers = document.getElementById('browsersChart');
+    if (ctxBrowsers) {
+        browsersChart = new Chart(ctxBrowsers, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Acessos', data: [], backgroundColor: '#FF6B00', borderRadius: 6 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                animation: { duration: 400 }
+            }
+        });
+    }
+
+    var ctxCountries = document.getElementById('countriesChart');
+    if (ctxCountries) {
+        countriesChart = new Chart(ctxCountries, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Acessos', data: [], backgroundColor: '#17a2b8', borderRadius: 6 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                animation: { duration: 400 }
+            }
+        });
+    }
+}
+
+function destroyCharts() {
+    if (visitsChart) { visitsChart.destroy(); visitsChart = null; }
+    if (devicesChart) { devicesChart.destroy(); devicesChart = null; }
+    if (browsersChart) { browsersChart.destroy(); browsersChart = null; }
+    if (countriesChart) { countriesChart.destroy(); countriesChart = null; }
 }
 
 function loadData() {
@@ -236,36 +269,36 @@ function loadData() {
             $('#statTodayUnique').text(numFmt(d.stats.today_unique));
 
             // Grafico de visitas
-            if (d.visits && d.visits.labels) {
+            if (visitsChart && d.visits && d.visits.labels) {
                 visitsChart.data.labels = d.visits.labels;
                 visitsChart.data.datasets = (d.visits.datasets || []).map(function(ds) {
                     return { label: ds.label, data: ds.data, borderColor: ds.borderColor, backgroundColor: ds.backgroundColor, tension: ds.tension || 0.4, fill: true, pointRadius: 3 };
                 });
-                visitsChart.update();
+                visitsChart.update('none'); // 'none' = sem animacao para evitar flicker
             }
 
             // Grafico de dispositivos
-            if (d.devices && d.devices.labels) {
+            if (devicesChart && d.devices && d.devices.labels) {
                 devicesChart.data.labels = d.devices.labels;
                 if (d.devices.datasets && d.devices.datasets[0]) {
                     devicesChart.data.datasets[0].data = d.devices.datasets[0].data;
                     if (d.devices.datasets[0].backgroundColor) devicesChart.data.datasets[0].backgroundColor = d.devices.datasets[0].backgroundColor;
                 }
-                devicesChart.update();
+                devicesChart.update('none');
             }
 
             // Grafico de navegadores
-            if (d.browsers) {
+            if (browsersChart && d.browsers) {
                 browsersChart.data.labels = d.browsers.labels || [];
                 browsersChart.data.datasets[0].data = d.browsers.data || [];
-                browsersChart.update();
+                browsersChart.update('none');
             }
 
             // Grafico de paises
-            if (d.countries) {
+            if (countriesChart && d.countries) {
                 countriesChart.data.labels = d.countries.labels || [];
                 countriesChart.data.datasets[0].data = d.countries.data || [];
-                countriesChart.update();
+                countriesChart.update('none');
             }
 
             // Tabelas
