@@ -33,7 +33,7 @@ class AnalyticsController extends Controller
                     ];
                 }
             } catch (\Exception $e) {
-                Log::info('Tabela analytics nao existe ainda', ['error' => $e->getMessage()]);
+                Log::info('Tabela analytics não existe ainda', ['error' => $e->getMessage()]);
             }
 
             if ($request->wantsJson()) {
@@ -49,7 +49,7 @@ class AnalyticsController extends Controller
                 return response()->json(['success' => false, 'message' => 'Erro interno no servidor.'], 500);
             }
 
-            return back()->with('error', 'Erro ao carregar estatisticas.');
+            return back()->with('error', 'Erro ao carregar estatísticas.');
         }
     }
 
@@ -105,7 +105,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Obter visitantes com paginacao
+     * Obter visitantes com paginação
      */
     public function getVisitors(Request $request)
     {
@@ -128,7 +128,7 @@ class AnalyticsController extends Controller
                         ->toArray();
                 }
             } catch (\Exception $e) {
-                // Tabela nao existe
+                // Tabela não existe
             }
 
             return response()->json([
@@ -147,7 +147,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Obter paginas mais visitadas
+     * Obter páginas mais visitadas
      */
     public function getPages(Request $request)
     {
@@ -166,17 +166,17 @@ class AnalyticsController extends Controller
                         ->toArray();
                 }
             } catch (\Exception $e) {
-                // Tabela nao existe
+                // Tabela não existe
             }
 
             return response()->json(['success' => true, 'data' => $pages]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erro ao carregar paginas'], 500);
+            return response()->json(['success' => false, 'message' => 'Erro ao carregar páginas'], 500);
         }
     }
 
     /**
-     * Relatorio detalhado
+     * Relatório detalhado
      */
     public function report(Request $request)
     {
@@ -194,18 +194,18 @@ class AnalyticsController extends Controller
             return view('modules.analytics.report', compact('data', 'startDate', 'endDate', 'groupBy'));
 
         } catch (\Exception $e) {
-            Log::error('Erro ao gerar relatorio', ['error' => $e->getMessage(), 'user_id' => Auth::id()]);
+            Log::error('Erro ao gerar relatório', ['error' => $e->getMessage(), 'user_id' => Auth::id()]);
 
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Erro interno no servidor.'], 500);
             }
 
-            return back()->with('error', 'Erro ao gerar relatorio.');
+            return back()->with('error', 'Erro ao gerar relatório.');
         }
     }
 
     /**
-     * Dados para graficos
+     * Dados para gráficos
      */
     public function chartData(Request $request)
     {
@@ -226,8 +226,8 @@ class AnalyticsController extends Controller
             return response()->json(['success' => true, 'data' => $data]);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao obter dados do grafico', ['error' => $e->getMessage(), 'type' => $request->input('type'), 'user_id' => Auth::id()]);
-            return response()->json(['success' => false, 'message' => 'Erro ao carregar dados do grafico.'], 500);
+            Log::error('Erro ao obter dados do gráfico', ['error' => $e->getMessage(), 'type' => $request->input('type'), 'user_id' => Auth::id()]);
+            return response()->json(['success' => false, 'message' => 'Erro ao carregar dados do gráfico.'], 500);
         }
     }
 
@@ -268,7 +268,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Heartbeat - atualizar duracao da visita (rota publica)
+     * Heartbeat - atualizar duração da visita (rota pública)
      */
     public function heartbeat(Request $request)
     {
@@ -311,7 +311,7 @@ class AnalyticsController extends Controller
 
             Log::info('Limpeza de analytics executada', ['days_to_keep' => $daysToKeep, 'deleted_count' => $deletedCount, 'user_id' => Auth::id()]);
 
-            return response()->json(['success' => true, 'message' => "Limpeza concluida. {$deletedCount} registros removidos.", 'deleted_count' => $deletedCount]);
+            return response()->json(['success' => true, 'message' => "Limpeza concluída. {$deletedCount} registros removidos.", 'deleted_count' => $deletedCount]);
 
         } catch (\Exception $e) {
             Log::error('Erro na limpeza de analytics', ['error' => $e->getMessage(), 'user_id' => Auth::id()]);
@@ -320,7 +320,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Gerar relatorio personalizado
+     * Gerar relatório personalizado
      */
     private function generateReport(string $startDate, string $endDate, string $groupBy): array
     {
@@ -364,7 +364,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Dados do grafico de visitas - preenche todos os dias
+     * Dados do gráfico de visitas - preenche todos os dias
      */
     private function getVisitsChartData(int $days): array
     {
@@ -407,7 +407,7 @@ class AnalyticsController extends Controller
                         'tension' => 0.4
                     ],
                     [
-                        'label' => 'Visitas Unicas',
+                        'label' => 'Visitas Únicas',
                         'data' => array_column($allDays, 'unique_visits'),
                         'borderColor' => '#0D0D0D',
                         'backgroundColor' => 'rgba(13, 13, 13, 0.1)',
@@ -422,7 +422,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Dados do grafico de dispositivos
+     * Dados do gráfico de dispositivos
      */
     private function getDevicesChartData(int $days): array
     {
@@ -459,7 +459,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Dados do grafico de navegadores
+     * Dados do gráfico de navegadores
      */
     private function getBrowsersChartData(int $days): array
     {
@@ -488,7 +488,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Dados do grafico de paises
+     * Dados do gráfico de países
      */
     private function getCountriesChartData(int $days): array
     {
@@ -518,7 +518,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Dados das paginas mais visitadas
+     * Dados das páginas mais visitadas
      */
     private function getPagesChartData(int $days): array
     {
@@ -538,7 +538,7 @@ class AnalyticsController extends Controller
 
             $labels = $data->pluck('url')->map(function ($url) {
                 $path = parse_url($url, PHP_URL_PATH);
-                return $path === '/' ? 'Pagina Inicial' : basename($path);
+                return $path === '/' ? 'Página Inicial' : basename($path);
             })->toArray();
 
             return [

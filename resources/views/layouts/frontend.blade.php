@@ -1155,7 +1155,7 @@
 </script>
 
 <script>
-// Analytics heartbeat - tracking de duracao de visita
+// Analytics heartbeat - tracking de duração de visita
 (function() {
     var startTime = Date.now();
     var csrfToken = document.querySelector('meta[name="csrf-token"]');
@@ -1176,7 +1176,7 @@
     // Enviar heartbeat a cada 30s
     setInterval(sendHeartbeat, 30000);
 
-    // Enviar ao sair da pagina
+    // Enviar ao sair da página
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'hidden') sendHeartbeat();
     });

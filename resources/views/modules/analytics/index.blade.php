@@ -425,10 +425,10 @@ function loadVisitors(page) {
             });
             $('#visitorsTable').html(html);
 
-            // Paginacao
+            // Paginação
             var p = res.pagination;
             if (p && p.last_page > 1) {
-                $('#visitorsInfo').text(p.total + ' visitantes - Pag. ' + p.current_page + '/' + p.last_page);
+                $('#visitorsInfo').text(p.total + ' visitantes - Pág. ' + p.current_page + '/' + p.last_page);
                 var pagHtml = '<nav><ul class="pagination pagination-sm mb-0 justify-content-center">';
                 pagHtml += '<li class="page-item' + (p.current_page <= 1 ? ' disabled' : '') + '"><a class="page-link" href="#" onclick="loadVisitors(' + (p.current_page - 1) + ');return false;">&laquo;</a></li>';
                 var startP = Math.max(1, p.current_page - 2);

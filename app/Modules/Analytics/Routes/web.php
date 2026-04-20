@@ -3,7 +3,7 @@
 use App\Modules\Analytics\Controllers\AnalyticsController;
 use Illuminate\Support\Facades\Route;
 
-// Heartbeat publico (frontend) - tracking de duracao
+// Heartbeat público (frontend) - tracking de duração
 Route::post('/analytics/heartbeat', [AnalyticsController::class, 'heartbeat'])->name('analytics.heartbeat');
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
