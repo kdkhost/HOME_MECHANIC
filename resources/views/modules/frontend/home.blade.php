@@ -273,6 +273,57 @@
     margin-bottom: 1rem;
 }
 .cta-title span { color: var(--orange); }
+
+/* ── Sponsors Carousel ──────────────────────────────────── */
+.sponsors-section { background: var(--dark2); padding: 4rem 0; }
+.sponsors-carousel {
+    position: relative;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+.sponsors-track {
+    display: flex;
+    gap: 3rem;
+    animation: scroll-carousel 30s linear infinite;
+}
+.sponsors-track:hover {
+    animation-play-state: paused;
+}
+@keyframes scroll-carousel {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+.sponsor-item {
+    flex-shrink: 0;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: grayscale(100%) brightness(0.7);
+    transition: all 0.3s ease;
+    padding: 0 1.5rem;
+}
+.sponsor-item:hover {
+    filter: grayscale(0%) brightness(1);
+    transform: scale(1.1);
+}
+.sponsor-item img {
+    max-height: 60px;
+    max-width: 150px;
+    object-fit: contain;
+}
+/* Animate.css classes */
+.animate__fadeIn { animation: fadeIn 1s; }
+.animate__slideInUp { animation: slideInUp 1s; }
+.animate__zoomIn { animation: zoomIn 1s; }
+.animate__flipInX { animation: flipInX 1s; }
+.animate__bounceIn { animation: bounceIn 1s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+@keyframes flipInX { from { opacity: 0; transform: perspective(400px) rotateX(90deg); } to { opacity: 1; transform: perspective(400px) rotateX(0); } }
+@keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
 </style>
 @endsection
 
@@ -512,6 +563,41 @@
         </div>
     </div>
 </section>
+
+<!-- Sponsors -->
+@if(isset($sponsors) && $sponsors->count() > 0)
+<section class="sponsors-section">
+    <div class="container">
+        <div class="text-center mb-4" data-aos="fade-up">
+            <div class="section-label justify-content-center">Parceiros</div>
+            <h3 class="section-title" style="font-size:1.5rem;">Nossos <span>Patrocinadores</span></h3>
+        </div>
+        <div class="sponsors-carousel" data-aos="fade-up">
+            <div class="sponsors-track">
+                @foreach($sponsors as $sponsor)
+                <a href="{{ $sponsor->website ?? '#' }}" class="sponsor-item {{ $sponsor->animation_class }}" style="animation-duration: {{ $sponsor->speed_value }};" target="_blank" rel="noopener">
+                    @if($sponsor->logo)
+                        <img src="{{ $sponsor->logo_url }}" alt="{{ $sponsor->name }}">
+                    @else
+                        <span style="color:var(--orange);font-weight:600;">{{ $sponsor->name }}</span>
+                    @endif
+                </a>
+                @endforeach
+                {{-- Duplicar para scroll infinito --}}
+                @foreach($sponsors as $sponsor)
+                <a href="{{ $sponsor->website ?? '#' }}" class="sponsor-item {{ $sponsor->animation_class }}" style="animation-duration: {{ $sponsor->speed_value }};" target="_blank" rel="noopener">
+                    @if($sponsor->logo)
+                        <img src="{{ $sponsor->logo_url }}" alt="{{ $sponsor->name }}">
+                    @else
+                        <span style="color:var(--orange);font-weight:600;">{{ $sponsor->name }}</span>
+                    @endif
+                </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</section>
+@endif
 
 <!-- CTA -->
 <section class="cta-section" data-aos="fade-up">

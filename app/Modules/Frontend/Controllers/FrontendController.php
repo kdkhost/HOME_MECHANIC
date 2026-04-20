@@ -17,12 +17,14 @@ class FrontendController extends Controller
             $services = \App\Modules\Services\Models\Service::active()->featured()->ordered()->take(4)->get();
             $testimonials = \App\Modules\Testimonials\Models\Testimonial::active()->ordered()->take(3)->get();
             $galleryPhotos = \App\Modules\Gallery\Models\GalleryPhoto::active()->latest()->take(6)->get();
+            $sponsors = \App\Modules\Sponsors\Models\Sponsor::active()->ordered()->get();
         } catch (\Exception $e) {
             $services = collect();
             $testimonials = collect();
             $galleryPhotos = collect();
+            $sponsors = collect();
         }
-        return view('modules.frontend.home', compact('services', 'testimonials', 'galleryPhotos'));
+        return view('modules.frontend.home', compact('services', 'testimonials', 'galleryPhotos', 'sponsors'));
     }
 
     public function services()

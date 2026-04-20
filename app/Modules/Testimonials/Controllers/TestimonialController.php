@@ -11,10 +11,39 @@ use Illuminate\Support\Facades\Log;
 
 class TestimonialController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $testimonials = Testimonial::ordered()->get();
-        return view('modules.testimonials.index', compact('testimonials'));
+        // Requisicao AJAX → retorna JSON com paginacao
+        if ($request->wantsJson() || $request->ajax()) {
+            $query = Testimonial::ordered();
+
+            if ($request->filled('search')) {
+                $query->where(function($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%')
+                      ->orWhere('content', 'like', '%' . $request->search . '%');
+                });
+            }
+            if ($request->filled('active') && $request->active !== '') {
+                $query->where('is_active', (bool) $request->active);
+            }
+
+            $perPage = min((int) ($request->per_page ?? 10), 50);
+            $testimonials = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $testimonials->items(),
+                'pagination' => [
+                    'current_page' => $testimonials->currentPage(),
+                    'last_page' => $testimonials->lastPage(),
+                    'total' => $testimonials->total(),
+                    'per_page' => $testimonials->perPage(),
+                ],
+            ]);
+        }
+
+        // Requisicao normal → view
+        return view('modules.testimonials.index');
     }
 
     public function store(Request $request)
