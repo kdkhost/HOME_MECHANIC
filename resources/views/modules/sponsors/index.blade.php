@@ -119,11 +119,14 @@
                         <div class="col-md-4">
                             <div class="form-group mb-3">
                                 <label>Logo</label>
-                                <x-filepond name="logo" id="sponsorLogo" />
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" name="logo" id="sponsorLogo" accept="image/*">
+                                    <label class="custom-file-label" for="sponsorLogo">Escolher arquivo...</label>
+                                </div>
                                 <small class="text-muted">Formato: PNG, SVG ou JPG com fundo transparente recomendado.</small>
                             </div>
                             <div id="logoPreview" class="text-center mb-3 d-none">
-                                <img src="" class="img-fluid rounded" style="max-height:100px;">
+                                <img src="" class="img-fluid rounded" style="max-height:100px; border:1px solid #ddd; padding:5px;">
                             </div>
                         </div>
                     </div>
@@ -261,8 +264,12 @@ window.openModal = function() {
         document.getElementById('modalTitle').textContent = 'Novo Patrocinador';
         document.getElementById('sponsorActive').checked = true;
         document.getElementById('logoPreview').classList.add('d-none');
-        if (window.filePondInstances && window.filePondInstances.logo) {
-            window.filePondInstances.logo.removeFiles();
+        // Reset input file e label
+        var fileInput = document.getElementById('sponsorLogo');
+        if (fileInput) {
+            fileInput.value = '';
+            var label = fileInput.nextElementSibling;
+            if (label) label.textContent = 'Escolher arquivo...';
         }
         var modalEl = document.getElementById('sponsorModal');
         if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
@@ -383,6 +390,25 @@ function deleteSponsor(id, name) {
         });
     });
 }
+
+// Preview da imagem ao selecionar arquivo
+document.getElementById('sponsorLogo').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) {
+        // Atualizar label com nome do arquivo
+        var label = e.target.nextElementSibling;
+        if (label) label.textContent = file.name;
+        
+        // Mostrar preview
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var preview = document.getElementById('logoPreview');
+            preview.querySelector('img').src = e.target.result;
+            preview.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
 $(function() { loadSponsors(); });
 </script>
