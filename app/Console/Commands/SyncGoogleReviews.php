@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -80,6 +81,13 @@ class SyncGoogleReviews extends Command
 
                 $maxOrder = DB::table('testimonials')->max('sort_order') ?? 0;
 
+                // Tentar cruzar com usuario cadastrado pelo nome
+                $userEmail = null;
+                $user = User::where('name', 'like', '%' . $name . '%')->first();
+                if ($user) {
+                    $userEmail = $user->email;
+                }
+
                 DB::table('testimonials')->insert([
                     'name'       => $name,
                     'role'       => 'Avaliacao Google',
@@ -88,6 +96,9 @@ class SyncGoogleReviews extends Command
                     'rating'     => min(5, max(1, $review['rating'] ?? 5)),
                     'is_active'  => true,
                     'sort_order' => $maxOrder + 1,
+                    'source'     => 'google',
+                    'email'      => $userEmail,
+                    'author_url' => $review['author_url'] ?? null,
                     'created_at' => isset($review['time'])
                         ? \Carbon\Carbon::createFromTimestamp($review['time'])
                         : now(),

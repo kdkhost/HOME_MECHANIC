@@ -17,7 +17,7 @@
         <table class="table table-striped table-valign-middle">
             <thead>
                 <tr>
-                    <th>Nome</th>
+                    <th>Cliente</th>
                     <th>Avaliação</th>
                     <th>Depoimento</th>
                     <th class="text-center">Status</th>
@@ -29,8 +29,13 @@
                 <tr data-id="{{ $t->id }}">
                     <td>
                         <i class="fas fa-grip-vertical text-muted me-2" style="cursor: grab;"></i>
+                        @if($t->photo_url)
+                            <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:0.5rem;">
+                        @else
+                            <div style="width:36px;height:36px;border-radius:50%;background:var(--hm-primary-light);color:var(--hm-primary);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;vertical-align:middle;margin-right:0.5rem;">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
+                        @endif
                         <strong>{{ $t->name }}</strong>
-                        @if($t->role)<div class="small text-muted">{{ $t->role }}</div>@endif
+                        @if($t->role)<div class="small text-muted" style="margin-left:46px;">{{ $t->role }}</div>@endif
                     </td>
                     <td>
                         <div class="text-warning">
@@ -52,6 +57,7 @@
                         <button class="btn btn-sm btn-outline-primary btn-edit" 
                                 data-id="{{ $t->id }}" data-name="{{ $t->name }}" data-role="{{ $t->role }}" 
                                 data-content="{{ $t->content }}" data-rating="{{ $t->rating }}" 
+                                data-email="{{ $t->email ?? '' }}"
                                 data-bs-toggle="modal" data-bs-target="#modalEdit">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -82,6 +88,10 @@
                     <div class="mb-3">
                         <label>Nome do Cliente *</label>
                         <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Email <small class="text-muted">(para vincular ao cliente cadastrado)</small></label>
+                        <input type="email" name="email" class="form-control" placeholder="email@exemplo.com">
                     </div>
                     <div class="mb-3">
                         <label>Função ou Veículo</label>
@@ -128,6 +138,10 @@
                         <input type="text" name="name" id="edit_name" class="form-control" required>
                     </div>
                     <div class="mb-3">
+                        <label>Email <small class="text-muted">(para vincular ao cliente cadastrado)</small></label>
+                        <input type="email" name="email" id="edit_email" class="form-control" placeholder="email@exemplo.com">
+                    </div>
+                    <div class="mb-3">
                         <label>Função ou Veículo</label>
                         <input type="text" name="role" id="edit_role" class="form-control">
                     </div>
@@ -164,6 +178,7 @@ $(function(){
     $('.btn-edit').click(function(){
         $('#formEdit').attr('action', '{{ url('admin/testimonials') }}/' + $(this).data('id'));
         $('#edit_name').val($(this).data('name'));
+        $('#edit_email').val($(this).data('email'));
         $('#edit_role').val($(this).data('role'));
         $('#edit_rating').val($(this).data('rating'));
         $('#edit_content').val($(this).data('content'));

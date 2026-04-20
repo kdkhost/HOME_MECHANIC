@@ -549,7 +549,11 @@
                     </div>
                     <p class="testimonial-text">"{{ $t->content }}"</p>
                     <div class="testimonial-author">
-                        <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
+                        @if($t->photo_url)
+                            <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                        @else
+                            <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
+                        @endif
                         <div>
                             <div class="testimonial-name">{{ $t->name }}</div>
                             <div class="testimonial-car">{{ $t->role }}</div>

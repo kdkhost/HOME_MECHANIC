@@ -52,6 +52,15 @@ class Service extends Model
             return $this->cover_image;
         }
 
+        // Se for UUID do FilePond (sem barra), resolver para path real
+        if (!str_contains($this->cover_image, '/')) {
+            $upload = Upload::where('uuid', $this->cover_image)->first();
+            if ($upload) {
+                return '/' . ltrim($upload->path, '/');
+            }
+            return null; // UUID inválido — imagem não encontrada
+        }
+
         return '/' . ltrim($this->cover_image, '/');
     }
 

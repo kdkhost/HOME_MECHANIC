@@ -51,6 +51,7 @@ class TestimonialController extends Controller
     {
         $request->validate([
             'name'      => 'required|string|max:255',
+            'email'     => 'nullable|email|max:255',
             'role'      => 'nullable|string|max:255',
             'content'   => 'required|string',
             'rating'    => 'required|integer|min:1|max:5',
@@ -61,11 +62,13 @@ class TestimonialController extends Controller
             DB::beginTransaction();
             $testimonial = Testimonial::create([
                 'name'      => $request->name,
+                'email'     => $request->email ?: null,
                 'role'      => $request->role,
                 'content'   => $request->content,
                 'rating'    => $request->rating,
                 'is_active' => $request->boolean('is_active', true),
                 'sort_order'=> Testimonial::max('sort_order') + 1,
+                'source'    => 'manual',
             ]);
             AuditLog::record('testimonial_created', $testimonial, [], $testimonial->toArray());
             DB::commit();
@@ -86,6 +89,7 @@ class TestimonialController extends Controller
     {
         $request->validate([
             'name'      => 'required|string|max:255',
+            'email'     => 'nullable|email|max:255',
             'role'      => 'nullable|string|max:255',
             'content'   => 'required|string',
             'rating'    => 'required|integer|min:1|max:5',
@@ -96,6 +100,7 @@ class TestimonialController extends Controller
             $oldData = $testimonial->toArray();
             $testimonial->update([
                 'name'    => $request->name,
+                'email'   => $request->email ?: null,
                 'role'    => $request->role,
                 'content' => $request->content,
                 'rating'  => $request->rating,

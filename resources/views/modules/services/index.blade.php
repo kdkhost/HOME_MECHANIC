@@ -231,8 +231,8 @@ function renderServices(services) {
 
     var html = '<div class="row g-3" id="svcList">';
     services.forEach(function(s) {
-        var img = s.cover_image
-            ? '<img src="/' + s.cover_image.replace(/^\//, '') + '" class="svc-img" alt="' + s.title + '">'
+        var img = s.cover_image_url
+            ? '<img src="' + s.cover_image_url + '" class="svc-img" alt="' + s.title + '">'
             : '<div class="svc-img-placeholder"><i class="bi ' + (s.icon || 'bi-tools') + '"></i></div>';
 
         html += '<div class="col-md-4 col-lg-3" data-id="' + s.id + '">' +
@@ -344,9 +344,9 @@ function editService(id) {
             document.getElementById('svcActive').checked   = !!s.active;
             document.getElementById('iconPreview').className = 'bi ' + (s.icon || 'bi-tools');
 
-            if (s.cover_image) {
+            if (s.cover_image_url) {
                 document.getElementById('imgPreview').innerHTML =
-                    '<img src="/' + s.cover_image.replace(/^\//, '') + '" style="max-height:120px;border-radius:6px;">';
+                    '<img src="' + s.cover_image_url + '" style="max-height:120px;border-radius:6px;">';
                 document.getElementById('btnRemoveImg').classList.remove('d-none');
             }
             openModal(id);
