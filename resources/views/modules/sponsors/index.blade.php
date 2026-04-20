@@ -65,7 +65,7 @@
                 <h5 class="modal-title" id="modalTitle">Novo Patrocinador</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="sponsorForm">
+            <form id="sponsorForm" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" id="sponsorId" name="id">
                 <input type="hidden" id="sponsorMethod" name="_method" value="POST">
