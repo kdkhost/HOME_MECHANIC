@@ -430,7 +430,7 @@
         <strong>Copyright &copy; {{ date('Y') }} <a href="https://homemechanic.com.br">HomeMechanic</a>.</strong>
         Todos os direitos reservados.
         <div class="float-end d-none d-sm-inline-block">
-            Laravel {{ app()->version() }} | PHP {{ PHP_MAJOR_VERSION }}.{{ PHP_MINOR_VERSION }}
+          <a href="https://kdkhost.com.br">KdkHost</a> - Laravel {{ app()->version() }} | PHP {{ PHP_MAJOR_VERSION }}.{{ PHP_MINOR_VERSION }}
         </div>
     </footer>
     <!--end::Footer-->
