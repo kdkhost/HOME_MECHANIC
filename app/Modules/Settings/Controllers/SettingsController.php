@@ -203,6 +203,9 @@ class SettingsController extends Controller
             'analytics_enabled'  => $request->boolean('analytics_enabled') ? '1' : '0',
             'timezone'           => $request->input('timezone', 'America/Sao_Paulo'),
             'language'           => $request->input('language', 'pt_BR'),
+            // Integracao Google Places (avaliacoes)
+            'google_place_id'        => $request->input('google_place_id', ''),
+            'google_places_api_key'  => $request->input('google_places_api_key', ''),
         ], 'general');
 
         // Processar Logo e Favicon via FilePond (arquivo direto ou UUID)
