@@ -252,16 +252,31 @@ function renderPagination(p) {
     c.innerHTML = html;
 }
 
-function openModal() {
-    document.getElementById('sponsorForm').reset();
-    document.getElementById('sponsorId').value = '';
-    document.getElementById('sponsorMethod').value = 'POST';
-    document.getElementById('modalTitle').textContent = 'Novo Patrocinador';
-    document.getElementById('sponsorActive').checked = true;
-    document.getElementById('logoPreview').classList.add('d-none');
-    window.filePondInstances.logo?.removeFiles();
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('sponsorModal')).show();
-}
+window.openModal = function() {
+    try {
+        console.log('Abrindo modal de patrocinador...');
+        document.getElementById('sponsorForm').reset();
+        document.getElementById('sponsorId').value = '';
+        document.getElementById('sponsorMethod').value = 'POST';
+        document.getElementById('modalTitle').textContent = 'Novo Patrocinador';
+        document.getElementById('sponsorActive').checked = true;
+        document.getElementById('logoPreview').classList.add('d-none');
+        if (window.filePondInstances && window.filePondInstances.logo) {
+            window.filePondInstances.logo.removeFiles();
+        }
+        var modalEl = document.getElementById('sponsorModal');
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        } else {
+            console.error('Bootstrap Modal não está disponível');
+            HMToast.error('Erro ao abrir modal. Recarregue a página.');
+        }
+    } catch (e) {
+        console.error('Erro ao abrir modal:', e);
+        HMToast.error('Erro ao abrir modal: ' + e.message);
+    }
+};
 
 function editSponsor(id) {
     $.ajax({
