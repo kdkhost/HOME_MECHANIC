@@ -939,42 +939,6 @@ function dashRunMigrations() {
 
 <!-- Conteúdo Principal -->
 <div class="row">
-    <!-- Atividade Recente -->
-    <div class="col-lg-6 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-activity text-primary me-2"></i>
-                    Atividade Recente
-                </h5>
-                <button class="refresh-btn" onclick="refreshActivity()">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-            </div>
-            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                <div id="activity-list">
-                    @forelse($data['recent_activity'] as $activity)
-                        <div class="activity-item">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <strong>{{ $activity['action'] }}</strong> em {{ $activity['model'] }}
-                                    <br>
-                                    <small class="text-muted">por {{ $activity['user'] }}</small>
-                                </div>
-                                <small class="text-muted">{{ $activity['formatted_time'] }}</small>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center text-muted py-4">
-                            <i class="bi bi-inbox display-4"></i>
-                            <p class="mt-2">Nenhuma atividade recente</p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Posts Recentes -->
     <div class="col-lg-6 mb-4">
         <div class="card dashboard-card">
@@ -1166,10 +1130,15 @@ $(document).ready(function() {
     // Inicializar gráficos
     initializeCharts();
     
-    // Auto-refresh a cada 5 minutos
+    // Auto-refresh estatísticas a cada 5 minutos
     setInterval(function() {
         refreshQuickStats();
     }, 300000);
+
+    // Atividades em tempo real — polling a cada 30s
+    setInterval(function() {
+        refreshActivity();
+    }, 30000);
 });
 
 // Inicializar gráficos
@@ -1250,10 +1219,45 @@ function refreshQuickStats() {
     });
 }
 
-// Atualizar atividade
+// Atualizar atividade em tempo real
 function refreshActivity() {
-    // Implementar refresh da atividade via AJAX
-    location.reload();
+    const icon = document.getElementById('activityRefreshIcon');
+    if (icon) icon.classList.add('fa-spin');
+
+    $.ajax({
+        url: '{{ route("admin.dashboard.recent-activity") }}',
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        success: function(response) {
+            if (response.success && response.data) {
+                const list = document.getElementById('activityList');
+                if (!list) return;
+
+                if (response.data.length === 0) {
+                    list.innerHTML = '<div class="empty-state" style="padding:1.5rem 0;"><i class="fas fa-history"></i><p>Nenhuma atividade registrada</p></div>';
+                    return;
+                }
+
+                let html = '';
+                response.data.forEach(function(act) {
+                    html += '<div class="activity-item">' +
+                        '<div class="activity-dot"></div>' +
+                        '<div>' +
+                            '<div class="activity-action">' + act.action + ' <span style="font-weight:400;color:var(--hm-text-muted);">em ' + act.model + '</span></div>' +
+                            '<div class="activity-meta">' + act.user + ' · ' + act.formatted_time + '</div>' +
+                        '</div>' +
+                    '</div>';
+                });
+                list.innerHTML = html;
+            }
+        },
+        error: function() {
+            // Silencioso — polling não deve incomodar o usuário
+        },
+        complete: function() {
+            if (icon) icon.classList.remove('fa-spin');
+        }
+    });
 }
 
 // Atualizar contadores
