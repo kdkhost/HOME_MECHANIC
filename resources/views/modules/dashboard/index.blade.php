@@ -153,7 +153,7 @@
 {{-- KPI Cards --}}
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
-        <div class="card kpi-card" style="background:linear-gradient(135deg,#FF6B00,#E55A00) !important;color:#fff !important;">
+        <div class="card kpi-card h-100" style="background:linear-gradient(135deg,#FF6B00,#E55A00) !important;color:#fff !important;">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <div class="kpi-num" id="kpi-services" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['services'] }}</div>
@@ -164,7 +164,7 @@
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card kpi-card" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;">
+        <div class="card kpi-card h-100" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <div class="kpi-num" id="kpi-posts" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['posts_published'] }}</div>
@@ -175,7 +175,7 @@
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card kpi-card" style="background:linear-gradient(135deg,#0891b2,#0e7490) !important;color:#fff !important;">
+        <div class="card kpi-card h-100" style="background:linear-gradient(135deg,#0891b2,#0e7490) !important;color:#fff !important;">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <div class="kpi-num" id="kpi-photos" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['gallery_photos'] }}</div>
@@ -186,7 +186,7 @@
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card kpi-card" style="background:linear-gradient(135deg,#d97706,#b45309) !important;color:#fff !important;">
+        <div class="card kpi-card h-100" style="background:linear-gradient(135deg,#d97706,#b45309) !important;color:#fff !important;">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <div class="kpi-num" id="kpi-messages" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['unread_messages'] }}</div>
@@ -202,25 +202,25 @@
 <div class="row g-3 mb-4">
     {{-- Visitas hoje --}}
     <div class="col-6 col-md-3">
-        <div class="card mini-stat">
+        <div class="card mini-stat h-100">
             <div class="mini-stat-num" id="kpi-visits-today">{{ $data['visits']['today'] ?? 0 }}</div>
             <div class="mini-stat-lbl"><i class="fas fa-eye me-1" style="color:var(--hm-primary);"></i>Visitas Hoje</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card mini-stat">
+        <div class="card mini-stat h-100">
             <div class="mini-stat-num" id="kpi-visits-month">{{ $data['visits']['month'] ?? 0 }}</div>
             <div class="mini-stat-lbl"><i class="fas fa-calendar me-1" style="color:var(--hm-primary);"></i>Visitas no Mês</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card mini-stat">
+        <div class="card mini-stat h-100">
             <div class="mini-stat-num" id="kpi-online">{{ $data['visits']['online'] ?? 0 }}</div>
             <div class="mini-stat-lbl"><i class="fas fa-circle me-1" style="color:#16a34a;font-size:0.6rem;"></i>Online Agora</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card mini-stat">
+        <div class="card mini-stat h-100">
             <div class="mini-stat-num">{{ $data['stats']['total_messages'] }}</div>
             <div class="mini-stat-lbl"><i class="fas fa-inbox me-1" style="color:var(--hm-primary);"></i>Total Mensagens</div>
         </div>
@@ -281,7 +281,7 @@
 <div class="row g-3 mb-4">
     {{-- Posts recentes --}}
     <div class="col-lg-6">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <span class="card-title"><i class="fas fa-newspaper"></i> Posts Recentes</span>
                 <div class="card-tools">
@@ -312,7 +312,7 @@
 
     {{-- Mensagens recentes --}}
     <div class="col-lg-6">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <span class="card-title"><i class="fas fa-envelope"></i> Mensagens Recentes</span>
                 <div class="card-tools">
@@ -347,7 +347,7 @@
 <div class="row g-3">
     {{-- Ações rápidas --}}
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <span class="card-title"><i class="fas fa-bolt"></i> Ações Rápidas</span>
             </div>
@@ -400,7 +400,7 @@
 
     {{-- Sistema --}}
     <div class="col-lg-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <span class="card-title"><i class="fas fa-server"></i> Sistema</span>
             </div>
