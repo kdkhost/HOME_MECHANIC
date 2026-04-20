@@ -248,9 +248,21 @@
                             Redes Sociais
                         </div>
                         <div class="social-links">
-                            <a href="#"><i class="bi bi-instagram"></i></a>
-                            <a href="#"><i class="bi bi-facebook"></i></a>
-                            <a href="#"><i class="bi bi-youtube"></i></a>
+                            @if(!empty($siteSettings['social_instagram']))
+                                <a href="{{ $siteSettings['social_instagram'] }}" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
+                            @endif
+                            @if(!empty($siteSettings['social_facebook']))
+                                <a href="{{ $siteSettings['social_facebook'] }}" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
+                            @endif
+                            @if(!empty($siteSettings['social_youtube']))
+                                <a href="{{ $siteSettings['social_youtube'] }}" target="_blank" rel="noopener"><i class="bi bi-youtube"></i></a>
+                            @endif
+                            @if(!empty($siteSettings['social_twitter']))
+                                <a href="{{ $siteSettings['social_twitter'] }}" target="_blank" rel="noopener"><i class="bi bi-twitter-x"></i></a>
+                            @endif
+                            @if(!empty($siteSettings['social_tiktok']))
+                                <a href="{{ $siteSettings['social_tiktok'] }}" target="_blank" rel="noopener"><i class="bi bi-tiktok"></i></a>
+                            @endif
                         </div>
                     </div>
                 </div>
