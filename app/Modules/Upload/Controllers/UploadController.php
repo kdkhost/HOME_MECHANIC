@@ -255,12 +255,24 @@ class UploadController extends Controller
     public function load(Request $request)
     {
         $source = $request->input('load');
-        
+
         if (!$source) {
             return response('Source not provided', 400);
         }
 
         try {
+            // URL externa: baixar e servir como proxy
+            if (str_starts_with($source, 'http')) {
+                try {
+                    $temp = tempnam(sys_get_temp_dir(), 'fp_');
+                    file_put_contents($temp, file_get_contents($source));
+                    $mime = mime_content_type($temp) ?: 'application/octet-stream';
+                    return response()->file($temp, ['Content-Type' => $mime])->deleteFileAfterSend(true);
+                } catch (\Exception $e) {
+                    return redirect($source);
+                }
+            }
+
             // Tenta buscar por UUID
             $upload = $this->uploadService->getByUuid($source);
             $path = $upload ? public_path($upload->path) : public_path(ltrim($source, '/'));
