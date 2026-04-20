@@ -43,7 +43,6 @@
         if (preview) preview.style.display = 'none';
         var existing = document.querySelector('#fpw_{{ $uid }} input[name="{{ $name }}_existing"]');
         if (existing) existing.value = '';
-        // Marcar para limpar no form
         var form = document.getElementById('fpw_{{ $uid }}').closest('form');
         if (form) {
             var cf = form.querySelector('input[name="{{ $name }}_clear"]');
@@ -90,7 +89,6 @@
             if (!form) return;
             var cf = form.querySelector('input[name="' + fieldName_{{ $uid }} + '_clear"]');
             if (cf) cf.value = '0';
-            // Esconder preview existente quando novo arquivo for adicionado
             var preview = document.getElementById('fpPreview_{{ $uid }}');
             if (preview) preview.style.display = 'none';
             var existing = document.querySelector('#fpw_{{ $uid }} input[name="{{ $name }}_existing"]');

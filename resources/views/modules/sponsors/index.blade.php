@@ -119,14 +119,8 @@
                         <div class="col-md-4">
                             <div class="form-group mb-3">
                                 <label>Logo</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" name="logo" id="sponsorLogo" accept="image/*">
-                                    <label class="custom-file-label" for="sponsorLogo">Escolher arquivo...</label>
-                                </div>
+                                <x-filepond name="logo" id="sponsorLogo" />
                                 <small class="text-muted">Formato: PNG, SVG ou JPG com fundo transparente recomendado.</small>
-                            </div>
-                            <div id="logoPreview" class="text-center mb-3 d-none">
-                                <img src="" class="img-fluid rounded" style="max-height:100px; border:1px solid #ddd; padding:5px;">
                             </div>
                         </div>
                     </div>
@@ -257,26 +251,22 @@ function renderPagination(p) {
 
 window.openModal = function() {
     try {
-        console.log('Abrindo modal de patrocinador...');
         document.getElementById('sponsorForm').reset();
         document.getElementById('sponsorId').value = '';
         document.getElementById('sponsorMethod').value = 'POST';
         document.getElementById('modalTitle').textContent = 'Novo Patrocinador';
         document.getElementById('sponsorActive').checked = true;
-        document.getElementById('logoPreview').classList.add('d-none');
-        // Reset input file e label
-        var fileInput = document.getElementById('sponsorLogo');
-        if (fileInput) {
-            fileInput.value = '';
-            var label = fileInput.nextElementSibling;
-            if (label) label.textContent = 'Escolher arquivo...';
+        // Limpar FilePond se existir
+        var fpInput = document.getElementById('sponsorLogo');
+        if (fpInput) {
+            var pond = FilePond.find(fpInput);
+            if (pond) pond.removeFiles();
         }
         var modalEl = document.getElementById('sponsorModal');
         if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
             var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
         } else {
-            console.error('Bootstrap Modal não está disponível');
             HMToast.error('Erro ao abrir modal. Recarregue a página.');
         }
     } catch (e) {
@@ -390,25 +380,6 @@ function deleteSponsor(id, name) {
         });
     });
 }
-
-// Preview da imagem ao selecionar arquivo
-document.getElementById('sponsorLogo').addEventListener('change', function(e) {
-    var file = e.target.files[0];
-    if (file) {
-        // Atualizar label com nome do arquivo
-        var label = e.target.nextElementSibling;
-        if (label) label.textContent = file.name;
-        
-        // Mostrar preview
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var preview = document.getElementById('logoPreview');
-            preview.querySelector('img').src = e.target.result;
-            preview.classList.remove('d-none');
-        };
-        reader.readAsDataURL(file);
-    }
-});
 
 $(function() { loadSponsors(); });
 </script>
