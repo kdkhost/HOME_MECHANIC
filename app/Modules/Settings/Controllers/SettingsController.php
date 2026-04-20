@@ -5,6 +5,7 @@ namespace App\Modules\Settings\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\FileUploadHelper;
 
@@ -371,6 +372,117 @@ class SettingsController extends Controller
         }
 
         file_put_contents($envPath, $content);
+    }
+
+    // ── Tarefas Agendadas (Cron) ──────────────────────────────
+
+    /**
+     * Listar tarefas agendadas do sistema
+     */
+    public function cronList()
+    {
+        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $events = $schedule->events();
+
+        $tasks = [];
+        $disabled = json_decode(Setting::get('cron_disabled', '[]'), true) ?: [];
+
+        foreach ($events as $event) {
+            $command = $event->command ?? $event->description ?? 'N/A';
+            // Extrair nome amigavel do comando
+            $name = $command;
+            if (str_starts_with($command, 'backup:run')) {
+                $name = 'Backup Automático';
+            } elseif (str_starts_with($command, 'google:sync-reviews')) {
+                $name = 'Sync Google Reviews';
+            }
+
+            $expression = $event->expression;
+            $cronHuman = $this->cronToHuman($expression);
+
+            $tasks[] = [
+                'id'          => md5($command),
+                'command'     => $command,
+                'name'        => $name,
+                'expression'  => $expression,
+                'human'       => $cronHuman,
+                'timezone'    => $event->timezone ?? config('app.timezone'),
+                'next_run'    => $event->nextRunDate()?->format('d/m/Y H:i'),
+                'enabled'     => !in_array(md5($command), $disabled),
+            ];
+        }
+
+        return response()->json(['success' => true, 'data' => $tasks]);
+    }
+
+    /**
+     * Executar uma tarefa agendada manualmente
+     */
+    public function cronRun(Request $request)
+    {
+        $command = $request->input('command');
+
+        $allowed = ['backup:run', 'backup:run --type=all', 'backup:run --type=db', 'backup:run --type=files', 'google:sync-reviews'];
+        if (!in_array($command, $allowed)) {
+            return response()->json(['success' => false, 'message' => 'Comando não permitido.'], 403);
+        }
+
+        try {
+            $exitCode = Artisan::call($command);
+            $output = Artisan::output();
+
+            if ($exitCode === 0) {
+                return response()->json(['success' => true, 'message' => 'Tarefa executada com sucesso.', 'output' => trim($output)]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'Erro na execução.', 'output' => trim($output)]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Ativar/desativar uma tarefa agendada
+     */
+    public function cronToggle(Request $request)
+    {
+        $command = $request->input('command');
+        $id = md5($command);
+
+        $disabled = json_decode(Setting::get('cron_disabled', '[]'), true) ?: [];
+
+        if (in_array($id, $disabled)) {
+            // Reativar
+            $disabled = array_values(array_diff($disabled, [$id]));
+            $status = 'ativada';
+        } else {
+            // Desativar
+            $disabled[] = $id;
+            $status = 'desativada';
+        }
+
+        Setting::set('cron_disabled', json_encode($disabled), 'general');
+
+        return response()->json(['success' => true, 'message' => "Tarefa {$status} com sucesso.", 'enabled' => !in_array($id, $disabled)]);
+    }
+
+    /**
+     * Converter expressao cron para texto legivel
+     */
+    private function cronToHuman(string $expression): string
+    {
+        $map = [
+            '* * * * *'  => 'A cada minuto',
+            '0 3 * * *'  => 'Diariamente às 03:00',
+            '0 6 * * 6'  => 'Sábados às 06:00',
+            '0 * * * *'  => 'A cada hora',
+            '0 0 * * *'  => 'Diariamente à meia-noite',
+            '*/5 * * * *' => 'A cada 5 minutos',
+            '*/15 * * * *' => 'A cada 15 minutos',
+            '*/30 * * * *' => 'A cada 30 minutos',
+        ];
+
+        return $map[$expression] ?? $expression;
     }
 
     // ── Test SMTP ──────────────────────────────────────────

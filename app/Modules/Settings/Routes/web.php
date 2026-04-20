@@ -26,6 +26,11 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         Route::get('/backup/download',  [\App\Modules\Settings\Controllers\BackupController::class, 'download'])->name('backup.download');
         Route::delete('/backup/delete', [\App\Modules\Settings\Controllers\BackupController::class, 'destroy'])->name('backup.delete');
 
+        // Tarefas Agendadas (Cron)
+        Route::get('/cron/list',   [SettingsController::class, 'cronList'])->name('cron.list');
+        Route::post('/cron/run',   [SettingsController::class, 'cronRun'])->name('cron.run');
+        Route::post('/cron/toggle', [SettingsController::class, 'cronToggle'])->name('cron.toggle');
+
         // reCAPTCHA
         Route::get('/recaptcha',  [RecaptchaController::class, 'index'])->name('recaptcha');
         Route::post('/recaptcha', [RecaptchaController::class, 'update'])->name('recaptcha.update');

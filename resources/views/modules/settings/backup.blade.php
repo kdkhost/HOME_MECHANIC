@@ -203,6 +203,32 @@
             </div>
         </div>
 
+        <!-- ⏰ Tarefas Agendadas (Cron) -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-bottom py-3">
+                <span class="card-title font-weight-bold" style="color:var(--hm-primary);"><i class="fas fa-clock me-2"></i>Tarefas Agendadas</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Configure o cron no cPanel: <code>* * * * * cd /home/homemechanic/public_html && php artisan schedule:run &gt;&gt; /dev/null 2&gt;&amp;1</code></p>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border" id="cronTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Tarefa</th>
+                                <th>Frequência</th>
+                                <th>Próxima Execução</th>
+                                <th>Status</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cronList">
+                            <tr><td colspan="5" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Limpeza de Cache -->
         <div class="card">
             <div class="card-header">
@@ -594,6 +620,100 @@ function deleteBackup(file) {
         });
     });
 }
+
+// ── Tarefas Agendadas (Cron) ────────────────────────────────
+
+function loadCrons() {
+    $.ajax({
+        url: '{{ route("admin.settings.cron.list") }}',
+        method: 'GET',
+        success: function(res) {
+            var list = document.getElementById('cronList');
+            if (!res.success || !res.data || res.data.length === 0) {
+                list.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Nenhuma tarefa agendada encontrada.</td></tr>';
+                return;
+            }
+            list.innerHTML = res.data.map(function(t) {
+                var statusBadge = t.enabled
+                    ? '<span class="badge badge-success">Ativa</span>'
+                    : '<span class="badge badge-secondary">Desativada</span>';
+                var toggleBtn = t.enabled
+                    ? '<button onclick="toggleCron(\'' + t.command.replace(/'/g, "\\'") + '\')" class="btn btn-sm btn-outline-warning" title="Desativar"><i class="fas fa-pause"></i></button>'
+                    : '<button onclick="toggleCron(\'' + t.command.replace(/'/g, "\\'") + '\')" class="btn btn-sm btn-outline-success" title="Ativar"><i class="fas fa-play"></i></button>';
+                var runBtn = '<button onclick="runCron(\'' + t.command.replace(/'/g, "\\'") + '\')" class="btn btn-sm btn-outline-primary" title="Executar agora"><i class="fas fa-rocket"></i></button>';
+                return '<tr>' +
+                    '<td><i class="fas fa-tasks me-2 text-primary"></i><strong>' + t.name + '</strong><br><small class="text-muted">' + t.command + '</small></td>' +
+                    '<td>' + t.human + '</td>' +
+                    '<td>' + (t.next_run || '—') + '</td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td class="text-end"><div class="btn-group">' + toggleBtn + ' ' + runBtn + '</div></td>' +
+                '</tr>';
+            }).join('');
+        },
+        error: function() {
+            document.getElementById('cronList').innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Erro ao carregar tarefas.</td></tr>';
+        }
+    });
+}
+
+function toggleCron(command) {
+    $.ajax({
+        url: '{{ route("admin.settings.cron.toggle") }}',
+        method: 'POST',
+        data: JSON.stringify({ command: command }),
+        contentType: 'application/json',
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+        success: function(res) {
+            if (res.success) {
+                HMToast.success(res.message);
+                loadCrons();
+            }
+        }
+    });
+}
+
+function runCron(command) {
+    Swal.fire({
+        title: 'Executar tarefa agora?',
+        html: '<code>' + command + '</code>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#FF6B00',
+        confirmButtonText: '<i class="fas fa-rocket me-1"></i> Executar',
+        cancelButtonText: 'Cancelar'
+    }).then(function(r) {
+        if (!r.isConfirmed) return;
+
+        Swal.fire({ title: 'Executando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+        $.ajax({
+            url: '{{ route("admin.settings.cron.run") }}',
+            method: 'POST',
+            data: JSON.stringify({ command: command }),
+            contentType: 'application/json',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function(res) {
+                Swal.close();
+                if (res.success) {
+                    Swal.fire({ title: '✅ Pronto!', text: res.message, icon: 'success', confirmButtonColor: '#FF6B00' });
+                    loadBackups();
+                } else {
+                    Swal.fire({ title: '❌ Erro', text: res.message || res.output, icon: 'error', confirmButtonColor: '#FF6B00' });
+                }
+            },
+            error: function(xhr) {
+                Swal.close();
+                Swal.fire({ title: '❌ Erro', text: 'Erro inesperado.', icon: 'error', confirmButtonColor: '#FF6B00' });
+            }
+        });
+    });
+}
+
+// Carregar ao iniciar
+$(document).ready(function() {
+    loadBackups();
+    loadCrons();
+});
 </script>
 @endsection
 
