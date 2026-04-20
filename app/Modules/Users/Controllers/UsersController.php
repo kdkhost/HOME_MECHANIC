@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileUploadHelper;
 
 class UsersController extends Controller
@@ -59,14 +58,9 @@ class UsersController extends Controller
                 $data['bio'] = $request->bio;
             }
 
-            if ($request->hasFile('avatar')) {
-                $data['avatar'] = FileUploadHelper::save($request->file('avatar'), 'uploads/avatars');
-            } elseif ($request->filled('avatar')) {
-                $uuid = $request->input('avatar');
-                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid)) {
-                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
-                    if ($upload) $data['avatar'] = $upload->path;
-                }
+            $avatarResolved = FileUploadHelper::resolveFromRequest($request, 'avatar', 'uploads/avatars');
+            if ($avatarResolved !== null) {
+                $data['avatar'] = $avatarResolved ?: null;
             }
 
             User::create($data);
@@ -135,26 +129,17 @@ class UsersController extends Controller
                 $data['password'] = Hash::make($request->password);
             }
 
-            if ($request->hasFile('avatar')) {
-                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
+                // remove_avatar manual OU _clear do FilePond
+                if ($request->input('remove_avatar') === '1' || $request->input('avatar_clear') === '1') {
                     FileUploadHelper::delete($user->avatar);
-                    $data['avatar'] = FileUploadHelper::save($request->file('avatar'), 'uploads/avatars');
-                }
-            } elseif ($request->filled('avatar')) {
-                $uuid = $request->input('avatar');
-                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid)) {
-                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
-                    if ($upload && \Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
-                        FileUploadHelper::delete($user->avatar);
-                        $data['avatar'] = $upload->path;
+                    $data['avatar'] = null;
+                } else {
+                    $avatarResolved = FileUploadHelper::resolveFromRequest($request, 'avatar', 'uploads/avatars', $user->avatar);
+                    if ($avatarResolved !== null) {
+                        $data['avatar'] = $avatarResolved ?: null;
                     }
                 }
-            }
-
-            // Remover avatar
-            if ($request->input('remove_avatar') === '1' && \Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
-                FileUploadHelper::delete($user->avatar);
-                $data['avatar'] = null;
             }
 
             $user->update($data);

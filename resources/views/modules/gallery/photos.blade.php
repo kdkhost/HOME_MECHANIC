@@ -160,9 +160,9 @@
                     <div class="col-md-2">
                         <select id="sortBy" class="form-control">
                             <option value="sort_order">Ordem</option>
-                            <option value="title">TÃ­tulo</option>
-                            <option value="created_at">Data de CriaÃ§Ã£o</option>
-                            <option value="updated_at">Ãšltima AtualizaÃ§Ã£o</option>
+                            <option value="title">Título</option>
+                            <option value="created_at">Data de Criação</option>
+                            <option value="updated_at">Última Atualização</option>
                         </select>
                     </div>
                     <div class="col-md-3 text-right">
@@ -184,7 +184,7 @@
                     </div>
                 </div>
 
-                <!-- PaginaÃ§Ã£o -->
+                <!-- Paginação -->
                 <div id="paginationContainer" class="d-flex justify-content-center mt-3"></div>
             </div>
         </div>
@@ -209,7 +209,7 @@
                     <div class="row">
                         <div class="col-md-8">
                             <div class="form-group">
-                                <label for="title">TÃ­tulo da Foto <span class="text-danger">*</span></label>
+                                <label for="title">Título da Foto <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="title" name="title" required maxlength="255">
                             </div>
 
@@ -224,13 +224,13 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="description">DescriÃ§Ã£o</label>
+                                <label for="description">Descrição</label>
                                 <textarea class="form-control" id="description" name="description" rows="3" maxlength="1000"></textarea>
-                                <small class="form-text text-muted">DescriÃ§Ã£o opcional da foto (mÃ¡x. 1000 caracteres)</small>
+                                <small class="form-text text-muted">Descrição opcional da foto (máx. 1000 caracteres)</small>
                             </div>
 
                             <div class="form-group">
-                                <label for="sort_order">Ordem de ExibiÃ§Ã£o</label>
+                                <label for="sort_order">Ordem de Exibição</label>
                                 <input type="number" class="form-control" id="sort_order" name="sort_order" min="0">
                                 <small class="form-text text-muted">Deixe em branco para adicionar ao final</small>
                             </div>
@@ -240,7 +240,7 @@
                                     <input type="checkbox" class="custom-control-input" id="active" name="active" value="1" checked>
                                     <label class="custom-control-label" for="active">Foto Ativa</label>
                                 </div>
-                                <small class="form-text text-muted">Apenas fotos ativas sÃ£o exibidas na galeria pÃºblica</small>
+                                <small class="form-text text-muted">Apenas fotos ativas são exibidas na galeria pública</small>
                             </div>
                         </div>
 
@@ -248,13 +248,13 @@
                             <div class="form-group mb-4">
                                 <label class="form-label font-weight-bold">Imagem Principal <span class="text-danger">*</span></label>
                                 <x-filepond name="filename" id="photo_filename" required="true" />
-                                <small class="text-muted">Arraste a foto principal aqui (MÃ¡x: 10MB)</small>
+                                <small class="text-muted">Arraste a foto principal aqui (Máx: 10MB)</small>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label font-weight-bold">Thumbnail Personalizado</label>
                                 <x-filepond name="thumbnail" id="photo_thumbnail" />
-                                <small class="form-text text-muted">Opcional. Se vazio, serÃ¡ gerado automaticamente.</small>
+                                <small class="form-text text-muted">Opcional. Se vazio, será gerado automaticamente.</small>
                             </div>
                         </div>
                     </div>
@@ -290,12 +290,12 @@
                 <div class="form-group">
                     <label>Fotos</label>
                     <x-filepond name="mass_photos[]" id="mass_photos" multiple="true" />
-                    <small class="text-muted">Arraste mÃºltiplas fotos de uma vez.</small>
+                    <small class="text-muted">Arraste múltiplas fotos de uma vez.</small>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary btn-block" onclick="photosManager.processMassUpload()">
-                    <i class="bi bi-check-circle"></i> Iniciar ImportaÃ§Ã£o
+                    <i class="bi bi-check-circle"></i> Iniciar Importação
                 </button>
             </div>
         </div>
@@ -394,7 +394,7 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexÃ£o');
+            this.showError('Erro de conexão');
         }
     }
 
@@ -497,7 +497,7 @@ class PhotosManager {
         
         if (pagination.current_page < pagination.last_page) {
             html += `<li class="page-item">
-                       <a class="page-link" href="#" onclick="photosManager.loadPhotos(${pagination.current_page + 1})">PrÃ³ximo</a>
+                       <a class="page-link" href="#" onclick="photosManager.loadPhotos(${pagination.current_page + 1})">Próximo</a>
                      </li>`;
         }
         
@@ -567,7 +567,7 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexÃ£o');
+            this.showError('Erro de conexão');
             this.loadPhotos(this.currentPage);
         }
     }
@@ -632,7 +632,7 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro ao processar solicitaÃ§Ã£o');
+            this.showError('Erro ao processar solicitação');
         }
     }
 
@@ -684,7 +684,7 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            Swal.fire('Erro', 'Falha na comunicaÃ§Ã£o com o servidor.', 'error');
+            Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
         }
     }
 
@@ -693,8 +693,8 @@ class PhotosManager {
             this.editingId = id;
             $('#modalTitle').text('Editar Foto');
             
-            // Note: Usando a rota de photos com parÃ¢metro search ou algo que retorne JSON da foto especÃ­fica se nÃ£o houver rota direta
-            // Para simplificar, assumimos que photos Manager jÃ¡ tem os dados ou que photos(Request, photo_id) funciona
+            // Note: Usando a rota de photos com parâmetro search ou algo que retorne JSON da foto específica se não houver rota direta
+            // Para simplificar, assumimos que photos Manager já tem os dados ou que photos(Request, photo_id) funciona
             const response = await fetch(`{{ route('admin.gallery.photos') }}?photo_id=${id}`, {
                 headers: { 'Accept': 'application/json' }
             });
@@ -721,14 +721,14 @@ class PhotosManager {
             }
         } catch (error) {
             console.error('Erro ao buscar foto:', error);
-            this.showError('NÃ£o foi possÃ­vel carregar os dados da foto.');
+            this.showError('Não foi possível carregar os dados da foto.');
         }
     }
 
     async deletePhoto(id) {
         const result = await Swal.fire({
             title: 'Excluir foto?',
-            text: 'Esta aÃ§Ã£o nÃ£o poderÃ¡ ser desfeita.',
+            text: 'Esta ação não poderá ser desfeita.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',

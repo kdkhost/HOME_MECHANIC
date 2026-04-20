@@ -32,7 +32,7 @@
             </div>
             <div class="form-group mb-4">
                 <label class="form-label font-weight-bold">Imagem de Capa</label>
-                <x-filepond name="cover_image" :value="$post['cover_image'] ? asset('storage/' . $post['cover_image']) : null" />
+                <x-filepond name="cover_image" :value="$post['cover_image'] ? '/' . ltrim($post['cover_image'], '/') : null" />
                 <small class="text-muted">Recomendado: 1200x600px. Arraste e solte para enviar.</small>
             </div>
             <div class="form-group">

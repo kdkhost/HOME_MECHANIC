@@ -2,6 +2,7 @@
 
 namespace App\Modules\Blog\Controllers;
 
+use App\Helpers\FileUploadHelper;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Modules\Blog\Models\Post;
@@ -41,7 +42,7 @@ class BlogController extends Controller
             'content'     => 'required|string',
             'status'      => 'required|in:draft,published',
             'excerpt'     => 'nullable|string|max:500',
-            'cover_image' => 'nullable|string|max:255',
+            'cover_image' => 'nullable',
         ]);
 
         try {
@@ -57,10 +58,9 @@ class BlogController extends Controller
                 'published_at' => $request->status === 'published' ? now() : null,
             ];
 
-            if ($request->filled('cover_image')) {
-                $uuid = $request->input('cover_image');
-                $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
-                if ($upload) $data['cover_image'] = $upload->path;
+            $coverResolved = FileUploadHelper::resolveFromRequest($request, 'cover_image', 'uploads/blog');
+            if ($coverResolved !== null) {
+                $data['cover_image'] = $coverResolved ?: null;
             }
 
             $post = Post::create($data);
@@ -104,7 +104,7 @@ class BlogController extends Controller
             'content'     => 'required|string',
             'status'      => 'required|in:draft,published,archived',
             'excerpt'     => 'nullable|string|max:500',
-            'cover_image' => 'nullable|string|max:255',
+            'cover_image' => 'nullable',
         ]);
 
         try {
@@ -122,10 +122,9 @@ class BlogController extends Controller
                 'published_at' => $request->status === 'published' && !$post->published_at ? now() : $post->published_at,
             ];
 
-            if ($request->filled('cover_image')) {
-                $uuid = $request->input('cover_image');
-                $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
-                if ($upload) $data['cover_image'] = $upload->path;
+            $coverResolved = FileUploadHelper::resolveFromRequest($request, 'cover_image', 'uploads/blog', $post->cover_image);
+            if ($coverResolved !== null) {
+                $data['cover_image'] = $coverResolved ?: null;
             }
 
             $post->update($data);
@@ -147,6 +146,7 @@ class BlogController extends Controller
         try {
             $post    = Post::findOrFail($id);
             $oldData = $post->toArray();
+            if ($post->cover_image) FileUploadHelper::delete($post->cover_image);
             $post->delete();
             AuditLog::record('post_deleted', $post, $oldData, []);
             return redirect()->route('admin.blog.index')->with('success', 'Post excluído com sucesso!');

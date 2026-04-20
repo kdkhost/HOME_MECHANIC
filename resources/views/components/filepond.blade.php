@@ -10,43 +10,58 @@
 
 @php
     $id = $id ?? $name;
+    $uid = 'fp_' . str_replace(['-', '.', '[', ']'], '_', $id) . '_' . uniqid();
 @endphp
 
-<div class="filepond-container" wire:ignore>
-    <input type="file" 
-           id="{{ $id }}" 
-           name="{{ $name }}" 
-           {{ $multiple ? 'multiple' : '' }} 
-           {{ $required ? 'required' : '' }}
-           data-allow-reorder="true"
-           data-max-file-size="{{ $maxFileSize }}"
-           data-accepted-file-types="{{ $acceptedFileTypes }}">
+<div class="filepond-container">
+    <input type="file"
+           id="{{ $id }}"
+           name="{{ $name }}"
+           {{ $multiple ? 'multiple' : '' }}
+           {{ $required ? 'required' : '' }}>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const input = document.getElementById('{{ $id }}');
-        if (!input) return;
+    document.addEventListener('DOMContentLoaded', function() {
+        var input_{{ $uid }} = document.getElementById(@json($id));
+        if (!input_{{ $uid }} || input_{{ $uid }}.__filepond_init) return;
+        input_{{ $uid }}.__filepond_init = true;
 
-        const pond = FilePond.create(input, {
-            @if($value)
-            files: [
-                {
-                    source: '{{ $value }}',
-                    options: {
-                        type: 'local'
-                    }
+        var opts_{{ $uid }} = {
+            allowMultiple: {{ $multiple ? 'true' : 'false' }},
+            maxFileSize: @json($maxFileSize),
+            acceptedFileTypes: @json(array_map('trim', explode(',', $acceptedFileTypes))),
+        };
+
+        @if($value)
+        opts_{{ $uid }}.files = [{
+            source: @json($value),
+            options: { type: 'local' }
+        }];
+        @endif
+
+        var pond_{{ $uid }} = FilePond.create(input_{{ $uid }}, opts_{{ $uid }});
+
+        var fieldName_{{ $uid }} = @json($name);
+        pond_{{ $uid }}.on('removefile', function() {
+            if (pond_{{ $uid }}.getFiles().length === 0) {
+                var form = input_{{ $uid }}.closest('form');
+                if (!form) return;
+                var cf = form.querySelector('input[name="' + fieldName_{{ $uid }} + '_clear"]');
+                if (!cf) {
+                    cf = document.createElement('input');
+                    cf.type = 'hidden';
+                    cf.name = fieldName_{{ $uid }} + '_clear';
+                    form.appendChild(cf);
                 }
-            ],
-            @endif
-        });
-
-        // Garantir que o valor seja repassado se o formulário for submetido
-        pond.on('processfile', (error, file) => {
-            if (!error) {
-                // O FilePond já injeta um hidden input com o UUID retornado pelo 'onload' do server
-                console.log('Arquivo processado:', file.serverId);
+                cf.value = '1';
             }
+        });
+        pond_{{ $uid }}.on('addfile', function() {
+            var form = input_{{ $uid }}.closest('form');
+            if (!form) return;
+            var cf = form.querySelector('input[name="' + fieldName_{{ $uid }} + '_clear"]');
+            if (cf) cf.value = '0';
         });
     });
 </script>

@@ -75,14 +75,9 @@ class ServiceController extends Controller
             $data['active']     = $request->boolean('active', true);
             $data['sort_order'] = $data['sort_order'] ?? (Service::max('sort_order') + 1);
 
-            if ($request->hasFile('cover_image')) {
-                $data['cover_image'] = FileUploadHelper::save($request->file('cover_image'), 'uploads/services');
-            } elseif ($request->filled('cover_image')) {
-                $uuid = $request->input('cover_image');
-                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid)) {
-                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
-                    if ($upload) $data['cover_image'] = $upload->path;
-                }
+            $coverResolved = FileUploadHelper::resolveFromRequest($request, 'cover_image', 'uploads/services');
+            if ($coverResolved !== null) {
+                $data['cover_image'] = $coverResolved ?: null;
             }
 
             $service = Service::create($data);
@@ -140,24 +135,9 @@ class ServiceController extends Controller
             $data['featured'] = $request->boolean('featured');
             $data['active']   = $request->boolean('active', true);
 
-            if ($request->hasFile('cover_image')) {
-                if ($service->cover_image) FileUploadHelper::delete($service->cover_image);
-                $data['cover_image'] = FileUploadHelper::save($request->file('cover_image'), 'uploads/services');
-            } elseif ($request->filled('cover_image')) {
-                $uuid = $request->input('cover_image');
-                if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid)) {
-                    $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
-                    if ($upload) {
-                        if ($service->cover_image) FileUploadHelper::delete($service->cover_image);
-                        $data['cover_image'] = $upload->path;
-                    }
-                }
-            }
-
-            // Remover imagem
-            if ($request->input('remove_image') === '1' && $service->cover_image) {
-                FileUploadHelper::delete($service->cover_image);
-                $data['cover_image'] = null;
+            $coverResolved = FileUploadHelper::resolveFromRequest($request, 'cover_image', 'uploads/services', $service->cover_image);
+            if ($coverResolved !== null) {
+                $data['cover_image'] = $coverResolved ?: null;
             }
 
             $service->update($data);
