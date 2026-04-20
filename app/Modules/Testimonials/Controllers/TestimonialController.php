@@ -43,7 +43,8 @@ class TestimonialController extends Controller
         }
 
         // Requisicao normal → view
-        return view('modules.testimonials.index');
+        $testimonials = Testimonial::ordered()->get();
+        return view('modules.testimonials.index', compact('testimonials'));
     }
 
     public function store(Request $request)
