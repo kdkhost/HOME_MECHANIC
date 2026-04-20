@@ -282,12 +282,35 @@
         padding: 0.75rem 0;
         border-bottom: 1px solid rgba(255,107,0,0.15);
     }
+    #navbar.scrolled .nav-brand.has-logo .nav-logo-floating {
+        height: 96px;
+    }
     .nav-brand {
         font-family: var(--font-head);
         font-size: 1.6rem; font-weight: 700;
         color: var(--white) !important;
         letter-spacing: 2px;
         display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-brand.has-logo {
+        position: relative;
+        display: block;
+        width: clamp(210px, 24vw, 320px);
+        height: 44px;
+        overflow: visible;
+    }
+    .nav-brand.has-logo .nav-logo-floating {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 108px;
+        width: auto;
+        max-width: none;
+        object-fit: contain;
+        filter: drop-shadow(0 6px 20px rgba(0,0,0,0.35));
+        transform-origin: left center;
+        pointer-events: none;
     }
     .nav-brand span { color: var(--orange); }
     .nav-brand .brand-icon {
@@ -708,6 +731,18 @@
     }
     .btn-drawer:hover { color: var(--orange); }
     @media (max-width: 991px) {
+        .nav-brand.has-logo {
+            width: auto;
+            height: auto;
+        }
+        .nav-brand.has-logo .nav-logo-floating {
+            position: static;
+            transform: none;
+            height: 40px;
+            max-width: 190px;
+            filter: none;
+            pointer-events: auto;
+        }
         .btn-drawer { display: flex; align-items: center; }
         .navbar-collapse { display: none !important; } /* esconde o collapse padrão */
     }
@@ -836,9 +871,9 @@
 <!-- ── Navbar ──────────────────────────────────────────── -->
 <nav class="navbar navbar-expand-lg" id="navbar">
     <div class="container">
-        <a class="navbar-brand nav-brand" href="{{ route('home') }}">
+        <a class="navbar-brand nav-brand {{ !empty($siteSettings['site_logo']) ? 'has-logo' : '' }}" href="{{ route('home') }}">
             @if(!empty($siteSettings['site_logo']))
-                <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="height:44px;width:auto;object-fit:contain;">
+                <img class="nav-logo-floating" src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}">
             @else
                 <div class="brand-icon"><i class="bi bi-tools"></i></div>
                 HOME<span>MECHANIC</span>

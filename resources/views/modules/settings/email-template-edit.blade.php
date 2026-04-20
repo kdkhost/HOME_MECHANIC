@@ -92,165 +92,170 @@
     </div>
 </div>
 
-<div class="row g-4">
+<div class="row">
+    @include('modules.settings._sidebar', ['active' => 'templates'])
 
-    {{-- ── EDITOR ─────────────────────────────────────── --}}
-    <div class="col-xl-6">
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title"><i class="fas fa-edit"></i> Editor de Template</span>
-                <div class="card-tools">
-                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);">{{ $meta['desc'] }}</span>
+    <div class="col-md-9">
+        <div class="row g-4">
+
+            {{-- ── EDITOR ─────────────────────────────────────── --}}
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-edit"></i> Editor de Template</span>
+                        <div class="card-tools">
+                            <span style="font-size:0.75rem;color:rgba(255,255,255,0.8);">{{ $meta['desc'] }}</span>
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ route('admin.settings.email.templates.update', $slug) }}" id="tplForm">
+                        @csrf
+                        <div class="card-body">
+
+                            {{-- Variáveis --}}
+                            <div class="mb-3">
+                                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:0.5rem;">
+                                    Variáveis disponíveis
+                                    <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;"> — clique para inserir no editor</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach($meta['vars'] as $var)
+                                        <span class="var-chip" onclick="insertVariable({{ json_encode($var) }})">
+                                            <i class="fas fa-code" style="font-size:0.55rem;"></i>{{ $var }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            {{-- Assunto --}}
+                            <div class="form-group">
+                                <label>Assunto do E-mail <span class="text-danger">*</span></label>
+                                <input type="text" name="subject" id="subject" class="form-control"
+                                       value="{{ old('subject', $subject) }}" required
+                                       placeholder="Ex: Bem-vindo à &#123;&#123;site_name&#125;&#125;!">
+                                <small class="form-text">Use variáveis como <code style="color:#FF6B00;background:rgba(255,107,0,0.08);padding:0 4px;border-radius:3px;">&#123;&#123;site_name&#125;&#125;</code> no assunto.</small>
+                            </div>
+
+                            {{-- Corpo --}}
+                            <div class="form-group mb-0">
+                                <label>Corpo do E-mail <span class="text-danger">*</span></label>
+
+                                <div class="mode-tabs mb-0">
+                                    <button type="button" class="mode-tab active" id="tabRich" onclick="switchMode('rich')">
+                                        <i class="fas fa-paint-brush"></i> Editor Visual
+                                    </button>
+                                    <button type="button" class="mode-tab" id="tabHtml" onclick="switchMode('html')">
+                                        <i class="fas fa-code"></i> HTML Direto
+                                    </button>
+                                </div>
+
+                                <div id="richEditorWrap">
+                                    <textarea id="summernote" name="body">{{ old('body', $body) }}</textarea>
+                                </div>
+
+                                <div id="htmlEditorWrap" style="display:none;">
+                                    <textarea id="htmlBody" class="form-control"
+                                              style="font-family:'Courier New',monospace;font-size:0.82rem;min-height:280px;resize:vertical;border-radius:0 0 8px 8px;border-top:none;"
+                                              placeholder="<p>Seu HTML aqui...</p>"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="card-footer d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Template
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="refreshPreview()">
+                                <i class="fas fa-sync-alt"></i> Atualizar Preview
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="sendTestEmail()">
+                                <i class="fas fa-paper-plane"></i> Enviar Teste
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <form method="POST" action="{{ route('admin.settings.email.templates.update', $slug) }}" id="tplForm">
-                @csrf
-                <div class="card-body">
 
-                    {{-- Variáveis --}}
-                    <div class="mb-3">
-                        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:0.5rem;">
-                            Variáveis disponíveis
-                            <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;"> — clique para inserir no editor</span>
-                        </div>
-                        <div class="d-flex flex-wrap gap-1">
-                            @foreach($meta['vars'] as $var)
-                                <span class="var-chip" onclick="insertVariable({{ json_encode($var) }})">
-                                    <i class="fas fa-code" style="font-size:0.55rem;"></i>{{ $var }}
+            {{-- ── PREVIEW ─────────────────────────────────────── --}}
+            <div class="col-lg-6">
+                <div class="preview-sticky">
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <span class="card-title"><i class="fas fa-eye"></i> Preview em Tempo Real</span>
+                            <div class="card-tools">
+                                <span style="font-size:0.72rem;color:rgba(255,255,255,0.75);">
+                                    <i class="fas fa-flask me-1"></i>Dados de exemplo
                                 </span>
-                            @endforeach
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="preview-subject-bar">
+                                <span class="lbl">Assunto:</span>
+                                <span class="val" id="preview-subject">{{ $subject }}</span>
+                            </div>
+                            <div id="preview-container" style="position:relative;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;min-height:500px;background:#f8fafc;">
+                                <div id="preview-loading" class="preview-loading">
+                                    <div style="font-size:2.5rem;">📧</div>
+                                    <div>Carregando preview...</div>
+                                </div>
+                                <iframe id="preview-frame"
+                                        style="width:100%;height:500px;border:none;display:none;"
+                                        sandbox="allow-same-origin"></iframe>
+                            </div>
                         </div>
                     </div>
 
-                    {{-- Assunto --}}
-                    <div class="form-group">
-                        <label>Assunto do E-mail <span class="text-danger">*</span></label>
-                        <input type="text" name="subject" id="subject" class="form-control"
-                               value="{{ old('subject', $subject) }}" required
-                               placeholder="Ex: Bem-vindo à &#123;&#123;site_name&#125;&#125;!">
-                        <small class="form-text">Use variáveis como <code style="color:#FF6B00;background:rgba(255,107,0,0.08);padding:0 4px;border-radius:3px;">&#123;&#123;site_name&#125;&#125;</code> no assunto.</small>
-                    </div>
-
-                    {{-- Corpo --}}
-                    <div class="form-group mb-0">
-                        <label>Corpo do E-mail <span class="text-danger">*</span></label>
-
-                        <div class="mode-tabs mb-0">
-                            <button type="button" class="mode-tab active" id="tabRich" onclick="switchMode('rich')">
-                                <i class="fas fa-paint-brush"></i> Editor Visual
-                            </button>
-                            <button type="button" class="mode-tab" id="tabHtml" onclick="switchMode('html')">
-                                <i class="fas fa-code"></i> HTML Direto
-                            </button>
+                    {{-- Variáveis de exemplo --}}
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"><i class="fas fa-table"></i> Dados de Exemplo no Preview</span>
                         </div>
-
-                        <div id="richEditorWrap">
-                            <textarea id="summernote" name="body">{{ old('body', $body) }}</textarea>
+                        <div class="card-body p-0">
+                            <table class="table table-sm table-hover mb-0" style="font-size:0.8rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:42%;">Variável</th>
+                                        <th>Valor de Exemplo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                    $exampleVars = [
+                                        '{{nome}}'              => 'João Silva',
+                                        '{{email}}'             => 'joao@email.com',
+                                        '{{assunto}}'           => 'Orçamento para revisão',
+                                        '{{resposta}}'          => 'Nosso orçamento é de R$ 350,00.',
+                                        '{{mensagem_original}}' => 'Gostaria de um orçamento...',
+                                        '{{site_name}}'         => $siteName,
+                                        '{{login_url}}'         => url('/admin/login'),
+                                        '{{reset_url}}'         => url('/admin/login').'?reset=ex',
+                                        '{{expiry}}'            => '2 horas',
+                                        '{{titulo}}'            => 'Nova mensagem recebida',
+                                        '{{mensagem}}'          => 'Você recebeu uma nova mensagem.',
+                                        '{{acao_url}}'          => url('/admin/contact'),
+                                        '{{acao_texto}}'        => 'Ver Mensagem',
+                                    ];
+                                    @endphp
+                                    @foreach($exampleVars as $var => $val)
+                                    @if(in_array($var, $meta['vars']))
+                                    <tr>
+                                        <td>
+                                            <code style="color:#FF6B00;font-size:0.73rem;background:rgba(255,107,0,0.08);padding:0.1rem 0.4rem;border-radius:4px;">{{ $var }}</code>
+                                        </td>
+                                        <td style="color:#64748b;">{{ Str::limit($val, 42) }}</td>
+                                    </tr>
+                                    @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-
-                        <div id="htmlEditorWrap" style="display:none;">
-                            <textarea id="htmlBody" class="form-control"
-                                      style="font-family:'Courier New',monospace;font-size:0.82rem;min-height:280px;resize:vertical;border-radius:0 0 8px 8px;border-top:none;"
-                                      placeholder="<p>Seu HTML aqui...</p>"></textarea>
-                        </div>
                     </div>
 
-                </div>
-                <div class="card-footer d-flex flex-wrap gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Salvar Template
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="refreshPreview()">
-                        <i class="fas fa-sync-alt"></i> Atualizar Preview
-                    </button>
-                    <button type="button" class="btn btn-info" onclick="sendTestEmail()">
-                        <i class="fas fa-paper-plane"></i> Enviar Teste
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- ── PREVIEW ─────────────────────────────────────── --}}
-    <div class="col-xl-6">
-        <div class="preview-sticky">
-
-            <div class="card mb-3">
-                <div class="card-header">
-                    <span class="card-title"><i class="fas fa-eye"></i> Preview em Tempo Real</span>
-                    <div class="card-tools">
-                        <span style="font-size:0.72rem;color:rgba(255,255,255,0.75);">
-                            <i class="fas fa-flask me-1"></i>Dados de exemplo
-                        </span>
-                    </div>
-                </div>
-                <div class="card-body p-3">
-                    <div class="preview-subject-bar">
-                        <span class="lbl">Assunto:</span>
-                        <span class="val" id="preview-subject">{{ $subject }}</span>
-                    </div>
-                    {{-- Usamos div+iframe para controle total do conteúdo --}}
-                    <div id="preview-container" style="position:relative;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;min-height:500px;background:#f8fafc;">
-                        <div id="preview-loading" class="preview-loading">
-                            <div style="font-size:2.5rem;">📧</div>
-                            <div>Carregando preview...</div>
-                        </div>
-                        <iframe id="preview-frame"
-                                style="width:100%;height:500px;border:none;display:none;"
-                                sandbox="allow-same-origin"></iframe>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Variáveis de exemplo --}}
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title"><i class="fas fa-table"></i> Dados de Exemplo no Preview</span>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-sm table-hover mb-0" style="font-size:0.8rem;">
-                        <thead>
-                            <tr>
-                                <th style="width:42%;">Variável</th>
-                                <th>Valor de Exemplo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                            $exampleVars = [
-                                '{{nome}}'              => 'João Silva',
-                                '{{email}}'             => 'joao@email.com',
-                                '{{assunto}}'           => 'Orçamento para revisão',
-                                '{{resposta}}'          => 'Nosso orçamento é de R$ 350,00.',
-                                '{{mensagem_original}}' => 'Gostaria de um orçamento...',
-                                '{{site_name}}'         => $siteName,
-                                '{{login_url}}'         => url('/admin/login'),
-                                '{{reset_url}}'         => url('/admin/login').'?reset=ex',
-                                '{{expiry}}'            => '2 horas',
-                                '{{titulo}}'            => 'Nova mensagem recebida',
-                                '{{mensagem}}'          => 'Você recebeu uma nova mensagem.',
-                                '{{acao_url}}'          => url('/admin/contact'),
-                                '{{acao_texto}}'        => 'Ver Mensagem',
-                            ];
-                            @endphp
-                            @foreach($exampleVars as $var => $val)
-                            @if(in_array($var, $meta['vars']))
-                            <tr>
-                                <td>
-                                    <code style="color:#FF6B00;font-size:0.73rem;background:rgba(255,107,0,0.08);padding:0.1rem 0.4rem;border-radius:4px;">{{ $var }}</code>
-                                </td>
-                                <td style="color:#64748b;">{{ Str::limit($val, 42) }}</td>
-                            </tr>
-                            @endif
-                            @endforeach
-                        </tbody>
-                    </table>
                 </div>
             </div>
 
         </div>
     </div>
-
 </div>
 @endsection
 
