@@ -778,7 +778,7 @@
 <!-- Preloader -->
 <div id="preloader">
     @if(!empty($siteSettings['site_logo']))
-        <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="max-height:60px;object-fit:contain;">
+        <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="height:48px;width:auto;object-fit:contain;">
     @else
         <div class="pre-logo">HOME<span style="color:#fff">MECHANIC</span></div>
     @endif
@@ -792,7 +792,7 @@
 <div class="mobile-drawer" id="mobileDrawer">
     <div class="drawer-header">
         @if(!empty($siteSettings['site_logo']))
-            <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="max-height:36px;object-fit:contain;">
+            <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="height:28px;width:auto;object-fit:contain;">
         @else
             <div class="drawer-brand">HOME<span>MECHANIC</span></div>
         @endif
@@ -838,7 +838,7 @@
     <div class="container">
         <a class="navbar-brand nav-brand" href="{{ route('home') }}">
             @if(!empty($siteSettings['site_logo']))
-                <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="max-height:40px;object-fit:contain;">
+                <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="height:32px;width:auto;object-fit:contain;">
             @else
                 <div class="brand-icon"><i class="bi bi-tools"></i></div>
                 HOME<span>MECHANIC</span>
@@ -986,7 +986,7 @@
         <div class="row g-5 pb-5">
             <div class="col-lg-4">
                 @if(!empty($siteSettings['site_logo']))
-                    <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="max-height:50px;object-fit:contain;margin-bottom:0.75rem;">
+                    <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="height:36px;width:auto;object-fit:contain;margin-bottom:0.75rem;">
                 @else
                     <div class="footer-brand mb-3">{{ strtoupper($siteSettings['site_name'] ?? 'HOMEMECHANIC') }}</div>
                 @endif
