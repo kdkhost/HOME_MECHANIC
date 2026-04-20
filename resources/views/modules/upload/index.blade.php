@@ -68,7 +68,12 @@
 </div>
 @endsection
 
+@section('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+@endsection
+
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 <script>
 let currentType = '';
 
@@ -139,13 +144,15 @@ function renderFiles(files) {
 
     const html = `
         <div class="row">
-            ${files.map(f => `
+            ${files.map(f => {
+                const imgSrc = f.is_image ? (f.thumbnail_url || f.url) : '';
+                return `
                 <div class="col-md-3 col-sm-4 col-6 mb-3">
                     <div class="card h-100" style="border:1px solid var(--hm-border)!important;box-shadow:none!important;">
-                        <div style="height:120px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0;overflow:hidden;">
-                            ${f.is_image && f.thumbnail_url
-                                ? `<img src="${f.thumbnail_url}" style="width:100%;height:100%;object-fit:cover;">`
-                                : `<i class="${f.icon || 'fas fa-file'}" style="font-size:2.5rem;color:var(--hm-primary);"></i>`
+                        <div style="height:120px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0;overflow:hidden;cursor:pointer;" onclick="openPreview('${f.url}', '${f.original_name.replace(/'/g, "\\'")}', ${f.is_image})">
+                            ${imgSrc
+                                ? '<img src="' + imgSrc + '" style="width:100%;height:100%;object-fit:cover;">'
+                                : '<i class="' + (f.icon || 'fas fa-file') + '" style="font-size:2.5rem;color:var(--hm-primary);"></i>'
                             }
                         </div>
                         <div class="card-body p-2">
@@ -153,15 +160,23 @@ function renderFiles(files) {
                             <div style="font-size:0.72rem;color:#718096;">${f.formatted_size || ''}</div>
                         </div>
                         <div class="card-footer p-1 d-flex justify-content-between" style="background:transparent;border-top:1px solid var(--hm-border);">
-                            <a href="${f.url}" target="_blank" class="btn btn-sm btn-info" title="Ver"><i class="fas fa-eye"></i></a>
+                            <button onclick="openPreview('${f.url}', '${f.original_name.replace(/'/g, "\\'")}', ${f.is_image})" class="btn btn-sm btn-info" title="Ver"><i class="fas fa-eye"></i></button>
                             <button onclick="deleteFile('${f.uuid}')" class="btn btn-sm btn-danger" title="Excluir"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
-                </div>
-            `).join('')}
+                </div>`;
+            }).join('')}
         </div>
     `;
     $('#filesContainer').html(html);
+}
+
+function openPreview(url, title, isImage) {
+    if (isImage) {
+        GLightbox({ elements: [{ href: url, title: title }] }).open();
+    } else {
+        window.open(url, '_blank');
+    }
 }
 
 function uploadFiles(files) {
