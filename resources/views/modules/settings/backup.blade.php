@@ -29,6 +29,33 @@
     transition: color 0.2s;
 }
 .ip-tag .remove-ip:hover { color: white; }
+
+/* Tabs padronizadas com cor do sistema */
+#settingsTabs {
+    border-bottom: 2px solid rgba(255,107,0,0.15);
+}
+#settingsTabs .nav-link {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 0.65rem 1.1rem;
+    transition: all 0.2s ease;
+    border-radius: 0;
+}
+#settingsTabs .nav-link:hover {
+    color: var(--hm-primary);
+    border-bottom-color: rgba(255,107,0,0.3);
+}
+#settingsTabs .nav-link.active {
+    color: var(--hm-primary);
+    background: transparent;
+    border-bottom-color: var(--hm-primary);
+}
+#settingsTabs .nav-link i {
+    margin-right: 0.3rem;
+}
 </style>
 @endsection
 
@@ -45,23 +72,23 @@
         <!-- Guias (Tabs) -->
         <ul class="nav nav-tabs mb-0" id="settingsTabs" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="tab-maintenance" data-toggle="tab" href="#pane-maintenance" role="tab">
-                    <i class="fas fa-hard-hat me-1"></i> Manutenção
+                <a class="nav-link active" id="tab-maintenance" data-bs-toggle="tab" href="#pane-maintenance" role="tab">
+                    <i class="fas fa-hard-hat"></i> Manutenção
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="tab-backup" data-toggle="tab" href="#pane-backup" role="tab">
-                    <i class="fas fa-shield-alt me-1"></i> Backup
+                <a class="nav-link" id="tab-backup" data-bs-toggle="tab" href="#pane-backup" role="tab">
+                    <i class="fas fa-shield-alt"></i> Backup
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="tab-cron" data-toggle="tab" href="#pane-cron" role="tab">
-                    <i class="fas fa-clock me-1"></i> Agendamentos
+                <a class="nav-link" id="tab-cron" data-bs-toggle="tab" href="#pane-cron" role="tab">
+                    <i class="fas fa-clock"></i> Agendamentos
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="tab-system" data-toggle="tab" href="#pane-system" role="tab">
-                    <i class="fas fa-cogs me-1"></i> Sistema
+                <a class="nav-link" id="tab-system" data-bs-toggle="tab" href="#pane-system" role="tab">
+                    <i class="fas fa-cogs"></i> Sistema
                 </a>
             </li>
         </ul>
@@ -393,10 +420,12 @@ $(function() {
     renderIpTags();
 
     // Carregar dados quando a guia for aberta
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-        var target = $(e.target).attr('href');
-        if (target === '#pane-backup') loadBackups();
-        if (target === '#pane-cron') loadCrons();
+    document.querySelectorAll('#settingsTabs a[data-bs-toggle="tab"]').forEach(function(tab) {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            var target = e.target.getAttribute('href');
+            if (target === '#pane-backup') loadBackups();
+            if (target === '#pane-cron') loadCrons();
+        });
     });
 
     // Carregar dados da guia ativa inicial
