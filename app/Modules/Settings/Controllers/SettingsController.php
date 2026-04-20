@@ -388,17 +388,28 @@ class SettingsController extends Controller
         $disabled = json_decode(Setting::get('cron_disabled', '[]'), true) ?: [];
 
         foreach ($events as $event) {
-            $command = $event->command ?? $event->description ?? 'N/A';
-            // Extrair nome amigavel do comando
-            $name = $command;
-            if (str_starts_with($command, 'backup:run')) {
-                $name = 'Backup Automático';
-            } elseif (str_starts_with($command, 'google:sync-reviews')) {
-                $name = 'Sync Google Reviews';
+            // Extrair comando completo (php artisan xxx)
+            $fullCommand = $event->command ?? '';
+            // Remover "php artisan " do inicio para ficar so o nome
+            $command = $fullCommand;
+            if (str_starts_with($command, 'php artisan ')) {
+                $command = substr($command, strlen('php artisan '));
             }
+            if (empty($command)) {
+                $command = $event->description ?? 'N/A';
+            }
+
+            // Nome amigavel
+            $name = match(true) {
+                str_starts_with($command, 'backup:run') => 'Backup Automático',
+                str_starts_with($command, 'google:sync-reviews') => 'Sync Google Reviews',
+                str_starts_with($command, 'inspire') => 'Inspire (Demo)',
+                default => $command,
+            };
 
             $expression = $event->expression;
             $cronHuman = $this->cronToHuman($expression);
+            $nextRun = $event->nextRunDate();
 
             $tasks[] = [
                 'id'          => md5($command),
@@ -407,7 +418,7 @@ class SettingsController extends Controller
                 'expression'  => $expression,
                 'human'       => $cronHuman,
                 'timezone'    => $event->timezone ?? config('app.timezone'),
-                'next_run'    => $event->nextRunDate()?->format('d/m/Y H:i'),
+                'next_run'    => $nextRun ? $nextRun->format('d/m/Y H:i') : '—',
                 'enabled'     => !in_array(md5($command), $disabled),
             ];
         }

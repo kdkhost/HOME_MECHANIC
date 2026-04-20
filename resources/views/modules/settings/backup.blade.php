@@ -42,300 +42,346 @@
 
     <div class="col-md-9">
 
-        <!-- Modo de Manutenção -->
-        <div class="card" style="border: 1px solid rgba(255,107,0,0.1);">
-            <div class="card-header" style="background: rgba(255,107,0,0.02);">
-                <span class="card-title font-weight-bold" style="color: #ff6b00;"><i class="fas fa-hard-hat"></i> Parâmetros de Manutenção</span>
+        <!-- Guias (Tabs) -->
+        <ul class="nav nav-tabs mb-0" id="settingsTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="tab-maintenance" data-toggle="tab" href="#pane-maintenance" role="tab">
+                    <i class="fas fa-hard-hat me-1"></i> Manutenção
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-backup" data-toggle="tab" href="#pane-backup" role="tab">
+                    <i class="fas fa-shield-alt me-1"></i> Backup
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-cron" data-toggle="tab" href="#pane-cron" role="tab">
+                    <i class="fas fa-clock me-1"></i> Agendamentos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-system" data-toggle="tab" href="#pane-system" role="tab">
+                    <i class="fas fa-cogs me-1"></i> Sistema
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content pt-3" id="settingsTabContent">
+
+            <!-- ══════ GUIA: MANUTENÇÃO ══════ -->
+            <div class="tab-pane fade show active" id="pane-maintenance" role="tabpanel">
+                <div class="card" style="border: 1px solid rgba(255,107,0,0.1);">
+                    <div class="card-header" style="background: rgba(255,107,0,0.02);">
+                        <span class="card-title font-weight-bold" style="color: #ff6b00;"><i class="fas fa-hard-hat"></i> Parâmetros de Manutenção</span>
+                    </div>
+                    <div class="card-body py-4">
+                        <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="section" value="maintenance">
+                            <div class="row">
+                                <div class="col-md-12 mb-4 border-bottom pb-3">
+                                    <div class="custom-control custom-switch custom-switch-lg">
+                                        <input type="checkbox" class="custom-control-input" id="maintenance_mode"
+                                               name="maintenance_mode" value="1"
+                                               {{ ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' }}>
+                                        <label class="custom-control-label font-weight-bold" style="font-size: 1.1rem; padding-top: 2px;" for="maintenance_mode">Ativar Modo de Manutenção</label>
+                                    </div>
+                                    <small class="form-text mt-2" style="font-size: 0.95rem; color: #6c757d;">
+                                        Quando ativado, o site exibe uma página de manutenção isolada. Administradores e IPs autorizados continuam com acesso normal.
+                                    </small>
+                                </div>
+
+                                <div class="col-md-6 mt-3">
+                                    <div class="form-group">
+                                        <label>Título da Página de Manutenção</label>
+                                        <input type="text" class="form-control" name="maintenance_title"
+                                               value="{{ old('maintenance_title', $settings['maintenance_title'] ?? 'Site em Manutenção') }}"
+                                               placeholder="Ex: Site em Manutenção">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mt-3">
+                                    <div class="form-group">
+                                        <label>Mensagem para Visitantes</label>
+                                        <input type="text" class="form-control" name="maintenance_message"
+                                               value="{{ old('maintenance_message', $settings['maintenance_message'] ?? 'Voltaremos em breve. Estamos realizando atualizações.') }}"
+                                               placeholder="Ex: Voltaremos em breve.">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mt-3">
+                                    <div class="form-group">
+                                        <label>Temporizador de Retorno (Opcional)</label>
+                                        <input type="datetime-local" class="form-control" name="maintenance_timer"
+                                               value="{{ old('maintenance_timer', $settings['maintenance_timer'] ?? '') }}">
+                                        <small class="form-text text-muted mt-1">Defina quando a página voltará para exibir um <strong>Cronômetro</strong>.</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mt-3">
+                                    <div class="form-group">
+                                        <label>Ao Zerar o Temporizador</label>
+                                        <select name="maintenance_timer_action" class="form-control">
+                                            <option value="hide" {{ ($settings['maintenance_timer_action'] ?? 'hide') === 'hide' ? 'selected' : '' }}>Apenas esconder o cronômetro</option>
+                                            <option value="disable" {{ ($settings['maintenance_timer_action'] ?? 'hide') === 'disable' ? 'selected' : '' }}>Desativar manutenção automaticamente (site volta ao ar)</option>
+                                        </select>
+                                        <small class="form-text text-muted mt-1"><strong>Esconder:</strong> o cronômetro some, mas o site continua em manutenção. <strong>Desativar:</strong> o site volta ao ar sozinho quando o tempo acabar.</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mt-3">
+                                    <div class="form-group mb-4">
+                                        <label class="form-label font-weight-bold">Imagem de Fundo (Manutenção)</label>
+                                        @php
+                                            $bgImage = $settings['maintenance_bg_image'] ?? '';
+                                            if ($bgImage) {
+                                                $bgUrl = str_starts_with($bgImage, 'http') ? $bgImage : '/' . ltrim($bgImage, '/');
+                                            } else {
+                                                $bgUrl = null;
+                                            }
+                                        @endphp
+                                        <x-filepond name="maintenance_bg_image" max-file-size="10MB" :value="$bgUrl" />
+                                        <small class="text-muted">Recomendado: 1920x1080px. Arraste e solte para enviar.</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 mt-2">
+                                    <div class="form-group mb-4">
+                                        <label>IPs com Acesso Liberado</label>
+
+                                        <div class="ip-manager-container p-3" style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px;">
+                                            <input type="hidden" name="maintenance_ips" id="maintenance_ips" value="{{ old('maintenance_ips', $settings['maintenance_ips'] ?? '') }}">
+
+                                            <div id="ip-tags-list" class="mb-3 d-flex flex-wrap">
+                                            </div>
+
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-network-wired text-orange"></i></span>
+                                                </div>
+                                                <input type="text" id="ip_input" class="form-control bg-white" placeholder="Digite IPv4 (ex: 192.168.0.1) ou faixa CIDR (ex: 10.0.0.0/24)">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button" id="btnAddIp"><i class="fas fa-plus"></i> Inserir</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-3 d-flex align-items-center justify-content-between">
+                                                <button type="button" class="btn btn-sm" id="btnMyIp" style="background:rgba(255,107,0,0.1); color:#ff6b00; border:1px solid rgba(255,107,0,0.3);">
+                                                    <i class="fas fa-wifi me-1"></i> Autorizar meu IP Atual
+                                                </button>
+                                                <small class="text-muted">Seu IP detectado: <strong id="my_current_ip">{{ request()->ip() }}</strong></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> Salvar Manutenção</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="card-body py-4">
-                <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="section" value="maintenance">
-                    <div class="row">
-                        <div class="col-md-12 mb-4 border-bottom pb-3">
-                            <div class="custom-control custom-switch custom-switch-lg">
-                                <input type="checkbox" class="custom-control-input" id="maintenance_mode"
-                                       name="maintenance_mode" value="1"
-                                       {{ ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' }}>
-                                <label class="custom-control-label font-weight-bold" style="font-size: 1.1rem; padding-top: 2px;" for="maintenance_mode">Ativar Modo de Manutenção</label>
-                            </div>
-                            <small class="form-text mt-2" style="font-size: 0.95rem; color: #6c757d;">
-                                Quando ativado, o site exibe uma página de manutenção isolada. Administradores e IPs autorizados continuam com acesso normal.
-                            </small>
-                        </div>
-                        
-                        <div class="col-md-6 mt-3">
-                            <div class="form-group">
-                                <label>Título da Página de Manutenção</label>
-                                <input type="text" class="form-control" name="maintenance_title"
-                                       value="{{ old('maintenance_title', $settings['maintenance_title'] ?? 'Site em Manutenção') }}"
-                                       placeholder="Ex: Site em Manutenção">
-                            </div>
-                        </div>
-                        <div class="col-md-6 mt-3">
-                            <div class="form-group">
-                                <label>Mensagem para Visitantes</label>
-                                <input type="text" class="form-control" name="maintenance_message"
-                                       value="{{ old('maintenance_message', $settings['maintenance_message'] ?? 'Voltaremos em breve. Estamos realizando atualizações.') }}"
-                                       placeholder="Ex: Voltaremos em breve.">
-                            </div>
-                        </div>
 
-                        <div class="col-md-6 mt-3">
-                            <div class="form-group">
-                                <label>Temporizador de Retorno (Opcional)</label>
-                                <input type="datetime-local" class="form-control" name="maintenance_timer"
-                                       value="{{ old('maintenance_timer', $settings['maintenance_timer'] ?? '') }}">
-                                <small class="form-text text-muted mt-1">Defina quando a página voltará para exibir um <strong>Cronômetro</strong>.</small>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mt-3">
-                            <div class="form-group">
-                                <label>Ao Zerar o Temporizador</label>
-                                <select name="maintenance_timer_action" class="form-control">
-                                    <option value="hide" {{ ($settings['maintenance_timer_action'] ?? 'hide') === 'hide' ? 'selected' : '' }}>Apenas esconder o cronômetro</option>
-                                    <option value="disable" {{ ($settings['maintenance_timer_action'] ?? 'hide') === 'disable' ? 'selected' : '' }}>Desativar manutenção automaticamente (site volta ao ar)</option>
-                                </select>
-                                <small class="form-text text-muted mt-1"><strong>Esconder:</strong> o cronômetro some, mas o site continua em manutenção. <strong>Desativar:</strong> o site volta ao ar sozinho quando o tempo acabar.</small>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mt-3">
-                            <div class="form-group mb-4">
-                                <label class="form-label font-weight-bold">Imagem de Fundo (Manutenção)</label>
-                                @php
-                                    $bgImage = $settings['maintenance_bg_image'] ?? '';
-                                    if ($bgImage) {
-                                        $bgUrl = str_starts_with($bgImage, 'http') ? $bgImage : '/' . ltrim($bgImage, '/');
-                                    } else {
-                                        $bgUrl = null;
-                                    }
-                                @endphp
-                                <x-filepond name="maintenance_bg_image" max-file-size="10MB" :value="$bgUrl" />
-                                <small class="text-muted">Recomendado: 1920x1080px. Arraste e solte para enviar.</small>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 mt-2">
-                            <div class="form-group mb-4">
-                                <label>IPs com Acesso Liberado</label>
-                                
-                                <div class="ip-manager-container p-3" style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px;">
-                                    <input type="hidden" name="maintenance_ips" id="maintenance_ips" value="{{ old('maintenance_ips', $settings['maintenance_ips'] ?? '') }}">
-                                    
-                                    <div id="ip-tags-list" class="mb-3 d-flex flex-wrap">
-                                        <!-- IP Badges serão renderizadas via JS -->
-                                    </div>
-
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text"><i class="fas fa-network-wired text-orange"></i></span>
-                                        </div>
-                                        <input type="text" id="ip_input" class="form-control bg-white" placeholder="Digite IPv4 (ex: 192.168.0.1) ou faixa CIDR (ex: 10.0.0.0/24)">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-outline-secondary" type="button" id="btnAddIp"><i class="fas fa-plus"></i> Inserir</button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-3 d-flex align-items-center justify-content-between">
-                                        <button type="button" class="btn btn-sm" id="btnMyIp" style="background:rgba(255,107,0,0.1); color:#ff6b00; border:1px solid rgba(255,107,0,0.3);">
-                                            <i class="fas fa-wifi me-1"></i> Autorizar meu IP Atual
+            <!-- ══════ GUIA: BACKUP ══════ -->
+            <div class="tab-pane fade" id="pane-backup" role="tabpanel">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <span class="card-title font-weight-bold" style="color:var(--hm-primary);"><i class="fas fa-shield-alt me-2"></i>Backup do Sistema</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12">
+                                <div class="p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                                    <h5 class="font-weight-bold mb-2" style="font-size:1rem;">Gerar Novo Backup</h5>
+                                    <p class="text-muted small mb-3">Recomendamos realizar backups periódicos do banco de dados e dos arquivos de upload.</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button onclick="runBackup('all')" class="btn btn-primary btn-sm px-3">
+                                            <i class="fas fa-archive me-1"></i> Backup Completo (BD + Arquivos)
                                         </button>
-                                        <small class="text-muted">Seu IP detectado: <strong id="my_current_ip">{{ request()->ip() }}</strong></small>
+                                        <button onclick="runBackup('db')" class="btn btn-outline-primary btn-sm px-3">
+                                            <i class="fas fa-database me-1"></i> Apenas Banco de Dados
+                                        </button>
+                                        <button onclick="runBackup('files')" class="btn btn-outline-secondary btn-sm px-3">
+                                            <i class="fas fa-images me-1"></i> Apenas Arquivos
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-12">
-                            <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> Salvar Manutenção</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
 
-        <!-- 🛡️ Sistema de Backup Nativo -->
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white border-bottom py-3">
-                <span class="card-title font-weight-bold" style="color:var(--hm-primary);"><i class="fas fa-shield-alt me-2"></i>Backup do Sistema</span>
-            </div>
-            <div class="card-body">
-                <div class="row g-4 mb-4">
-                    <div class="col-md-12">
-                        <div class="p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
-                            <h5 class="font-weight-bold mb-2" style="font-size:1rem;">Gerar Novo Backup</h5>
-                            <p class="text-muted small mb-3">Recomendamos realizar backups periódicos do banco de dados e dos arquivos de upload.</p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <button onclick="runBackup('all')" class="btn btn-primary btn-sm px-3">
-                                    <i class="fas fa-archive me-1"></i> Backup Completo (BD + Arquivos)
-                                </button>
-                                <button onclick="runBackup('db')" class="btn btn-outline-primary btn-sm px-3">
-                                    <i class="fas fa-database me-1"></i> Apenas Banco de Dados
-                                </button>
-                                <button onclick="runBackup('files')" class="btn btn-outline-secondary btn-sm px-3">
-                                    <i class="fas fa-images me-1"></i> Apenas Arquivos
-                                </button>
-                            </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border" id="backupsTable">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Arquivo</th>
+                                        <th>Tamanho</th>
+                                        <th>Data de Criação</th>
+                                        <th class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="backupsList">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            <i class="fas fa-spinner fa-spin me-2"></i> Carregando backups...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle border" id="backupsTable">
-                        <thead class="bg-light">
+            <!-- ══════ GUIA: AGENDAMENTOS ══════ -->
+            <div class="tab-pane fade" id="pane-cron" role="tabpanel">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <span class="card-title font-weight-bold" style="color:var(--hm-primary);"><i class="fas fa-clock me-2"></i>Tarefas Agendadas</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info small py-2 px-3 mb-3" style="border-radius:6px;">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Configure o cron no cPanel com o comando:<br>
+                            <code style="font-size:0.82rem;">* * * * * cd /home/homemechanic/public_html && php artisan schedule:run >> /dev/null 2>&1</code>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border" id="cronTable">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Tarefa</th>
+                                        <th>Frequência</th>
+                                        <th>Próxima Execução</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cronList">
+                                    <tr><td colspan="5" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════ GUIA: SISTEMA ══════ -->
+            <div class="tab-pane fade" id="pane-system" role="tabpanel">
+
+                <!-- Configurações do Sistema -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-cogs"></i> Configurações do Sistema</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="formSystemConfig" method="POST" action="{{ route('admin.settings.update') }}">
+                            @csrf
+                            <input type="hidden" name="section" value="system">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="font-weight-bold">Ambiente</label>
+                                    <select name="app_env" class="form-control">
+                                        <option value="local" {{ config('app.env') === 'local' ? 'selected' : '' }}>Local (Desenvolvimento)</option>
+                                        <option value="production" {{ config('app.env') === 'production' ? 'selected' : '' }}>Produção</option>
+                                        <option value="staging" {{ config('app.env') === 'staging' ? 'selected' : '' }}>Staging (Homologação)</option>
+                                    </select>
+                                    <small class="text-muted">Em <strong>Produção</strong>, erros são ocultados e o cache é otimizado.</small>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="font-weight-bold">Modo Debug</label>
+                                    <div class="custom-control custom-switch custom-switch-lg mt-2">
+                                        <input type="checkbox" class="custom-control-input" id="app_debug" name="app_debug" value="1"
+                                               {{ config('app.debug') ? 'checked' : '' }}>
+                                        <label class="custom-control-label" for="app_debug">Ativado</label>
+                                    </div>
+                                    <small class="text-muted">Exibe detalhes de erro. <strong>Desative em produção!</strong></small>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="font-weight-bold">Fuso Horário</label>
+                                    <select name="app_timezone" class="form-control">
+                                        @foreach(['America/Sao_Paulo','America/Manaus','America/Belem','America/Fortaleza','America/Recife','America/Bahia','America/Cuiaba','America/Porto_Velho','America/Rio_Branco','UTC'] as $tz)
+                                            <option value="{{ $tz }}" {{ config('app.timezone') === $tz ? 'selected' : '' }}>{{ $tz }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Data/Hora atual: <strong>{{ now()->format('d/m/Y H:i:s') }}</strong></small>
+                                </div>
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Configurações</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Informações do Servidor -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-info-circle"></i> Informações do Servidor</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-bordered mb-0" style="font-size:0.87rem;">
+                            <tr><td class="font-weight-bold" width="35%">Versão PHP</td><td>{{ PHP_VERSION }}</td></tr>
+                            <tr><td class="font-weight-bold">Versão Laravel</td><td>{{ app()->version() }}</td></tr>
                             <tr>
-                                <th>Arquivo</th>
-                                <th>Tamanho</th>
-                                <th>Data de Criação</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="backupsList">
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">
-                                    <i class="fas fa-spinner fa-spin me-2"></i> Carregando backups...
+                                <td class="font-weight-bold">Ambiente Atual</td>
+                                <td>
+                                    @if(app()->environment('production'))
+                                        <span class="badge badge-success">Produção</span>
+                                    @else
+                                        <span class="badge badge-warning">{{ ucfirst(app()->environment()) }}</span>
+                                    @endif
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ⏰ Tarefas Agendadas (Cron) -->
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white border-bottom py-3">
-                <span class="card-title font-weight-bold" style="color:var(--hm-primary);"><i class="fas fa-clock me-2"></i>Tarefas Agendadas</span>
-            </div>
-            <div class="card-body">
-                <p class="text-muted small mb-3">Configure o cron no cPanel: <code>* * * * * cd /home/homemechanic/public_html && php artisan schedule:run &gt;&gt; /dev/null 2&gt;&amp;1</code></p>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle border" id="cronTable">
-                        <thead class="bg-light">
                             <tr>
-                                <th>Tarefa</th>
-                                <th>Frequência</th>
-                                <th>Próxima Execução</th>
-                                <th>Status</th>
-                                <th class="text-end">Ações</th>
+                                <td class="font-weight-bold">Debug</td>
+                                <td>
+                                    @if(config('app.debug'))
+                                        <span class="badge badge-warning">Ativado</span>
+                                    @else
+                                        <span class="badge badge-success">Desativado</span>
+                                    @endif
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody id="cronList">
-                            <tr><td colspan="5" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Limpeza de Cache -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title"><i class="fas fa-broom"></i> Limpeza de Cache</span>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-3">Limpe os caches do sistema para forçar a atualização de configurações e views.</p>
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <button onclick="clearCacheType('all')"    class="btn btn-primary"><i class="fas fa-broom"></i> Limpar Tudo</button>
-                    <button onclick="clearCacheType('config')" class="btn btn-secondary"><i class="fas fa-cog"></i> Config</button>
-                    <button onclick="clearCacheType('view')"   class="btn btn-secondary"><i class="fas fa-eye"></i> Views</button>
-                    <button onclick="clearCacheType('route')"  class="btn btn-secondary"><i class="fas fa-route"></i> Rotas</button>
-                    <button onclick="clearCacheType('app')"    class="btn btn-secondary"><i class="fas fa-database"></i> App Cache</button>
-                </div>
-                <div id="cacheResult" style="display:none;"></div>
-            </div>
-        </div>
-
-        <!-- Banco de Dados -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title"><i class="fas fa-database"></i> Banco de Dados</span>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-3">Execute as migrations pendentes para atualizar a estrutura do banco de dados.</p>
-                <button type="button" class="btn btn-primary" id="btnMigrate" onclick="runMigrations()">
-                    <i class="fas fa-play-circle"></i> Rodar Migrations Pendentes
-                </button>
-                <div id="migrateResult" class="mt-3" style="display:none;"></div>
-            </div>
-        </div>
-
-        <!-- Configurações do Sistema -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title"><i class="fas fa-cogs"></i> Configurações do Sistema</span>
-            </div>
-            <div class="card-body">
-                <form id="formSystemConfig" method="POST" action="{{ route('admin.settings.update') }}">
-                    @csrf
-                    <input type="hidden" name="section" value="system">
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="font-weight-bold">Ambiente</label>
-                            <select name="app_env" class="form-control">
-                                <option value="local" {{ config('app.env') === 'local' ? 'selected' : '' }}>Local (Desenvolvimento)</option>
-                                <option value="production" {{ config('app.env') === 'production' ? 'selected' : '' }}>Produção</option>
-                                <option value="staging" {{ config('app.env') === 'staging' ? 'selected' : '' }}>Staging (Homologação)</option>
-                            </select>
-                            <small class="text-muted">Em <strong>Produção</strong>, erros são ocultados e o cache é otimizado.</small>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="font-weight-bold">Modo Debug</label>
-                            <div class="custom-control custom-switch custom-switch-lg mt-2">
-                                <input type="checkbox" class="custom-control-input" id="app_debug" name="app_debug" value="1"
-                                       {{ config('app.debug') ? 'checked' : '' }}>
-                                <label class="custom-control-label" for="app_debug">Ativado</label>
-                            </div>
-                            <small class="text-muted">Exibe detalhes de erro. <strong>Desative em produção!</strong></small>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="font-weight-bold">Fuso Horário</label>
-                            <select name="app_timezone" class="form-control">
-                                @foreach(['America/Sao_Paulo','America/Manaus','America/Belem','America/Fortaleza','America/Recife','America/Bahia','America/Cuiaba','America/Porto_Velho','America/Rio_Branco','UTC'] as $tz)
-                                    <option value="{{ $tz }}" {{ config('app.timezone') === $tz ? 'selected' : '' }}>{{ $tz }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-muted">Data/Hora atual: <strong>{{ now()->format('d/m/Y H:i:s') }}</strong></small>
-                        </div>
-                        <div class="col-md-12">
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Configurações</button>
-                        </div>
+                            <tr><td class="font-weight-bold">Fuso Horário</td><td>{{ config('app.timezone') }}</td></tr>
+                            <tr><td class="font-weight-bold">Data/Hora do Servidor</td><td>{{ now()->format('d/m/Y H:i:s') }}</td></tr>
+                        </table>
                     </div>
-                </form>
+                </div>
 
-                <hr class="my-4">
+                <!-- Limpeza de Cache -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-broom"></i> Limpeza de Cache</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Limpe os caches do sistema para forçar a atualização de configurações e views.</p>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <button onclick="clearCacheType('all')"    class="btn btn-primary"><i class="fas fa-broom"></i> Limpar Tudo</button>
+                            <button onclick="clearCacheType('config')" class="btn btn-secondary"><i class="fas fa-cog"></i> Config</button>
+                            <button onclick="clearCacheType('view')"   class="btn btn-secondary"><i class="fas fa-eye"></i> Views</button>
+                            <button onclick="clearCacheType('route')"  class="btn btn-secondary"><i class="fas fa-route"></i> Rotas</button>
+                            <button onclick="clearCacheType('app')"    class="btn btn-secondary"><i class="fas fa-database"></i> App Cache</button>
+                        </div>
+                        <div id="cacheResult" style="display:none;"></div>
+                    </div>
+                </div>
 
-                <h6 class="font-weight-bold mb-3"><i class="fas fa-info-circle me-1"></i> Informações do Servidor</h6>
-                <table class="table table-bordered mb-0" style="font-size:0.87rem;">
-                    <tr><td class="font-weight-bold" width="35%">Versão PHP</td><td>{{ PHP_VERSION }}</td></tr>
-                    <tr><td class="font-weight-bold">Versão Laravel</td><td>{{ app()->version() }}</td></tr>
-                    <tr>
-                        <td class="font-weight-bold">Ambiente Atual</td>
-                        <td>
-                            @if(app()->environment('production'))
-                                <span class="badge badge-success">Produção</span>
-                            @else
-                                <span class="badge badge-warning">{{ ucfirst(app()->environment()) }}</span>
-                            @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="font-weight-bold">Debug</td>
-                        <td>
-                            @if(config('app.debug'))
-                                <span class="badge badge-warning">Ativado</span>
-                            @else
-                                <span class="badge badge-success">Desativado</span>
-                            @endif
-                        </td>
-                    </tr>
-                    <tr><td class="font-weight-bold">Fuso Horário</td><td>{{ config('app.timezone') }}</td></tr>
-                    <tr><td class="font-weight-bold">Data/Hora do Servidor</td><td>{{ now()->format('d/m/Y H:i:s') }}</td></tr>
-                </table>
+                <!-- Banco de Dados -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-database"></i> Banco de Dados</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Execute as migrations pendentes para atualizar a estrutura do banco de dados.</p>
+                        <button type="button" class="btn btn-primary" id="btnMigrate" onclick="runMigrations()">
+                            <i class="fas fa-play-circle"></i> Rodar Migrations Pendentes
+                        </button>
+                        <div id="migrateResult" class="mt-3" style="display:none;"></div>
+                    </div>
+                </div>
             </div>
-        </div>
 
+        </div>
     </div>
 </div>
 @endsection
@@ -343,8 +389,17 @@
 @section('scripts')
 <script>
 $(function() {
-    // Inicializar Tags de IPs e Backups
+    // Inicializar Tags de IPs
     renderIpTags();
+
+    // Carregar dados quando a guia for aberta
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+        var target = $(e.target).attr('href');
+        if (target === '#pane-backup') loadBackups();
+        if (target === '#pane-cron') loadCrons();
+    });
+
+    // Carregar dados da guia ativa inicial
     loadBackups();
 
     // ── Event Listeners para IPs ────────────────────────
@@ -709,11 +764,6 @@ function runCron(command) {
     });
 }
 
-// Carregar ao iniciar
-$(document).ready(function() {
-    loadBackups();
-    loadCrons();
-});
 </script>
 @endsection
 
