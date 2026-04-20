@@ -216,6 +216,19 @@
         margin-top: 2px;
     }
 
+    /* ── Heartbeat Animation ─────────────────────────────── */
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        14% { transform: scale(1.3); }
+        28% { transform: scale(1); }
+        42% { transform: scale(1.3); }
+        70% { transform: scale(1); }
+    }
+    .heartbeat {
+        animation: heartbeat 1.2s ease-in-out infinite;
+        display: inline-block;
+    }
+
     /* ── Preloader ─────────────────────────────────────────── */
     #preloader {
         position: fixed; inset: 0;
@@ -1023,7 +1036,7 @@
     <div class="footer-bottom">
         <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
             <span>&copy; {{ date('Y') }} {{ $siteSettings['site_name'] ?? 'HomeMechanic' }}. Todos os direitos reservados.</span>
-            <span>Desenvolvido com <i class="bi bi-heart-fill text-orange pulse"></i> por: Eth! Estratégias</span>
+            <span>Desenvolvido com <i class="bi bi-heart-fill text-orange heartbeat"></i> por: Eth! Estratégias</span>
         </div>
     </div>
 </footer>
