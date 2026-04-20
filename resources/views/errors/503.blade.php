@@ -7,7 +7,13 @@
     <title>{{ $title ?? 'Sistema em Manutenção' }}</title>
     
     @if(!empty($contact['favicon']))
-        <link rel="icon" href="{{ str_starts_with($contact['favicon'], 'http') ? $contact['favicon'] : asset(ltrim($contact['favicon'], '/')) }}" type="image/x-icon">
+        @php
+            $faviconUrl = str_starts_with($contact['favicon'], 'http') ? $contact['favicon'] : asset(ltrim($contact['favicon'], '/'));
+            $ext = strtolower(pathinfo($contact['favicon'], PATHINFO_EXTENSION));
+            $mime = match($ext) { 'png' => 'image/png', 'svg' => 'image/svg+xml', 'gif' => 'image/gif', default => 'image/x-icon' };
+        @endphp
+        <link rel="icon" href="{{ $faviconUrl }}" type="{{ $mime }}">
+        <link rel="apple-touch-icon" href="{{ $faviconUrl }}">
     @endif
 
     {{-- Fonts --}}
