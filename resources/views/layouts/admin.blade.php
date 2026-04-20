@@ -227,7 +227,7 @@
                     }
                 @endphp
                 @if($adminLogo)
-                    <img src="{{ str_starts_with($adminLogo, 'http') ? $adminLogo : asset(ltrim($adminLogo, '/')) }}" alt="HomeMechanic" style="height:28px;width:auto;object-fit:contain;">
+                    <img src="{{ str_starts_with($adminLogo, 'http') ? $adminLogo : asset(ltrim($adminLogo, '/')) }}" alt="HomeMechanic" style="height:40px;width:auto;object-fit:contain;">
                 @else
                     <i class="fas fa-tools" style="color:var(--hm-primary);font-size:1.3rem;margin-right:0.5rem;"></i>
                     <span class="brand-text fw-bold" style="color:var(--hm-primary);">HomeMechanic</span>
