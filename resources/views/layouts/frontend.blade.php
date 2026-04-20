@@ -1036,7 +1036,7 @@
     <div class="footer-bottom">
         <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
             <span>&copy; {{ date('Y') }} {{ $siteSettings['site_name'] ?? 'HomeMechanic' }}. Todos os direitos reservados.</span>
-            <span>Desenvolvido com <i class="bi bi-heart-fill text-orange heartbeat"></i> por: Eth! Estratégias</span>
+            <span>Desenvolvido com <i class="bi bi-heart-fill text-orange heartbeat"></i> por: <a href="https://ethestrategias.com.br" target="_blank" style="color:inherit;">Eth! Estratégias</a></span>
         </div>
     </div>
 </footer>
