@@ -6,6 +6,14 @@
     <li class="breadcrumb-item active">Editar</li>
 @endsection
 
+@section('styles')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs4.min.css" rel="stylesheet">
+<style>
+.note-editor { background:#fff; }
+.note-editor .note-toolbar { background:#f8f9fa; }
+</style>
+@endsection
+
 @section('content')
 <div class="page-header">
     <h2 class="page-header-title"><i class="fas fa-pencil-alt mr-2" style="color:var(--hm-primary);"></i>Editar Post</h2>
@@ -18,7 +26,7 @@
     <div class="card-header">
         <span class="card-title"><i class="fas fa-edit"></i> {{ $post['title'] }}</span>
     </div>
-    <form method="POST" action="{{ route('admin.blog.update', $post['id']) }}">
+    <form method="POST" action="{{ route('admin.blog.update', $post['id']) }}" id="postForm">
         @csrf @method('PUT')
         <div class="card-body">
             @if($errors->any())
@@ -37,7 +45,7 @@
             </div>
             <div class="form-group">
                 <label>Conteúdo <span class="text-danger">*</span></label>
-                <textarea class="form-control" name="content" rows="10" required>{{ old('content', $post['content']) }}</textarea>
+                <textarea id="summernote" name="content">{{ old('content', $post['content']) }}</textarea>
             </div>
             <div class="form-group">
                 <label>Status</label>
@@ -53,4 +61,32 @@
         </div>
     </form>
 </div>
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs4.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#summernote').summernote({
+        height: 300,
+        lang: 'pt-BR',
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            ['fontname', ['fontname']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture', 'video']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ],
+        styleTags: ['p', 'h2', 'h3', 'h4'],
+        callbacks: {
+            onImageUpload: function(files) {
+                alert('Use o botão Inserir > Imagem e cole a URL da imagem. Upload direto não está disponível.');
+            }
+        }
+    });
+});
+</script>
 @endsection
