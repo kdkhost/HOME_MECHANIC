@@ -6,6 +6,7 @@
     'acceptedFileTypes' => 'image/*',
     'maxFileSize' => '2MB',
     'value' => null,
+    'serverUrl' => null,
 ])
 
 @php
@@ -32,9 +33,31 @@
             allowMultiple: {{ $multiple ? 'true' : 'false' }},
             maxFileSize: @json($maxFileSize),
             acceptedFileTypes: @json($fileTypes),
-            server: null, // Upload junto com o formulario (padrao do sistema)
+            @if($serverUrl)
+            server: {
+                url: @json($serverUrl),
+                process: {
+                    url: '',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    onload: function(response) { return response; },
+                    onerror: function(response) { return response; }
+                },
+                revert: {
+                    url: '?revert=true',
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    }
+                }
+            }
+            @else
+            server: null, // Upload junto com o formulario
             instantUpload: false,
             allowProcess: false
+            @endif
         };
 
         @if($value)
