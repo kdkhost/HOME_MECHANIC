@@ -26,7 +26,7 @@ class ContentSeeder extends Seeder
         $services = [
             [
                 'title'       => 'Troca de Oleo e Filtros',
-                'icon'        => 'fas fa-oil-can',
+                'icon'        => 'bi-droplet-fill',
                 'description' => 'Realizamos troca de oleo do motor, cambio, filtro de oleo, filtro de ar e filtro de combustivel com produtos de primeira linha.',
                 'content'     => '<p>A troca de oleo e essencial para manter o motor do seu veiculo funcionando com eficiencia e prolongar sua vida util. Utilizamos oleos sinteticos e semissinteticos das melhores marcas do mercado.</p><h3>O que esta incluso</h3><ul><li>Oleo do motor (sintetico ou semissintetico)</li><li>Filtro de oleo novo</li><li>Verificacao do filtro de ar</li><li>Verificacao do filtro de combustivel</li><li>Inspecao visual de vazamentos</li></ul><p>Recomendamos a troca a cada 5.000 km ou 6 meses, o que vier primeiro.</p>',
                 'cover_image' => 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&h=500&fit=crop',
@@ -34,7 +34,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Freios e Suspensao',
-                'icon'        => 'fas fa-cogs',
+                'icon'        => 'bi-gear-wide-connected',
                 'description' => 'Manutencao completa do sistema de freios e suspensao: pastilhas, discos, amortecedores, molas e alinhamento.',
                 'content'     => '<p>Seu sistema de freios e a peca mais importante para sua seguranca. Oferecemos diagnostico completo e substituicao de componentes com pecas originais ou de qualidade equivalente.</p><h3>Servicos</h3><ul><li>Troca de pastilhas e lonas</li><li>Retifica e troca de discos</li><li>Troca de amortecedores</li><li>Troca de molas e coifas</li><li>Alinhamento e balanceamento</li></ul>',
                 'cover_image' => 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=500&fit=crop',
@@ -42,7 +42,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Diagnostico Eletronico',
-                'icon'        => 'fas fa-laptop-code',
+                'icon'        => 'bi-laptop-fill',
                 'description' => 'Scanner automotivo de ultima geracao para leitura de falhas, reset de sensores e diagnostico completo da ECU.',
                 'content'     => '<p>Contamos com equipamentos de diagnostico profissional que se comunicam diretamente com o modulo eletronico do seu veiculo. Identificamos falhas em sensores, atuadores e sistemas eletronicos com precisao.</p><h3>O que diagnosticamos</h3><ul><li>Motor e injecao eletronica</li><li>Transmissao automatica</li><li>ABS e controle de estabilidade</li><li>Airbags e sistemas de seguranca</li><li>Ar condicionado digital</li></ul>',
                 'cover_image' => 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop',
@@ -50,7 +50,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Ar Condicionado Automotivo',
-                'icon'        => 'fas fa-snowflake',
+                'icon'        => 'bi-snowflake',
                 'description' => 'Recarga de gas, higienizacao do sistema, troca de filtro de cabine e reparo no compressor.',
                 'content'     => '<p>Mantenha o conforto termico do seu veiculo com nosso servico completo de ar condicionado automotivo. Realizamos desde a simples recarga de gas ate reparos complexos no compressor.</p><h3>Servicos</h3><ul><li>Recarga de gas refrigerante R134a</li><li>Higienizacao do sistema com produto bactericida</li><li>Troca do filtro de cabine (filtro antipolen)</li><li>Verificacao de vazamentos</li><li>Reparo e troca do compressor</li></ul>',
                 'cover_image' => 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop',
@@ -58,7 +58,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Eletrica Automotiva',
-                'icon'        => 'fas fa-bolt',
+                'icon'        => 'bi-lightning-charge-fill',
                 'description' => 'Reparo em alternador, motor de partida, farois, vidros eletricos e instalacao de acessorios.',
                 'content'     => '<p>A parte eletrica do veiculo e responsavel por alimentar todos os componentes eletronicos. Problemas eletricos podem causar desde falhas no motor ate incendios.</p><h3>Servicos</h3><ul><li>Revisao do alternador e motor de partida</li><li>Troca e recarga de bateria</li><li>Reparo em vidros e travas eletricas</li><li>Instalacao de farois de LED e xenon</li><li>Instalacao de som, camera de re e sensores</li></ul>',
                 'cover_image' => 'https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=800&h=500&fit=crop',
@@ -66,7 +66,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Motor e Mecanica Geral',
-                'icon'        => 'fas fa-engine-warning',
+                'icon'        => 'bi-tools',
                 'description' => 'Retifica de motor, troca de correia dentada, junta do cabecote e reparos mecanicos completos.',
                 'content'     => '<p>Nosso time de mecanicos especializados esta preparado para resolver qualquer problema mecanico do seu veiculo, desde ajustes simples ate retificas completas de motor.</p><h3>Servicos</h3><ul><li>Retifica parcial e completa do motor</li><li>Troca de correia dentada e acessorios</li><li>Troca de junta do cabecote</li><li>Regulagem de valvulas</li><li>Troca de embreagem</li></ul>',
                 'cover_image' => 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=500&fit=crop',
@@ -74,7 +74,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Funilaria e Pintura',
-                'icon'        => 'fas fa-paint-roller',
+                'icon'        => 'bi-paint-bucket',
                 'description' => 'Reparos em lataria, pintura automotiva, polimento tecnico e tratamento contra corrosao.',
                 'content'     => '<p>Deixe seu veiculo com aparencia de novo! Nossa equipe de funilaria e pintura trabalha com tintas de alta qualidade e tecnologia de secagem em estufa.</p><h3>Servicos</h3><ul><li>Reparo de amassados e riscos</li><li>Pintura parcial e completa</li><li>Polimento tecnico cristalizado</li><li>Tratamento anticorrosivo</li><li>Envelopamento e plotagem</li></ul>',
                 'cover_image' => 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&h=500&fit=crop',
@@ -82,7 +82,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Injecao Eletronica',
-                'icon'        => 'fas fa-microchip',
+                'icon'        => 'bi-cpu-fill',
                 'description' => 'Limpeza de bicos injetores, troca de sensores, regulagem de marcha lenta e manutencao do sistema de injecao.',
                 'content'     => '<p>O sistema de injecao eletronica e o cerebro do motor do seu carro. Qualquer falha pode causar aumento no consumo, perda de potencia e emissoes excessivas.</p><h3>Servicos</h3><ul><li>Limpeza ultrassonica de bicos injetores</li><li>Troca de sensores (MAP, TPS, sonda lambda)</li><li>Regulagem de marcha lenta</li><li>Verificacao do corpo de borboleta</li><li>Analise de gases e emissoes</li></ul>',
                 'cover_image' => 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&h=500&fit=crop',
@@ -90,7 +90,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Cambio e Transmissao',
-                'icon'        => 'fas fa-exchange-alt',
+                'icon'        => 'bi-arrow-left-right',
                 'description' => 'Manutencao de cambio manual e automatico, troca de oleo do cambio e reparos na transmissao.',
                 'content'     => '<p>Problemas no cambio podem comprometer a dirigibilidade e seguranca do veiculo. Oferecemos servicos especializados para cambios manuais, automatizados e automaticos.</p><h3>Servicos</h3><ul><li>Troca de oleo do cambio</li><li>Revisao do cambio manual</li><li>Manutencao do cambio automatico/CVT</li><li>Troca de kit de embreagem</li><li>Reparo em caixa de direcao</li></ul>',
                 'cover_image' => 'https://images.unsplash.com/photo-1449130016994-a5ef73008ef5?w=800&h=500&fit=crop',
@@ -98,7 +98,7 @@ class ContentSeeder extends Seeder
             ],
             [
                 'title'       => 'Revisao Completa',
-                'icon'        => 'fas fa-clipboard-check',
+                'icon'        => 'bi-clipboard-check-fill',
                 'description' => 'Revisao de fabrica com checklist completo: motor, freios, suspensao, eletrica e fluidos.',
                 'content'     => '<p>A revisao periodica e fundamental para manter seu veiculo em perfeito estado e preservar a garantia. Seguimos o checklist completo do fabricante.</p><h3>O que verificamos</h3><ul><li>Niveis de fluidos (oleo, arrefecimento, freio, direcao)</li><li>Estado de correias e mangueiras</li><li>Sistema de freios completo</li><li>Suspensao e direcao</li><li>Parte eletrica e iluminacao</li><li>Pneus e alinhamento</li></ul><p>Emitimos ordem de servico detalhada com fotos do que foi encontrado e do que foi realizado.</p>',
                 'cover_image' => 'https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=800&h=500&fit=crop',
