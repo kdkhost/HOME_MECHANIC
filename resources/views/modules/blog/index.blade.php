@@ -5,6 +5,15 @@
     <li class="breadcrumb-item active">Blog</li>
 @endsection
 
+@section('styles')
+<style>
+.post-preview img { max-width:100%; height:auto; border-radius:6px; margin:1rem 0; }
+.post-preview h2, .post-preview h3 { margin-top:1rem; margin-bottom:0.5rem; font-size:1.1rem; font-weight:600; }
+.post-preview ul, .post-preview ol { padding-left:1.5rem; margin-bottom:0.75rem; }
+.post-preview p { margin-bottom:0.75rem; line-height:1.6; }
+</style>
+@endsection
+
 @section('content')
 <div class="page-header">
     <h2 class="page-header-title"><i class="fas fa-newspaper me-2" style="color:var(--hm-primary);"></i>Posts do Blog</h2>
@@ -96,7 +105,9 @@
                         <td>{{ $date->format('d/m/Y') }}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('admin.blog.show', $id) }}" class="btn btn-info" title="Ver"><i class="fas fa-eye"></i></a>
+                                <button type="button" class="btn btn-info" title="Ver" onclick="showPostModal({{ $id }}, '{{ addslashes($title) }}', '{{ addslashes($author) }}', '{{ $date->format('d/m/Y') }}', '{{ $status }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                                 <a href="{{ route('admin.blog.edit', $id) }}" class="btn btn-warning" title="Editar"><i class="fas fa-pencil-alt"></i></a>
                                 <form method="POST" action="{{ route('admin.blog.destroy', $id) }}" style="display:inline;">
                                     @csrf @method('DELETE')
@@ -122,4 +133,65 @@
         @endif
     </div>
 </div>
+
+{{-- Modal de Visualização --}}
+<div class="modal fade" id="postModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Visualizar Post</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2 d-flex align-items-center gap-2" style="gap:0.5rem;">
+                    <span id="modalStatus"></span>
+                    <small class="text-muted ml-2">por <span id="modalAuthor"></span> em <span id="modalDate"></span></small>
+                </div>
+                <div id="modalCoverImage" class="mb-3 text-center"></div>
+                <div id="modalContent" class="post-preview p-3" style="background:#f8f9fa;border-radius:8px;"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="modalEditLink" class="btn btn-warning"><i class="fas fa-pencil-alt"></i> Editar</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+const postsData = @json($posts->map(fn($p) => [
+    'id' => is_object($p) ? $p->id : $p['id'],
+    'content' => is_object($p) ? $p->content : $p['content'],
+    'cover_image' => is_object($p) ? $p->cover_image : ($p['cover_image'] ?? null)
+])->keyBy('id'));
+
+function showPostModal(id, title, author, date, status) {
+    const post = postsData[id] || {};
+
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalAuthor').textContent = author;
+    document.getElementById('modalDate').textContent = date;
+    document.getElementById('modalEditLink').href = '{{ url("admin/blog") }}/' + id + '/edit';
+
+    const statusBadge = status === 'published'
+        ? '<span class="badge badge-success">Publicado</span>'
+        : (status === 'archived' ? '<span class="badge badge-secondary">Arquivado</span>' : '<span class="badge badge-warning">Rascunho</span>');
+    document.getElementById('modalStatus').innerHTML = statusBadge;
+
+    const coverDiv = document.getElementById('modalCoverImage');
+    if (post.cover_image) {
+        coverDiv.innerHTML = '<img src="' + post.cover_image + '" class="img-fluid rounded" style="max-height:200px; object-fit:cover;">';
+    } else {
+        coverDiv.innerHTML = '';
+    }
+
+    document.getElementById('modalContent').innerHTML = post.content || '<em class="text-muted">Sem conteúdo</em>';
+
+    $('#postModal').modal('show');
+}
+</script>
 @endsection
