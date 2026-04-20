@@ -320,9 +320,9 @@
                                 </select>
                             </div>
                         </div>
-                    {{-- ── Analytics ──────────────────────── --}}
-                    <div class="section-divider mt-4"><i class="fas fa-chart-line"></i> Integrações</div>
-                    <div class="row align-items-center mb-4">
+                    {{-- ── Integracoes ──────────────────────── --}}
+                    <div class="section-divider mt-4"><i class="fas fa-chart-line"></i> Integracoes</div>
+                    <div class="row align-items-center mb-3">
                         <div class="col-md-4">
                             <div class="custom-control custom-switch custom-switch-lg">
                                 <input type="checkbox" class="custom-control-input" id="analytics_enabled"
@@ -331,6 +331,37 @@
                                 <label class="custom-control-label font-weight-bold" style="font-size: 1.1rem; padding-top: 2px;" for="analytics_enabled">Ativar Analytics</label>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="section-divider mt-3"><i class="fab fa-google"></i> Google Avaliacoes</div>
+                    <p class="text-muted" style="font-size:0.82rem;">Configure para importar automaticamente avaliacoes do Google para os depoimentos do sistema.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Google Place ID</label>
+                                <input type="text" class="form-control" name="google_place_id"
+                                       value="{{ old('google_place_id', $settings['google_place_id'] ?? '') }}"
+                                       placeholder="ChIJ...">
+                                <small class="text-muted">Encontre em <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank">Google Place ID Finder</a></small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Google Places API Key</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" name="google_places_api_key" id="googleApiKey"
+                                           value="{{ old('google_places_api_key', $settings['google_places_api_key'] ?? '') }}"
+                                           placeholder="AIza...">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="var f=document.getElementById('googleApiKey');f.type=f.type==='password'?'text':'password'">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Necessaria API Places ativada no Google Cloud Console</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Apos salvar, execute no servidor: <code>php artisan google:sync-reviews</code></small>
                     </div>
 
                 </div>
