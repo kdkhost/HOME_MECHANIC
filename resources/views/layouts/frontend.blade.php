@@ -54,6 +54,168 @@
     /* Previne qualquer elemento de causar scroll horizontal */
     section, .container, .container-fluid, footer, nav { max-width: 100%; }
 
+    /* ── Floating Buttons ──────────────────────────────────── */
+    .floating-buttons {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    @media (min-width: 768px) {
+        .floating-buttons {
+            bottom: 30px;
+            right: 30px;
+        }
+    }
+
+    /* Botão Voltar ao Topo */
+    .btn-float-top {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--orange);
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
+        transition: all 0.3s ease;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px);
+    }
+    .btn-float-top.visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    .btn-float-top:hover {
+        background: var(--orange-light);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5);
+    }
+
+    /* Botão de Contato Principal */
+    .btn-float-contact {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #25D366, #128C7E);
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .btn-float-contact:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(37, 211, 102, 0.5);
+    }
+    .btn-float-contact.pulse {
+        animation: pulse-green 2s infinite;
+    }
+    @keyframes pulse-green {
+        0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+        50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.7); }
+    }
+
+    /* Menu de Opções de Contato */
+    .contact-menu {
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        background: white;
+        border-radius: 16px;
+        padding: 12px;
+        min-width: 220px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px) scale(0.9);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .contact-menu.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+    .contact-menu::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        right: 20px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid white;
+    }
+    .contact-menu-header {
+        font-size: 0.75rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0 8px 8px;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 8px;
+    }
+    .contact-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        color: #333;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .contact-option:hover {
+        background: #f5f5f5;
+        color: var(--orange);
+    }
+    .contact-option i {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+    .contact-option.whatsapp i {
+        background: #25D366;
+        color: white;
+    }
+    .contact-option.call i {
+        background: var(--orange);
+        color: white;
+    }
+    .contact-option.sms i {
+        background: #17a2b8;
+        color: white;
+    }
+    .contact-option span {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .contact-option small {
+        display: block;
+        font-size: 0.75rem;
+        color: #888;
+        margin-top: 2px;
+    }
+
     /* ── Preloader ─────────────────────────────────────────── */
     #preloader {
         position: fixed; inset: 0;
@@ -711,6 +873,69 @@
 <!-- Content -->
 @yield('content')
 
+{{-- Floating Buttons --}}
+@php
+    $whatsappNum = preg_replace('/\D/', '', $siteSettings['whatsapp'] ?? '');
+    $phoneNum = preg_replace('/\D/', '', $siteSettings['contact_phone'] ?? $whatsappNum);
+    $isMobile = preg_match('/Android|iPhone|iPad|iPod|Mobile/i', $_SERVER['HTTP_USER_AGENT'] ?? '');
+@endphp
+
+<div class="floating-buttons">
+    {{-- Botão Voltar ao Topo --}}
+    <button class="btn-float-top" id="btnBackToTop" onclick="scrollToTop()" title="Voltar ao topo">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
+    {{-- Botão de Contato com Menu --}}
+    <div style="position: relative;">
+        <button class="btn-float-contact pulse" id="btnContact" onclick="toggleContactMenu()" title="Falar conosco">
+            <i class="bi bi-chat-dots-fill"></i>
+        </button>
+
+        <div class="contact-menu" id="contactMenu">
+            <div class="contact-menu-header">Falar com a HomeMechanic</div>
+
+            @if(!empty($whatsappNum))
+            <a href="https://wa.me/{{ $whatsappNum }}" class="contact-option whatsapp" target="_blank" rel="noopener">
+                <i class="bi bi-whatsapp"></i>
+                <div>
+                    <span>WhatsApp</span>
+                    <small>Envie uma mensagem</small>
+                </div>
+            </a>
+            @endif
+
+            @if(!empty($phoneNum))
+            <a href="tel:{{ $phoneNum }}" class="contact-option call">
+                <i class="bi bi-telephone-fill"></i>
+                <div>
+                    <span>Ligar Agora</span>
+                    <small>{{ $siteSettings['contact_phone'] ?? $siteSettings['whatsapp'] }}</small>
+                </div>
+            </a>
+
+            @if($isMobile)
+            <a href="sms:{{ $phoneNum }}" class="contact-option sms">
+                <i class="bi bi-chat-text-fill"></i>
+                <div>
+                    <span>Enviar SMS</span>
+                    <small>Mensagem de texto</small>
+                </div>
+            </a>
+            @endif
+            @endif
+
+            <a href="{{ route('contact') }}" class="contact-option" style="border-top:1px solid #eee;margin-top:8px;padding-top:12px;">
+                <i class="bi bi-envelope-fill" style="background:#FF6B00;color:white;"></i>
+                <div>
+                    <span>Formulário</span>
+                    <small>Envie sua mensagem</small>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
 <!-- Footer -->
 <footer class="pt-5 pb-0">
     <div class="container">
@@ -857,6 +1082,48 @@
         const diff = touchStartX - e.changedTouches[0].clientX;
         if (diff > 60) closeDrawer(); // swipe left → fechar
     }, { passive: true });
+
+    // ── Botão Voltar ao Topo ───────────────────────────────
+    const btnBackToTop = document.getElementById('btnBackToTop');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            btnBackToTop.classList.add('visible');
+        } else {
+            btnBackToTop.classList.remove('visible');
+        }
+    });
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Menu de Contato Flutuante ───────────────────────────
+    const btnContact = document.getElementById('btnContact');
+    const contactMenu = document.getElementById('contactMenu');
+    let menuOpen = false;
+
+    function toggleContactMenu() {
+        menuOpen = !menuOpen;
+        contactMenu.classList.toggle('open', menuOpen);
+        btnContact.classList.toggle('pulse', !menuOpen);
+    }
+
+    // Fechar menu ao clicar fora
+    document.addEventListener('click', (e) => {
+        if (!btnContact.contains(e.target) && !contactMenu.contains(e.target)) {
+            menuOpen = false;
+            contactMenu.classList.remove('open');
+            btnContact.classList.add('pulse');
+        }
+    });
+
+    // Fechar menu com ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menuOpen) {
+            menuOpen = false;
+            contactMenu.classList.remove('open');
+            btnContact.classList.add('pulse');
+        }
+    });
 </script>
 
 @yield('scripts')
