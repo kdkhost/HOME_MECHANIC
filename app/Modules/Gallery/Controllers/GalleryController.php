@@ -262,14 +262,22 @@ class GalleryController extends Controller
     /**
      * Listar fotos de uma categoria
      */
-    public function photos(Request $request, ?GalleryCategory $category = null)
+    public function photos(Request $request, $id = null)
     {
         try {
             $query = GalleryPhoto::with(['category']);
+            $category = null;
 
-            // Filtrar por categoria se especificada
-            if ($category) {
-                $query->where('category_id', $category->id);
+            // Resolver parâmetro {id?} — pode ser categoria ou photo_id
+            if ($id) {
+                // Primeiro tentar como categoria
+                $category = GalleryCategory::find($id);
+                if ($category) {
+                    $query->where('category_id', $category->id);
+                } else {
+                    // Se não é categoria, tentar como photo_id
+                    $query->where('id', $id);
+                }
             }
 
             // Filtros
@@ -283,6 +291,11 @@ class GalleryController extends Controller
 
             if ($request->has('category_id') && $request->filled('category_id')) {
                 $query->where('category_id', $request->input('category_id'));
+            }
+
+            // Filtro por ID da foto (usado pelo editPhoto JS)
+            if ($request->has('photo_id') && $request->filled('photo_id')) {
+                $query->where('id', $request->input('photo_id'));
             }
 
             // Ordenação

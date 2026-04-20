@@ -14,7 +14,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::post('/categories/reorder', [GalleryController::class, 'reorderCategories'])->name('categories.reorder');
         
         // Fotos
-        Route::get('/photos/{category?}', [GalleryController::class, 'photos'])->name('photos');
+        Route::get('/photos/{id?}', [GalleryController::class, 'photos'])->name('photos');
         Route::post('/photos', [GalleryController::class, 'storePhoto'])->name('photos.store');
         Route::put('/photos/{photo}', [GalleryController::class, 'updatePhoto'])->name('photos.update');
         Route::delete('/photos/{photo}', [GalleryController::class, 'destroyPhoto'])->name('photos.destroy');

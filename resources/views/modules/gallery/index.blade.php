@@ -116,7 +116,7 @@
                     </div>
                 </div>
 
-                <!-- PaginaÃ§Ã£o -->
+                <!-- Paginação -->
                 <div id="paginationContainer" class="d-flex justify-content-center mt-3"></div>
             </div>
         </div>
@@ -141,7 +141,7 @@
                     <div class="form-group">
                         <label for="name">Nome da Categoria <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="name" name="name" required maxlength="255">
-                        <small class="form-text text-muted">Nome que serÃ¡ exibido na galeria</small>
+                        <small class="form-text text-muted">Nome que será exibido na galeria</small>
                     </div>
 
                     <div class="form-group">
@@ -151,7 +151,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="sort_order">Ordem de ExibiÃ§Ã£o</label>
+                        <label for="sort_order">Ordem de Exibição</label>
                         <input type="number" class="form-control" id="sort_order" name="sort_order" min="0">
                         <small class="form-text text-muted">Deixe em branco para adicionar ao final</small>
                     </div>
@@ -243,7 +243,7 @@ class GalleryManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexÃ£o');
+            this.showError('Erro de conexão');
         }
     }
 
@@ -332,7 +332,7 @@ class GalleryManager {
                      </li>`;
         }
         
-        // PÃ¡ginas
+        // Páginas
         for (let i = 1; i <= pagination.last_page; i++) {
             if (i === pagination.current_page) {
                 html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
@@ -343,10 +343,10 @@ class GalleryManager {
             }
         }
         
-        // PrÃ³ximo
+        // Próximo
         if (pagination.current_page < pagination.last_page) {
             html += `<li class="page-item">
-                       <a class="page-link" href="#" onclick="galleryManager.loadCategories(${pagination.current_page + 1})">PrÃ³ximo</a>
+                       <a class="page-link" href="#" onclick="galleryManager.loadCategories(${pagination.current_page + 1})">Próximo</a>
                      </li>`;
         }
         
@@ -400,7 +400,7 @@ class GalleryManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexÃ£o');
+            this.showError('Erro de conexão');
             this.loadCategories(this.currentPage);
         }
     }
@@ -422,11 +422,11 @@ class GalleryManager {
                 $('#modalTitle').text('Editar Categoria');
                 $('#categoryModal').modal('show');
             } else {
-                this.showError('Categoria nÃ£o encontrada');
+                this.showError('Categoria não encontrada');
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexÃ£o');
+            this.showError('Erro de conexão');
         }
     }
 
@@ -470,14 +470,14 @@ class GalleryManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexÃ£o');
+            this.showError('Erro de conexão');
         }
     }
 
     async deleteCategory(id) {
         const result = await Swal.fire({
-            title: 'Confirmar ExclusÃ£o',
-            text: 'Tem certeza que deseja excluir esta categoria? Todas as fotos da categoria tambÃ©m serÃ£o removidas.',
+            title: 'Confirmar Exclusão',
+            text: 'Tem certeza que deseja excluir esta categoria? Todas as fotos da categoria também serão removidas.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -507,7 +507,7 @@ class GalleryManager {
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showError('Erro de conexÃ£o');
+            this.showError('Erro de conexão');
         }
     }
 
