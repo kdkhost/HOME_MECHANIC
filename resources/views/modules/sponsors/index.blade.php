@@ -265,7 +265,7 @@ function openModal() {
 
 function editSponsor(id) {
     $.ajax({
-        url: '{{ route("admin.sponsors.index") }}/' + id,
+        url: '{{ url("admin/sponsors") }}/' + id,
         headers: { 'Accept': 'application/json' },
         success: function(r) {
             if (!r.success) { HMToast.error('Erro ao carregar.'); return; }
@@ -301,7 +301,7 @@ document.getElementById('sponsorForm').addEventListener('submit', function(e) {
 
     var id = document.getElementById('sponsorId').value;
     var method = document.getElementById('sponsorMethod').value;
-    var url = id ? '{{ route("admin.sponsors.index") }}/' + id : '{{ route("admin.sponsors.store") }}';
+    var url = id ? '{{ url("admin/sponsors") }}/' + id : '{{ route("admin.sponsors.store") }}';
 
     var fd = new FormData(this);
     if (method === 'PUT') fd.append('_method', 'PUT');
@@ -339,7 +339,7 @@ document.getElementById('sponsorForm').addEventListener('submit', function(e) {
 
 function toggleActive(id) {
     $.ajax({
-        url: '{{ route("admin.sponsors.index") }}/' + id + '/toggle-active',
+        url: '{{ url("admin/sponsors") }}/' + id + '/toggle-active',
         method: 'PATCH',
         headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
         success: function(d) { if (d.success) { HMToast.success(d.message); loadSponsors(currentPage); } else HMToast.error(d.message); },
@@ -360,7 +360,7 @@ function deleteSponsor(id, name) {
     }).then(function(r) {
         if (!r.isConfirmed) return;
         $.ajax({
-            url: '{{ route("admin.sponsors.index") }}/' + id,
+            url: '{{ url("admin/sponsors") }}/' + id,
             method: 'DELETE',
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
             success: function(d) { if (d.success) { HMToast.success(d.message); loadSponsors(currentPage); } else HMToast.error(d.message); },
