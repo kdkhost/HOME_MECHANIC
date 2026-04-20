@@ -40,6 +40,7 @@ class SettingsController extends Controller
         'maintenance_message' => 'Voltaremos em breve. Estamos realizando atualizações.',
         'maintenance_ips'  => '',
         'maintenance_timer'=> '',
+        'maintenance_timer_action' => 'hide',
         'maintenance_bg_image' => '',
         'site_logo'        => '',
         'site_favicon'     => '',
@@ -264,6 +265,7 @@ class SettingsController extends Controller
             'maintenance_message'=> $request->input('maintenance_message', 'Voltaremos em breve.'),
             'maintenance_ips'    => $request->input('maintenance_ips', ''),
             'maintenance_timer'  => $request->input('maintenance_timer', ''),
+            'maintenance_timer_action' => $request->input('maintenance_timer_action', 'hide'),
         ];
 
         $resolved = FileUploadHelper::resolveFromRequest(
@@ -274,6 +276,38 @@ class SettingsController extends Controller
         }
 
         Setting::setMany($data, 'general');
+    }
+
+    /**
+     * Desativar modo de manutencao via AJAX (chamado quando timer expira)
+     */
+    public function disableMaintenance(Request $request)
+    {
+        // Verificar se manutencao esta ativa e se timer_action e 'disable'
+        $maintenanceMode = Setting::get('maintenance_mode', '0');
+        $timerAction = Setting::get('maintenance_timer_action', 'hide');
+        $timer = Setting::get('maintenance_timer', '');
+
+        if ($maintenanceMode !== '1' && $maintenanceMode !== 'true') {
+            return response()->json(['success' => true, 'message' => 'Manutenção já está desativada.']);
+        }
+
+        if ($timerAction !== 'disable') {
+            return response()->json(['success' => false, 'message' => 'Ação não permitida.'], 403);
+        }
+
+        // Verificar se o timer realmente expirou
+        if ($timer) {
+            $targetDate = \Carbon\Carbon::parse($timer);
+            if (now()->lt($targetDate)) {
+                return response()->json(['success' => false, 'message' => 'Temporizador ainda não expirou.'], 403);
+            }
+        }
+
+        Setting::set('maintenance_mode', '0', 'general');
+        Log::info('Manutenção desativada automaticamente pelo temporizador');
+
+        return response()->json(['success' => true, 'message' => 'Manutenção desativada. O site está no ar!']);
     }
 
     // ── Test SMTP ──────────────────────────────────────────

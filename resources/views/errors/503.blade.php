@@ -266,13 +266,31 @@
             
             <script>
                 const targetDate = new Date("{{ $timer }}").getTime();
-                
+                const timerAction = "{{ $timer_action ?? 'hide' }}";
+
                 function updateTimer() {
                     const now = new Date().getTime();
                     const distance = targetDate - now;
 
                     if (distance < 0) {
                         document.getElementById("countdown").style.display = "none";
+
+                        if (timerAction === 'disable') {
+                            // Desativar manutencao automaticamente
+                            fetch('/maintenance/disable', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                                body: JSON.stringify({})
+                            }).then(function(res) { return res.json(); })
+                              .then(function(data) {
+                                if (data.success) {
+                                    // Site voltou ao ar — recarregar pagina
+                                    setTimeout(function() { window.location.reload(); }, 2000);
+                                }
+                              }).catch(function() {
+                                // Falha silenciosa — usuario pode recarregar manualmente
+                              });
+                        }
                         return;
                     }
 

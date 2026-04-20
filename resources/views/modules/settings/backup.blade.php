@@ -91,6 +91,17 @@
                         </div>
 
                         <div class="col-md-6 mt-3">
+                            <div class="form-group">
+                                <label>Ao Zerar o Temporizador</label>
+                                <select name="maintenance_timer_action" class="form-control">
+                                    <option value="hide" {{ ($settings['maintenance_timer_action'] ?? 'hide') === 'hide' ? 'selected' : '' }}>Apenas esconder o cronômetro</option>
+                                    <option value="disable" {{ ($settings['maintenance_timer_action'] ?? 'hide') === 'disable' ? 'selected' : '' }}>Desativar manutenção automaticamente (site volta ao ar)</option>
+                                </select>
+                                <small class="form-text text-muted mt-1"><strong>Esconder:</strong> o cronômetro some, mas o site continua em manutenção. <strong>Desativar:</strong> o site volta ao ar sozinho quando o tempo acabar.</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
                             <div class="form-group mb-4">
                                 <label class="form-label font-weight-bold">Imagem de Fundo (Manutenção)</label>
                                 @php

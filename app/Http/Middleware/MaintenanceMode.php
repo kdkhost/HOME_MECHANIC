@@ -35,8 +35,8 @@ class MaintenanceMode
                 
                 // Se não está na lista de permitidos
                 if (!$allowedIp) {
-                    // Permitir acesso às rotas /admin e arquivos estáticos
-                    if ($request->is('admin') || $request->is('admin/*') || $request->is('api/*')) {
+                    // Permitir acesso às rotas /admin, /maintenance/disable e arquivos estáticos
+                    if ($request->is('admin') || $request->is('admin/*') || $request->is('api/*') || $request->is('maintenance/disable')) {
                         return $next($request);
                     }
                     
@@ -45,6 +45,7 @@ class MaintenanceMode
                     $mTitle   = $settings['maintenance_title'] ?? 'Site em Manutenção';
                     $mMessage = $settings['maintenance_message'] ?? 'Voltaremos em breve. Estamos realizando atualizações.';
                     $mTimer   = $settings['maintenance_timer'] ?? null;
+                    $mTimerAction = $settings['maintenance_timer_action'] ?? 'hide';
                     $mBg      = $settings['maintenance_bg_image'] ?? null;
                     
                     // Resolver UUIDs do FilePond para paths reais
@@ -63,11 +64,12 @@ class MaintenanceMode
                     
                     // Outras rotas são bloqueadas e recebem a tela de manutenção
                     return response()->view('errors.503', [
-                        'title'   => $mTitle,
-                        'message' => $mMessage,
-                        'timer'   => $mTimer,
-                        'bg'      => $mBg,
-                        'contact' => $contactData
+                        'title'       => $mTitle,
+                        'message'     => $mMessage,
+                        'timer'       => $mTimer,
+                        'timer_action' => $mTimerAction,
+                        'bg'          => $mBg,
+                        'contact'     => $contactData
                     ], 503)->header('Retry-After', 3600);
                 }
             }

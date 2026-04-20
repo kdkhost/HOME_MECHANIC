@@ -5,6 +5,9 @@ use App\Modules\Settings\Controllers\SettingsController;
 use App\Modules\Settings\Controllers\EmailTemplateController;
 use App\Modules\Settings\Controllers\RecaptchaController;
 
+// Rota publica para desativar manutencao via AJAX (timer expirado)
+Route::post('/maintenance/disable', [SettingsController::class, 'disableMaintenance'])->name('maintenance.disable');
+
 Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/',        [SettingsController::class, 'index'])->name('index');
