@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class BackupController extends Controller
@@ -17,8 +16,9 @@ class BackupController extends Controller
 
     public function __construct()
     {
-        if (!Storage::exists($this->backupPath)) {
-            Storage::makeDirectory($this->backupPath);
+        $backupDir = storage_path("app/" . $this->backupPath);
+        if (!is_dir($backupDir)) {
+            @mkdir($backupDir, 0775, true);
         }
     }
 
@@ -31,7 +31,7 @@ class BackupController extends Controller
             $type = $request->input('type', 'all'); // all, db, files
             $timestamp = date('Y-m-d_H-i-s');
             $filename = "backup_{$type}_{$timestamp}.zip";
-            
+
             // Garantir que a pasta física exista
             $backupDir = storage_path("app/" . $this->backupPath);
             if (!is_dir($backupDir)) {
@@ -39,8 +39,9 @@ class BackupController extends Controller
                     throw new \Exception("Falha ao criar diretório de backups em: {$backupDir}. Verifique as permissões do servidor.");
                 }
             }
-            
+
             $zipPath = $backupDir . '/' . $filename;
+            $errors = [];
 
             $zip = new ZipArchive();
             $res = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
@@ -50,28 +51,58 @@ class BackupController extends Controller
 
             // 1. Backup do Banco de Dados
             if ($type === 'all' || $type === 'db') {
-                $sqlDump = $this->generateSqlDump();
-                $zip->addFromString("database_dump.sql", $sqlDump);
+                try {
+                    $sqlDump = $this->generateSqlDump();
+                    $zip->addFromString("database_dump.sql", $sqlDump);
+                } catch (\Exception $e) {
+                    $errors[] = "Banco de Dados: " . $e->getMessage();
+                    Log::warning('Falha parcial no dump SQL do backup: ' . $e->getMessage());
+                    // Adicionar arquivo de erro no ZIP para o admin saber
+                    $zip->addFromString("_ERRO_DUMP_SQL.txt", "Erro ao gerar dump SQL:\n" . $e->getMessage() . "\n\nStack:\n" . $e->getTraceAsString());
+                }
             }
 
             // 2. Backup de Arquivos (Uploads)
             if ($type === 'all' || $type === 'files') {
-                $this->addFilesToZip($zip);
+                try {
+                    $fileCount = $this->addFilesToZip($zip);
+                    if ($fileCount === 0) {
+                        $zip->addFromString("_ARQUIVOS.txt", "Nenhum arquivo de upload encontrado para backup.");
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = "Arquivos: " . $e->getMessage();
+                    Log::warning('Falha parcial no backup de arquivos: ' . $e->getMessage());
+                }
             }
 
             $zip->close();
 
+            // Verificar se o arquivo realmente foi criado e tem conteudo
+            if (!file_exists($zipPath)) {
+                throw new \Exception("Arquivo de backup não foi criado em: {$zipPath}");
+            }
+            $fileSize = filesize($zipPath);
+            if ($fileSize === 0) {
+                @unlink($zipPath);
+                throw new \Exception("Arquivo de backup ficou vazio (0 bytes). Possível falha na escrita.");
+            }
+
             // Limpar backups antigos (manter apenas os $maxBackups mais recentes)
             $this->cleanupOldBackups();
 
-            Log::info("Backup gerado com sucesso: {$filename} (" . size_format(filesize($zipPath)) . ")");
+            $message = 'Backup concluído com sucesso!';
+            if (!empty($errors)) {
+                $message .= ' Avisos: ' . implode('; ', $errors);
+            }
+
+            Log::info("Backup gerado: {$filename} (" . size_format($fileSize) . ")" . (empty($errors) ? '' : " com avisos: " . implode('; ', $errors)));
 
             return response()->json([
                 'success' => true,
-                'message' => 'Backup concluído com sucesso!',
+                'message' => $message,
                 'data' => [
                     'filename' => $filename,
-                    'size' => size_format(filesize($zipPath)),
+                    'size' => size_format($fileSize),
                     'date' => date('d/m/Y H:i:s')
                 ]
             ]);
@@ -90,16 +121,24 @@ class BackupController extends Controller
      */
     public function list()
     {
-        $files = Storage::files($this->backupPath);
+        $backupDir = storage_path("app/" . $this->backupPath);
+
+        // Verificar se o diretorio existe fisicamente
+        if (!is_dir($backupDir)) {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+
+        // Ler arquivos diretamente do filesystem (mais confiavel que Storage)
+        $files = glob($backupDir . '/*.zip');
         $backups = [];
 
-        foreach ($files as $file) {
+        foreach ($files as $filePath) {
             $backups[] = [
-                'name' => basename($file),
-                'url'  => route('admin.settings.backup.download', ['file' => basename($file)]),
-                'size' => size_format(Storage::size($file)),
-                'date' => date('d/m/Y H:i', Storage::lastModified($file)),
-                'raw_date' => Storage::lastModified($file)
+                'name' => basename($filePath),
+                'url'  => route('admin.settings.backup.download', ['file' => basename($filePath)]),
+                'size' => size_format(filesize($filePath)),
+                'date' => date('d/m/Y H:i', filemtime($filePath)),
+                'raw_date' => filemtime($filePath)
             ];
         }
 
@@ -114,14 +153,14 @@ class BackupController extends Controller
      */
     public function download(Request $request)
     {
-        $filename = $request->query('file');
-        $path = "{$this->backupPath}/{$filename}";
+        $filename = basename($request->query('file'));
+        $filePath = storage_path("app/{$this->backupPath}/{$filename}");
 
-        if (!Storage::exists($path)) {
+        if (!file_exists($filePath) || !is_file($filePath)) {
             abort(404, 'Arquivo não encontrado.');
         }
 
-        return Storage::download($path);
+        return response()->download($filePath, $filename);
     }
 
     /**
@@ -129,11 +168,11 @@ class BackupController extends Controller
      */
     public function destroy(Request $request)
     {
-        $filename = $request->input('file');
-        $path = "{$this->backupPath}/{$filename}";
+        $filename = basename($request->input('file'));
+        $filePath = storage_path("app/{$this->backupPath}/{$filename}");
 
-        if (Storage::exists($path)) {
-            Storage::delete($path);
+        if (file_exists($filePath) && is_file($filePath)) {
+            @unlink($filePath);
             return response()->json(['success' => true, 'message' => 'Backup excluído.']);
         }
 
@@ -145,14 +184,16 @@ class BackupController extends Controller
      */
     private function cleanupOldBackups(): void
     {
-        $files = collect(Storage::files($this->backupPath))
-            ->filter(fn($f) => str_ends_with($f, '.zip'))
-            ->sortByDesc(fn($f) => Storage::lastModified($f));
+        $backupDir = storage_path("app/" . $this->backupPath);
+        if (!is_dir($backupDir)) return;
+
+        $files = collect(glob($backupDir . '/*.zip'))
+            ->sortByDesc(fn($f) => filemtime($f));
 
         if ($files->count() > $this->maxBackups) {
             $toDelete = $files->skip($this->maxBackups);
             foreach ($toDelete as $file) {
-                Storage::delete($file);
+                @unlink($file);
             }
         }
     }
@@ -235,18 +276,19 @@ class BackupController extends Controller
     /**
      * Adicionar pastas de upload ao ZIP
      */
-    private function addFilesToZip($zip)
+    private function addFilesToZip($zip): int
     {
         $folders = [
             public_path('uploads'),
             storage_path('app/public')
         ];
 
+        $count = 0;
         foreach ($folders as $folder) {
             if (!File::isDirectory($folder)) continue;
 
             $files = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($folder),
+                new \RecursiveDirectoryIterator($folder, \RecursiveDirectoryIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
 
@@ -254,10 +296,13 @@ class BackupController extends Controller
                 if (!$file->isDir()) {
                     $filePath = $file->getRealPath();
                     $relativePath = 'files/' . substr($filePath, strlen(base_path()) + 1);
-                    $zip->addFile($filePath, $relativePath);
+                    if ($zip->addFile($filePath, $relativePath)) {
+                        $count++;
+                    }
                 }
             }
         }
+        return $count;
     }
 }
 
