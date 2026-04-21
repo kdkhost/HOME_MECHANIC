@@ -585,25 +585,15 @@ class SettingsController extends Controller
             $port       = $request->input('mail_port',         Setting::get('mail_port',         '587'));
             $username   = $request->input('mail_username',     Setting::get('mail_username',     ''));
             $rawPassword = $request->input('mail_password', '');
-            $password   = ($rawPassword !== '' && $rawPassword !== '********') ? $rawPassword : Setting::get('mail_password', '');
+            // Ler senha diretamente do banco (bypass cache) para evitar problemas de cache desatualizado
+            $dbPassword = Setting::where('key', 'mail_password')->value('value') ?? '';
+            $password   = ($rawPassword !== '' && $rawPassword !== '********') ? $rawPassword : $dbPassword;
             $encryption = $request->input('mail_encryption',   Setting::get('mail_encryption',   'tls'));
             $verifyPeer = $request->input('mail_verify_peer') !== null 
                 ? $request->boolean('mail_verify_peer') 
                 : (Setting::get('mail_verify_peer', '1') === '1');
             $fromAddr   = $request->input('mail_from_address', Setting::get('mail_from_address', 'noreply@homemechanic.com.br'));
             $fromName   = $request->input('mail_from_name',    Setting::get('mail_from_name',    'HomeMechanic'));
-
-            // Sincronizar .env com o banco (garante que o .env esteja atualizado)
-            $this->syncMailToEnv([
-                'mail_driver'       => Setting::get('mail_driver', 'smtp'),
-                'mail_host'         => $host,
-                'mail_port'         => $port,
-                'mail_username'     => $username,
-                'mail_password'     => $password,
-                'mail_encryption'   => $encryption,
-                'mail_from_address' => $fromAddr,
-                'mail_from_name'    => $fromName,
-            ]);
 
             // Diagnostico: verificar se a senha esta vazia
             if (empty($password)) {
@@ -617,10 +607,23 @@ class SettingsController extends Controller
                         'encryption' => $encryption,
                         'password_status' => 'vazia',
                         'raw_password_empty' => empty($rawPassword),
-                        'db_password_empty' => empty(Setting::get('mail_password', '')),
+                        'db_password_empty' => empty($dbPassword),
+                        'db_password_len' => strlen($dbPassword),
                     ],
                 ], 422);
             }
+
+            // Sincronizar .env com o banco (garante que o .env esteja atualizado)
+            $this->syncMailToEnv([
+                'mail_driver'       => Setting::get('mail_driver', 'smtp'),
+                'mail_host'         => $host,
+                'mail_port'         => $port,
+                'mail_username'     => $username,
+                'mail_password'     => $password,
+                'mail_encryption'   => $encryption,
+                'mail_from_address' => $fromAddr,
+                'mail_from_name'    => $fromName,
+            ]);
 
             // Suporte a subject/body customizados (enviado da página de templates)
             $customSubject = $request->input('mail_subject');
