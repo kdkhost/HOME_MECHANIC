@@ -972,7 +972,7 @@
         </button>
 
         <div class="contact-menu" id="contactMenu">
-            <div class="contact-menu-header">Falar com a HomeMechanic</div>
+            <div class="contact-menu-header">Atendimento</div>
 
             @if(!empty($whatsappNum))
             <a href="https://wa.me/{{ $whatsappNum }}" class="contact-option whatsapp" target="_blank" rel="noopener">

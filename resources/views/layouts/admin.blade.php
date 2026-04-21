@@ -213,25 +213,6 @@
     </nav>
     <!--end::Header-->
 
-    <!-- Alerta de Impersonacao -->
-    @if(isset($impersonating) && $impersonating)
-    <div class="alert alert-warning m-0 py-2 rounded-0 border-0 d-flex justify-content-between align-items-center" style="background: linear-gradient(90deg, #ff6b00, #ff8c00);">
-        <div class="text-white">
-            <i class="fas fa-user-secret me-2"></i>
-            <strong>IMPERSONANDO:</strong> Voce esta acessando como <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->email }})
-            <span class="badge bg-dark ms-2">Nivel {{ auth()->user()->permission_level }}</span>
-        </div>
-        <div>
-            <a href="{{ route('admin.users.index') }}" class="btn btn-light btn-sm me-2">
-                <i class="fas fa-users me-1"></i> Voltar para Usuarios
-            </a>
-            <a href="{{ route('admin.stop-impersonating') }}" class="btn btn-danger btn-sm">
-                <i class="fas fa-sign-out-alt me-1"></i> Voltar para Minha Conta ({{ $originalUser->name ?? 'Admin' }})
-            </a>
-        </div>
-    </div>
-    @endif
-
     <!--begin::Sidebar-->
     <aside class="app-sidebar bg-dark shadow" data-bs-theme="dark">
 

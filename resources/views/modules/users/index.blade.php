@@ -162,14 +162,6 @@
                                 <a href="{{ route('admin.permissions.user', $uid) }}" class="btn btn-success" title="Permissões">
                                     <i class="fas fa-user-shield"></i>
                                 </a>
-                                @if(!$isMe && auth()->user()->canManageUser($u))
-                                <form method="POST" action="{{ route('admin.users.impersonate', $uid) }}" style="display:inline;" onsubmit="return confirm('Acessar como {{ $uname }}? Voce tera as permissoes deste usuario.');">
-                                    @csrf
-                                    <button type="submit" class="btn btn-dark" title="Acessar como este usuario">
-                                        <i class="fas fa-user-secret"></i>
-                                    </button>
-                                </form>
-                                @endif
                                 @if(!$uver)
                                 <button type="button" class="btn btn-info" onclick="sendVerification({{ $uid }})" title="Reenviar verificação">
                                     <i class="fas fa-envelope"></i>

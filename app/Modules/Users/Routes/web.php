@@ -21,11 +21,5 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         // Verificação de e-mail
         Route::post('/{id}/send-verification', [UsersController::class, 'sendVerification'])->name('send-verification');
         Route::post('/{id}/verify-manual', [UsersController::class, 'verifyManual'])->name('verify-manual');
-
-        // Impersonacao (acessar conta de outro usuario)
-        Route::post('/{id}/impersonate', [UsersController::class, 'impersonate'])->name('impersonate');
     });
-
-    // Parar impersonacao (volta para conta original)
-    Route::get('/stop-impersonating', [UsersController::class, 'stopImpersonating'])->name('stop-impersonating');
 });

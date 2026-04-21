@@ -263,15 +263,27 @@
             <!-- ══════ GUIA: AGENDAMENTOS ══════ -->
             <div class="tab-pane fade" id="pane-cron" role="tabpanel">
                 <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white border-bottom py-3">
+                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                         <span class="card-title font-weight-bold" style="color:var(--hm-primary);"><i class="fas fa-clock me-2"></i>Tarefas Agendadas</span>
+                        <button class="btn btn-sm btn-primary" onclick="runScheduleNow()">
+                            <i class="fas fa-play me-1"></i> Executar Agora
+                        </button>
                     </div>
                     <div class="card-body">
                         <div class="alert alert-info small py-2 px-3 mb-3" style="border-radius:6px;">
                             <i class="fas fa-info-circle me-1"></i>
-                            Configure o cron no cPanel com o comando:<br>
+                            <strong>Comando Cron (cPanel):</strong><br>
                             <code style="font-size:0.82rem;">* * * * * cd /home/homemechanic/public_html && php artisan schedule:run >> /dev/null 2>&1</code>
+                            <button class="btn btn-xs btn-outline-primary float-end" onclick="copyCronCommand()">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
                         </div>
+
+                        <!-- Status da última execução -->
+                        <div id="lastRunStatus" class="mb-3">
+                            <span class="text-muted"><i class="fas fa-history me-1"></i>Última execução: <span id="lastRunTime">Carregando...</span></span>
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-hover align-middle border" id="cronTable">
                                 <thead class="bg-light">
@@ -793,6 +805,83 @@ function runCron(command) {
     });
 }
 
+// ── Cron Functions ───────────────────────────────────────
+function runScheduleNow() {
+    Swal.fire({
+        title: 'Executar Agendamentos?',
+        html: 'Isso executará todas as tarefas agendadas que estão programadas para rodar agora.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#FF6B00',
+        confirmButtonText: '<i class="fas fa-play me-1"></i> Executar',
+        cancelButtonText: 'Cancelar'
+    }).then(function(r) {
+        if (!r.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Executando...',
+            html: 'Aguarde enquanto as tarefas são processadas.',
+            allowOutsideClick: false,
+            didOpen: function() { Swal.showLoading(); }
+        });
+
+        $.ajax({
+            url: '{{ route("admin.settings.cron.run") }}',
+            method: 'POST',
+            data: JSON.stringify({ command: 'schedule:run' }),
+            contentType: 'application/json',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function(res) {
+                Swal.close();
+                if (res.success) {
+                    Swal.fire({ title: '✅ Concluído!', text: res.message || 'Tarefas executadas com sucesso!', icon: 'success', confirmButtonColor: '#FF6B00' });
+                    loadCrons();
+                    updateLastRunTime();
+                } else {
+                    Swal.fire({ title: '⚠️ Atenção', text: res.message || 'Nenhuma tarefa para executar.', icon: 'warning', confirmButtonColor: '#FF6B00' });
+                }
+            },
+            error: function(xhr) {
+                Swal.close();
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao executar agendamentos.';
+                Swal.fire({ title: '❌ Erro', text: msg, icon: 'error', confirmButtonColor: '#FF6B00' });
+            }
+        });
+    });
+}
+
+function copyCronCommand() {
+    var cmd = '* * * * * cd /home/homemechanic/public_html && php artisan schedule:run >> /dev/null 2>&1';
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(cmd).then(function() {
+            HMToast.success('Comando copiado para a área de transferência!');
+        });
+    } else {
+        var textarea = document.createElement('textarea');
+        textarea.value = cmd;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        HMToast.success('Comando copiado para a área de transferência!');
+    }
+}
+
+function updateLastRunTime() {
+    var now = new Date();
+    var timeString = now.toLocaleString('pt-BR', { 
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    document.getElementById('lastRunTime').textContent = timeString + ' (agora)';
+}
+
+// Atualizar hora da última execução ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('lastRunTime')) {
+        document.getElementById('lastRunTime').textContent = 'Nunca executado manualmente';
+    }
+});
+
 </script>
 @endsection
-
