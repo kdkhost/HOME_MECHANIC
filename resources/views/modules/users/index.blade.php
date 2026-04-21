@@ -133,8 +133,10 @@
                             <div style="font-size:0.78rem;color:var(--hm-text-muted);">{{ $uemail }}</div>
                         </td>
                         <td>
-                            @if($urole === 'admin')
-                                <span class="badge badge-danger"><i class="fas fa-shield-alt me-1"></i>Admin</span>
+                            @if(is_object($u) && $u->isSuperAdmin())
+                                <span class="badge badge-danger"><i class="fas fa-shield-alt me-1"></i>SuperAdmin</span>
+                            @elseif($urole === 'admin')
+                                <span class="badge badge-warning"><i class="fas fa-user-shield me-1"></i>Admin</span>
                             @else
                                 <span class="badge badge-info"><i class="fas fa-user me-1"></i>Usuário</span>
                             @endif

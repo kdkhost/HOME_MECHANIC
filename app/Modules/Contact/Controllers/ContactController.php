@@ -50,16 +50,19 @@ class ContactController extends Controller
         try {
             $message = ContactMessage::findOrFail($id);
 
-            // Tentar enviar e-mail de resposta
+            // Tentar enviar e-mail de resposta usando template HTML
             $fromAddr = Setting::get('mail_from_address', config('mail.from.address'));
             $fromName = Setting::get('mail_from_name',    config('mail.from.name'));
-            $siteName = Setting::get('site_name',         'HomeMechanic');
+            $siteName = Setting::get('site_name',         'Home Mechanic');
 
-            Mail::raw(
-                "Olá, {$message->name}!\n\n" .
-                "Em resposta à sua mensagem: \"{$message->subject}\"\n\n" .
-                $request->reply . "\n\n" .
-                "Atenciosamente,\nEquipe {$siteName}",
+            Mail::send(
+                'emails.contact_reply',
+                [
+                    'name' => $message->name,
+                    'originalSubject' => $message->subject,
+                    'reply' => $request->reply,
+                    'siteName' => $siteName,
+                ],
                 function ($m) use ($message, $fromAddr, $fromName) {
                     $m->to($message->email, $message->name)
                       ->from($fromAddr, $fromName)
