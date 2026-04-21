@@ -506,7 +506,8 @@ class SettingsController extends Controller
             $host       = $request->input('mail_host',         Setting::get('mail_host',         'smtp.gmail.com'));
             $port       = $request->input('mail_port',         Setting::get('mail_port',         '587'));
             $username   = $request->input('mail_username',     Setting::get('mail_username',     ''));
-            $password   = $request->input('mail_password')     ?: Setting::get('mail_password',  '');
+            $rawPassword = $request->input('mail_password', '');
+            $password   = ($rawPassword !== '' && $rawPassword !== '********') ? $rawPassword : Setting::get('mail_password', '');
             $encryption = $request->input('mail_encryption',   Setting::get('mail_encryption',   'tls'));
             $verifyPeer = $request->input('mail_verify_peer') !== null 
                 ? $request->boolean('mail_verify_peer') 

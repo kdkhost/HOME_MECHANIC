@@ -74,8 +74,8 @@
                                 <div class="input-group">
                                     <input type="password" class="form-control" 
                                            name="mail_password" id="mail_password"
-                                           value="{{ $settings['mail_password'] ?? '' }}"
-                                           placeholder="{{ ($settings['mail_password_set'] ?? false) ? '••••••••' : 'Sua senha SMTP' }}"
+                                           value=""
+                                           placeholder="{{ ($settings['mail_password_set'] ?? false) ? '•••••••• (manter em branco para usar a senha salva)' : 'Sua senha SMTP' }}"
                                            autocomplete="new-password">
                                     <button type="button" class="btn btn-outline-secondary" id="togglePassword" title="Mostrar/ocultar senha">
                                         <i class="fas fa-eye" id="eyeIcon"></i>
@@ -284,7 +284,7 @@ document.getElementById('btnTestSmtp').addEventListener('click', function() {
             mail_host:          document.getElementById('mail_host').value,
             mail_port:          document.getElementById('mail_port').value,
             mail_username:      document.getElementById('mail_username').value,
-            mail_password:      document.getElementById('mail_password').value,
+            mail_password:      document.getElementById('mail_password').value || '',
             mail_encryption:    document.getElementById('mail_encryption').value,
             mail_verify_peer:   document.getElementById('mail_verify_peer').checked ? '1' : '0',
             mail_from_address:  document.getElementById('mail_from_address').value,
