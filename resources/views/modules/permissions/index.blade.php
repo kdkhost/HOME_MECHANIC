@@ -3,7 +3,7 @@
 @section('title', 'Permissoes')
 @section('page-title', 'Permissoes do Sistema')
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard.index') }}">Dashboard</a></li>
     <li class="breadcrumb-item active">Permissoes</li>
 @endsection
 

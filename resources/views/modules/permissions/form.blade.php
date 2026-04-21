@@ -3,7 +3,7 @@
 @section('title', $permission ? 'Editar Permissao' : 'Nova Permissao')
 @section('page-title', $permission ? 'Editar Permissao' : 'Nova Permissao')
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard.index') }}">Dashboard</a></li>
     <li class="breadcrumb-item"><a href="{{ route('admin.permissions.index') }}">Permissoes</a></li>
     <li class="breadcrumb-item active">{{ $permission ? 'Editar' : 'Nova' }}</li>
 @endsection

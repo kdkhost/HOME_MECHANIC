@@ -3,7 +3,7 @@
 @section('title', 'Permissoes do Usuario')
 @section('page-title', 'Gerenciar Permissoes')
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard.index') }}">Dashboard</a></li>
     <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">Usuarios</a></li>
     <li class="breadcrumb-item active">{{ $user->name }}</li>
 @endsection
