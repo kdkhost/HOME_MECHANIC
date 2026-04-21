@@ -403,7 +403,6 @@ class SettingsController extends Controller
             $name = match(true) {
                 str_starts_with($command, 'backup:run') => 'Backup Automático',
                 str_starts_with($command, 'google:sync-reviews') => 'Sync Google Reviews',
-                str_starts_with($command, 'inspire') => 'Inspire (Demo)',
                 default => $command,
             };
 
