@@ -15,8 +15,14 @@
         Permissoes: {{ $user->name }}
     </h2>
     <div class="page-header-actions">
-        <span class="badge bg-{{ $user->role === 'admin' ? 'danger' : 'secondary' }}">
-            {{ $user->role === 'admin' ? 'Administrador' : 'Usuario' }}
+        <span class="badge bg-{{ $user->role === 'admin' ? 'danger' : ($user->permission_level >= 50 ? 'warning text-dark' : 'secondary') }}">
+            @if($user->role === 'admin')
+                Superadmin (Nivel {{ $user->permission_level }})
+            @elseif($user->permission_level >= 50)
+                Gerente (Nivel {{ $user->permission_level }})
+            @else
+                Usuario (Nivel {{ $user->permission_level }})
+            @endif
         </span>
     </div>
 </div>
@@ -40,9 +46,24 @@
         @if($user->role === 'admin')
         <div class="alert alert-info">
             <i class="fas fa-info-circle me-2"></i>
-            <strong>Administrador:</strong> Este usuario tem acesso total a todas as funcoes do sistema. As permissoes individuais nao se aplicam a administradores.
+            <strong>Superadmin:</strong> Este usuario tem acesso total a todas as funcoes do sistema. As permissoes individuais nao se aplicam a superadmins.
         </div>
         @endif
+
+        <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-layer-group me-2"></i>
+                <strong>Sua Hierarquia:</strong> Nivel {{ auth()->user()->permission_level }}
+                @if(auth()->user()->isSuperAdmin())
+                    (Superadmin - pode gerenciar todos)
+                @elseif(auth()->user()->permission_level >= 50)
+                    (Gerente - pode gerenciar usuarios nivel 10-49)
+                @else
+                    (Usuario - sem permissao para gerenciar outros)
+                @endif
+            </div>
+            <span class="badge bg-dark">Maximo nivel de permissao atribuivel: {{ auth()->user()->getMaxPermissionLevel() }}</span>
+        </div>
 
         <form method="POST" action="{{ route('admin.permissions.user.update', $user) }}">
             @csrf
@@ -80,8 +101,11 @@
                                 <input class="form-check-input permission-check" type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="perm_{{ $permission->id }}" data-module="{{ $module }}" {{ in_array($permission->id, $userPermissions) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="perm_{{ $permission->id }}">
                                     {{ $permission->name }}
+                                    <span class="badge bg-{{ $permission->level >= 100 ? 'danger' : ($permission->level >= 50 ? 'warning text-dark' : ($permission->level >= 30 ? 'info' : 'success')) }} ms-1" style="font-size: 0.7rem;" title="Nivel {{ $permission->level }}">
+                                        {{ $permission->level }}
+                                    </span>
                                     @if(!$permission->is_active)
-                                        <span class="badge bg-warning text-dark ms-1" title="Permissao inativa no sistema">!</span>
+                                        <span class="badge bg-secondary ms-1" title="Permissao inativa no sistema">!</span>
                                     @endif
                                 </label>
                             </div>

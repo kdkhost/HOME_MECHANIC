@@ -93,7 +93,62 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'permission_level' => 'integer',
         ];
+    }
+
+    /**
+     * Verificar se é superadmin (nível 100 ou role admin).
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'admin' || $this->permission_level >= 100;
+    }
+
+    /**
+     * Verificar se pode gerenciar um usuário específico (hierarquia).
+     */
+    public function canManageUser(User $targetUser): bool
+    {
+        // Não pode gerenciar a si mesmo
+        if ($this->id === $targetUser->id) {
+            return false;
+        }
+
+        // Superadmin pode gerenciar todos exceto outros superadmins
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Usuário comum só pode gerenciar se tiver nível maior
+        return $this->permission_level > $targetUser->permission_level;
+    }
+
+    /**
+     * Verificar se pode atribuir uma permissão específica.
+     * Só pode atribuir permissões de nível igual ou inferior ao seu.
+     */
+    public function canAssignPermission(Permission $permission): bool
+    {
+        // Superadmin pode atribuir qualquer permissão
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Só pode atribuir permissões de nível <= seu nível
+        return $permission->level <= $this->permission_level;
+    }
+
+    /**
+     * Obter o nível máximo de permissão que este usuário pode ter/gerenciar.
+     */
+    public function getMaxPermissionLevel(): int
+    {
+        if ($this->isSuperAdmin()) {
+            return 100;
+        }
+
+        return $this->permission_level;
     }
 
     /**

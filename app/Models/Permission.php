@@ -17,6 +17,7 @@ class Permission extends Model
         'description',
         'module',
         'action',
+        'level',
         'is_active',
         'sort_order',
     ];
@@ -24,6 +25,7 @@ class Permission extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'level' => 'integer',
     ];
 
     /**
@@ -49,6 +51,14 @@ class Permission extends Model
     public function scopeByModule($query, string $module)
     {
         return $query->where('module', $module);
+    }
+
+    /**
+     * Scope para nivel minimo.
+     */
+    public function scopeMinLevel($query, int $level)
+    {
+        return $query->where('level', '<=', $level);
     }
 
     /**

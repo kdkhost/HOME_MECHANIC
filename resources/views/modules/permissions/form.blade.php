@@ -110,6 +110,21 @@
                         @enderror
                     </div>
 
+                    <div class="mb-3">
+                        <label for="level" class="form-label">Nivel Hierarquico <span class="text-danger">*</span></label>
+                        <select class="form-select @error('level') is-invalid @enderror" id="level" name="level" required>
+                            <option value="10" {{ old('level', $permission->level ?? 10) == 10 ? 'selected' : '' }}>10 - Basico (View) - Todos os usuarios</option>
+                            <option value="20" {{ old('level', $permission->level ?? 10) == 20 ? 'selected' : '' }}>20 - Operador (Create/Edit) - Operadores</option>
+                            <option value="30" {{ old('level', $permission->level ?? 10) == 30 ? 'selected' : '' }}>30 - Avancado (Delete) - Supervisores</option>
+                            <option value="50" {{ old('level', $permission->level ?? 10) == 50 ? 'selected' : '' }}>50 - Gerente (Manage) - Gerentes</option>
+                            <option value="100" {{ old('level', $permission->level ?? 10) == 100 ? 'selected' : '' }}>100 - Superadmin - Apenas superadmins</option>
+                        </select>
+                        <div class="form-text">Define quem pode atribuir esta permissao a outros usuarios. Usuarios so podem atribuir permissoes de nivel igual ou inferior ao seu.</div>
+                        @error('level')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     @if($permission)
                     <div class="mb-3">
                         <label for="sort_order" class="form-label">Ordem de Exibicao</label>
