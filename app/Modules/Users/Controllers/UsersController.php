@@ -333,26 +333,6 @@ class UsersController extends Controller
         }
     }
 
-    /**
-     * Verificar e-mail via link (rota assinada do Laravel)
-     */
-    public function verify(Request $request, $id, $hash)
-    {
-        $user = User::findOrFail($id);
-
-        if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
-            return redirect()->route('admin.login')->with('error', 'Link de verificação inválido.');
-        }
-
-        if ($user->hasVerifiedEmail()) {
-            return redirect()->route('admin.login')->with('success', 'Seu e-mail já está verificado. Faça login para continuar.');
-        }
-
-        $user->markEmailAsVerified();
-
-        return redirect()->route('admin.login')->with('success', 'E-mail verificado com sucesso! Você já pode fazer login.');
-    }
-
     // ── Helper ────────────────────────────────────────────────
     // Upload gerenciado pelo FileUploadHelper
 }
