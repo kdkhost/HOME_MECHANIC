@@ -94,6 +94,12 @@ class UsersController extends Controller
     {
         try {
             $user = User::findOrFail($id);
+
+            // Verificar hierarquia - so pode editar usuarios que pode gerenciar
+            if (!auth()->user()->canManageUser($user) && $user->id !== auth()->id()) {
+                return redirect()->route('admin.users.index')
+                    ->with('error', 'Você não tem permissão para editar este usuário.');
+            }
         } catch (\Exception $e) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'Usuário não encontrado.');
@@ -116,6 +122,12 @@ class UsersController extends Controller
 
         try {
             $user = User::findOrFail($id);
+
+            // Verificar hierarquia - nao pode atualizar usuarios que nao pode gerenciar (exceto si proprio)
+            if (!auth()->user()->canManageUser($user) && $user->id !== auth()->id()) {
+                return redirect()->route('admin.users.index')
+                    ->with('error', 'Você não tem permissão para atualizar este usuário.');
+            }
 
             $data = [
                 'name'  => $request->name,
@@ -171,10 +183,12 @@ class UsersController extends Controller
     {
         try {
             $user = User::findOrFail($id);
+            $currentUser = auth()->user();
 
-            if ($user->id === auth()->id()) {
+            // Verificar hierarquia - nao pode excluir superiores ou iguais
+            if (!$currentUser->canManageUser($user)) {
                 return redirect()->route('admin.users.index')
-                    ->with('error', 'Você não pode excluir sua própria conta.');
+                    ->with('error', 'Você não tem permissão para excluir este usuário.');
             }
 
             // Remover avatar do storage
@@ -183,6 +197,8 @@ class UsersController extends Controller
             }
 
             $user->delete();
+
+            Log::info('Usuario excluido', ['deleted_user_id' => $id, 'deleted_by' => $currentUser->id]);
 
             return redirect()->route('admin.users.index')
                 ->with('success', 'Usuário excluído com sucesso!');

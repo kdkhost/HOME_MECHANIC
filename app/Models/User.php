@@ -106,7 +106,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Verificar se pode gerenciar um usuário específico (hierarquia).
+     * Verificar se pode gerenciar um usuário específico (hierarquia rigorosa).
+     * 
+     * Regras:
+     * - Ninguém pode gerenciar a si mesmo
+     * - Ninguém pode gerenciar um Superadmin (nivel 100) exceto outro Superadmin
+     * - Superadmin pode gerenciar Admins (nivel 50) e Usuarios (nivel 10)
+     * - Admin pode gerenciar apenas Usuarios (nivel 10)
+     * - Usuario comum (nivel 10) não pode gerenciar ninguém
      */
     public function canManageUser(User $targetUser): bool
     {
@@ -115,13 +122,24 @@ class User extends Authenticatable implements MustVerifyEmail
             return false;
         }
 
-        // Superadmin pode gerenciar todos exceto outros superadmins
+        // Ninguém pode gerenciar um Superadmin exceto outro Superadmin
+        if ($targetUser->isSuperAdmin()) {
+            return $this->isSuperAdmin();
+        }
+
+        // Superadmin pode gerenciar todos (Admins e Usuarios)
         if ($this->isSuperAdmin()) {
             return true;
         }
 
-        // Usuário comum só pode gerenciar se tiver nível maior
-        return $this->permission_level > $targetUser->permission_level;
+        // Admin (nivel 50) pode gerenciar apenas Usuarios comuns (nivel 10)
+        // Admin NÃO pode gerenciar outros Admins
+        if ($this->permission_level >= 50) {
+            return $targetUser->permission_level < 50;
+        }
+
+        // Usuario comum (nivel 10) não pode gerenciar ninguém
+        return false;
     }
 
     /**
