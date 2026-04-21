@@ -38,7 +38,7 @@ class VerifyEmailCustom extends Notification
         $verifyUrl = $this->verificationUrl($notifiable);
 
         $siteName = Setting::get('site_name', 'HomeMechanic');
-        $slug = 'welcome';
+        $slug = 'email_verification';
 
         $defaultSubject = 'Verifique seu e-mail — ' . $siteName;
         $defaultBody = $this->getDefaultBody($siteName);

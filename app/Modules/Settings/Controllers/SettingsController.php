@@ -503,6 +503,9 @@ class SettingsController extends Controller
         $request->validate(['test_email' => 'required|email']);
 
         try {
+            // Limpar cache de settings para garantir valores atualizados
+            \Illuminate\Support\Facades\Cache::forget('settings_all');
+
             $host       = $request->input('mail_host',         Setting::get('mail_host',         'smtp.gmail.com'));
             $port       = $request->input('mail_port',         Setting::get('mail_port',         '587'));
             $username   = $request->input('mail_username',     Setting::get('mail_username',     ''));
@@ -514,18 +517,20 @@ class SettingsController extends Controller
                 : (Setting::get('mail_verify_peer', '1') === '1');
             $fromAddr   = $request->input('mail_from_address', Setting::get('mail_from_address', 'noreply@homemechanic.com.br'));
             $fromName   = $request->input('mail_from_name',    Setting::get('mail_from_name',    'HomeMechanic'));
-            
+
             // Suporte a subject/body customizados (enviado da página de templates)
             $customSubject = $request->input('mail_subject');
             $customBody    = $request->input('mail_body');
 
             $mailConfig = [
                 'mail.default'                 => 'smtp',
+                'mail.mailers.smtp.transport'  => 'smtp',
                 'mail.mailers.smtp.host'       => $host,
                 'mail.mailers.smtp.port'       => (int) $port,
                 'mail.mailers.smtp.username'   => $username,
                 'mail.mailers.smtp.password'   => $password,
                 'mail.mailers.smtp.encryption' => $encryption ?: null,
+                'mail.mailers.smtp.timeout'    => 15,
                 'mail.from.address'            => $fromAddr,
                 'mail.from.name'               => $fromName,
             ];
@@ -542,7 +547,20 @@ class SettingsController extends Controller
 
             config($mailConfig);
 
-            $subject = $customSubject ?: '✅ Teste SMTP — HomeMechanic';
+            // Limpar instância do mailer para forçar recriação com novas config
+            app()->forgetInstance('mail.manager');
+            app()->forgetInstance('mailer');
+
+            Log::info('Teste SMTP iniciado', [
+                'host' => $host,
+                'port' => $port,
+                'username' => $username,
+                'encryption' => $encryption,
+                'password_len' => strlen($password),
+                'from' => $fromAddr,
+            ]);
+
+            $subject = $customSubject ?: 'Teste SMTP — HomeMechanic';
             $isHtml  = $customBody && strip_tags($customBody) !== $customBody;
 
             if ($isHtml && $customBody) {
@@ -554,8 +572,8 @@ class SettingsController extends Controller
                 );
             } else {
                 $text = $customBody ?: (
-                    "✅ Teste de configuração SMTP — HomeMechanic\n\n" .
-                    "Se você recebeu este e-mail, as configurações SMTP estão corretas!\n\n" .
+                    "Teste de configuracao SMTP — HomeMechanic\n\n" .
+                    "Se voce recebeu este e-mail, as configuracoes SMTP estao corretas!\n\n" .
                     "Servidor: {$host}:{$port}\n" .
                     "Criptografia: " . ($encryption ?: 'Nenhuma') . "\n" .
                     "Remetente: {$fromName} <{$fromAddr}>\n\n" .
@@ -575,7 +593,12 @@ class SettingsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erro no teste SMTP', ['error' => $e->getMessage()]);
+            Log::error('Erro no teste SMTP', [
+                'error' => $e->getMessage(),
+                'host' => $request->input('mail_host'),
+                'port' => $request->input('mail_port'),
+                'username' => $request->input('mail_username'),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Falha: ' . $e->getMessage(),

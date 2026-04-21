@@ -30,6 +30,13 @@ class EmailTemplateController extends Controller
             'vars' => ['{{nome}}', '{{reset_url}}', '{{expiry}}', '{{site_name}}'],
             'subject' => 'Redefinição de senha — {{site_name}}',
         ],
+        'email_verification' => [
+            'name' => 'Verificação de E-mail',
+            'desc' => 'Enviado ao usuário para confirmar seu endereço de e-mail após o cadastro ou reenvio.',
+            'icon' => 'fas fa-user-check',
+            'vars' => ['{{nome}}', '{{email}}', '{{verify_url}}', '{{site_name}}'],
+            'subject' => 'Verifique seu e-mail — {{site_name}}',
+        ],
         'notification' => [
             'name' => 'Notificação Geral',
             'desc' => 'Template genérico para notificações do sistema.',
@@ -82,6 +89,20 @@ HTML,
   ⏱️ Este link é válido por <strong>{{expiry}}</strong>. Após esse prazo, você precisará solicitar um novo link.
 </p>
 <p style="font-size:0.85rem;color:#888;">Se você não solicitou a redefinição de senha, ignore este e-mail. Sua senha permanece a mesma.</p>
+<p>Atenciosamente,<br><strong>Equipe {{site_name}}</strong></p>
+HTML,
+            'email_verification' => <<<HTML
+<p>Olá, <strong>{{nome}}</strong>!</p>
+<p>Seja muito bem-vindo(a) à <strong>{{site_name}}</strong>! Para ativar sua conta e acessar o sistema, confirme seu endereço de e-mail:</p>
+<p style="text-align:center;margin:28px 0;">
+  <a href="{{verify_url}}" style="display:inline-block;background:{$primary};color:#fff;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:700;font-size:0.95rem;">
+    Verificar Meu E-mail
+  </a>
+</p>
+<p style="background:#fff8f5;border:1px solid #ffe0cc;border-radius:6px;padding:12px 16px;font-size:0.88rem;color:#555;">
+  ⏱️ Este link é válido por <strong>60 minutos</strong>. Após esse prazo, solicite um novo link no painel administrativo.
+</p>
+<p style="font-size:0.85rem;color:#888;">Se você não criou esta conta, ignore este e-mail.</p>
 <p>Atenciosamente,<br><strong>Equipe {{site_name}}</strong></p>
 HTML,
             'notification' => <<<HTML
@@ -158,6 +179,7 @@ HTML,
             '{{mensagem}}'          => 'Você recebeu uma nova mensagem de contato no painel.',
             '{{acao_url}}'          => url('/admin/contact'),
             '{{acao_texto}}'        => 'Ver Mensagem',
+            '{{verify_url}}'        => url('/admin/email/verify/1/example-hash'),
         ];
 
         $subjectParsed = str_replace(array_keys($vars), array_values($vars), $subject);
