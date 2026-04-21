@@ -14,7 +14,7 @@ class SettingsController extends Controller
     // ── Defaults ───────────────────────────────────────────
 
     private array $generalDefaults = [
-        'site_name'        => 'HomeMechanic',
+        'site_name'        => 'Home Mechanic',
         'site_description' => 'Oficina mecânica especializada em carros de luxo e tuning',
         'contact_email'    => 'contato@homemechanic.com.br',
         'contact_phone'    => '(11) 99999-9999',

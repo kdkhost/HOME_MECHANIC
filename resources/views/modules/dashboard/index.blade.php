@@ -139,12 +139,12 @@
 
 {{-- Welcome --}}
 <div class="dash-welcome">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
             <h4><i class="fas fa-tachometer-alt me-2"></i>Bem-vindo, {{ $user->name }}!</h4>
-            <p>{{ now()->format('l, d \d\e F \d\e Y') }} — Painel HomeMechanic</p>
+            <p>{{ now()->locale('pt_BR')->isoFormat('dddd, D [de] MMMM [de] YYYY') }} — Painel Home Mechanic</p>
         </div>
-        <button class="btn btn-light btn-sm" onclick="refreshDashboard()" id="btnRefresh">
+        <button class="btn btn-light btn-sm" onclick="loadDashboardData()" id="btnRefresh">
             <i class="fas fa-sync-alt me-1" id="refreshIcon"></i> Atualizar
         </button>
     </div>
