@@ -322,13 +322,16 @@
                         </a>
                     </li>
 
+                    @if(auth()->user()->permission_level >= 50)
                     <li class="nav-item">
                         <a href="{{ route('admin.upload.index') }}" class="nav-link {{ request()->routeIs('admin.upload.*') ? 'active' : '' }}">
                             <i class="nav-icon bi bi-cloud-upload"></i>
                             <p>Upload de Arquivos</p>
                         </a>
                     </li>
+                    @endif
 
+                    @if(auth()->user()->permission_level >= 50)
                     <li class="nav-header">MARKETING</li>
 
                     <li class="nav-item">
@@ -351,7 +354,9 @@
                             <p>Patrocinadores</p>
                         </a>
                     </li>
+                    @endif
 
+                    @if(auth()->user()->permission_level >= 50)
                     <li class="nav-header">SISTEMA</li>
 
                     <li class="nav-item {{ request()->routeIs('admin.settings.*') ? 'menu-open' : '' }}">
@@ -392,6 +397,7 @@
                             </li>
                         </ul>
                     </li>
+                    @endif
 
                     <li class="nav-item">
                         <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
@@ -400,12 +406,14 @@
                         </a>
                     </li>
 
+                    @if(auth()->user()->permission_level >= 50)
                     <li class="nav-item">
                         <a href="{{ route('admin.permissions.index') }}" class="nav-link {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
                             <i class="nav-icon bi bi-shield-check"></i>
                             <p>Permissões</p>
                         </a>
                     </li>
+                    @endif
 
                     <li class="nav-item">
                         <a href="{{ route('admin.documentation.index') }}" class="nav-link {{ request()->routeIs('admin.documentation.*') ? 'active' : '' }}">

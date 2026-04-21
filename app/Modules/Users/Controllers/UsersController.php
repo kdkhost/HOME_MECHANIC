@@ -13,8 +13,23 @@ class UsersController extends Controller
 {
     public function index()
     {
+        $currentUser = auth()->user();
+
         try {
-            $users = User::orderBy('created_at', 'desc')->get();
+            // Filtrar usuarios de acordo com hierarquia
+            if ($currentUser->isSuperAdmin()) {
+                // Superadmin ve todos (inclusive outros admins)
+                $users = User::orderBy('created_at', 'desc')->get();
+            } elseif ($currentUser->permission_level >= 50) {
+                // Admin so ve usuarios de nivel inferior (nivel 10)
+                $users = User::where('permission_level', '<', $currentUser->permission_level)
+                    ->orWhere('id', $currentUser->id)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                // Usuario comum so ve a si mesmo
+                $users = User::where('id', $currentUser->id)->get();
+            }
         } catch (\Exception $e) {
             $users = collect([[
                 'id' => 1, 'name' => 'Administrador',
@@ -83,6 +98,13 @@ class UsersController extends Controller
     {
         try {
             $user = User::findOrFail($id);
+            $currentUser = auth()->user();
+
+            // Verificar se pode ver dados deste usuario (proprio ou que pode gerenciar)
+            if ($user->id !== $currentUser->id && !$currentUser->canManageUser($user)) {
+                return redirect()->route('admin.users.index')
+                    ->with('error', 'Você não tem permissão para ver os dados deste usuário.');
+            }
         } catch (\Exception $e) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'Usuário não encontrado.');
