@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use App\Helpers\FileUploadHelper;
 
 class UsersController extends Controller
