@@ -382,6 +382,13 @@
                     </li>
 
                     <li class="nav-item">
+                        <a href="{{ route('admin.permissions.index') }}" class="nav-link {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-shield-check"></i>
+                            <p>Permissões</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a href="{{ route('admin.documentation.index') }}" class="nav-link {{ request()->routeIs('admin.documentation.*') ? 'active' : '' }}">
                             <i class="nav-icon bi bi-book"></i>
                             <p>Documentação</p>

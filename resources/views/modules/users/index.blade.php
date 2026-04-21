@@ -159,6 +159,9 @@
                                 <a href="{{ route('admin.users.edit', $uid) }}" class="btn btn-warning" title="Editar">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
+                                <a href="{{ route('admin.permissions.user', $uid) }}" class="btn btn-success" title="Permissões">
+                                    <i class="fas fa-user-shield"></i>
+                                </a>
                                 @if(!$uver)
                                 <button type="button" class="btn btn-info" onclick="sendVerification({{ $uid }})" title="Reenviar verificação">
                                     <i class="fas fa-envelope"></i>

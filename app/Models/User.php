@@ -119,4 +119,92 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(AuditLog::class);
     }
+
+    /**
+     * Relacionamento com permissoes.
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'user_permission')
+                    ->withPivot('granted_at', 'granted_by');
+    }
+
+    /**
+     * Verificar se usuario possui uma permissao especifica.
+     * Administradores sempre tem todas as permissoes.
+     */
+    public function hasPermission(string $permissionSlug): bool
+    {
+        // Administradores tem acesso total
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        // Verificar permissao ativa atribuida ao usuario
+        return $this->permissions()
+                    ->where('slug', $permissionSlug)
+                    ->where('is_active', true)
+                    ->exists();
+    }
+
+    /**
+     * Verificar se usuario possui permissao para um modulo/acao.
+     */
+    public function canModule(string $module, string $action): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        return $this->permissions()
+                    ->where('module', $module)
+                    ->where('action', $action)
+                    ->where('is_active', true)
+                    ->exists();
+    }
+
+    /**
+     * Verificar se usuario pode acessar um modulo (qualquer acao).
+     */
+    public function canAccessModule(string $module): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        return $this->permissions()
+                    ->where('module', $module)
+                    ->where('is_active', true)
+                    ->exists();
+    }
+
+    /**
+     * Conceder permissao ao usuario.
+     */
+    public function grantPermission(int $permissionId, ?int $grantedBy = null): void
+    {
+        $this->permissions()->syncWithoutDetaching([
+            $permissionId => ['granted_at' => now(), 'granted_by' => $grantedBy]
+        ]);
+    }
+
+    /**
+     * Revogar permissao do usuario.
+     */
+    public function revokePermission(int $permissionId): void
+    {
+        $this->permissions()->detach($permissionId);
+    }
+
+    /**
+     * Sincronizar todas as permissoes do usuario.
+     */
+    public function syncPermissions(array $permissionIds, ?int $grantedBy = null): void
+    {
+        $syncData = [];
+        foreach ($permissionIds as $id) {
+            $syncData[$id] = ['granted_at' => now(), 'granted_by' => $grantedBy];
+        }
+        $this->permissions()->sync($syncData);
+    }
 }

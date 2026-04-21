@@ -18,12 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
             guests: '/admin/login',
             users: '/admin/dashboard'
         );
-        
+
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         $middleware->web(append: [
             \App\Http\Middleware\CheckInstalled::class,
             \App\Http\Middleware\MaintenanceMode::class,
             \App\Http\Middleware\TrackAnalytics::class,
+        ]);
+
+        // Alias para middleware de permissao
+        $middleware->alias([
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
