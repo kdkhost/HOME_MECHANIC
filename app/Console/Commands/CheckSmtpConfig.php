@@ -71,7 +71,64 @@ class CheckSmtpConfig extends Command
         }
 
         $this->newLine();
-        $this->comment('Se os valores do .env estiverem diferentes do banco, salve as configuracoes pelo painel admin.');
+
+        // Sincronizar .env com o banco
+        $this->info('=== Sincronizando .env com o banco ===');
+        $this->newLine();
+
+        $envMap = [
+            'mail_driver'       => 'MAIL_MAILER',
+            'mail_host'         => 'MAIL_HOST',
+            'mail_port'         => 'MAIL_PORT',
+            'mail_username'     => 'MAIL_USERNAME',
+            'mail_password'     => 'MAIL_PASSWORD',
+            'mail_encryption'   => 'MAIL_ENCRYPTION',
+            'mail_from_address' => 'MAIL_FROM_ADDRESS',
+            'mail_from_name'   => 'MAIL_FROM_NAME',
+        ];
+
+        $envPath = base_path('.env');
+        if (file_exists($envPath) && is_writable($envPath)) {
+            $envContent = file_get_contents($envPath);
+            $updated = 0;
+
+            foreach ($envMap as $dbKey => $envKey) {
+                $dbValue = Setting::get($dbKey);
+                if ($dbValue === null || $dbValue === '') {
+                    continue;
+                }
+
+                $envValue = $dbValue;
+                if (preg_match('/[\s#"\'\\\\]/', $envValue) || $envValue === '') {
+                    $envValue = '"' . addslashes($envValue) . '"';
+                }
+
+                $pattern = '/^' . preg_quote($envKey, '/') . '=.*/m';
+                $replacement = $envKey . '=' . $envValue;
+
+                if (preg_match($pattern, $envContent)) {
+                    $envContent = preg_replace($pattern, $replacement, $envContent);
+                    $updated++;
+                } else {
+                    $envContent .= "\n" . $replacement;
+                    $updated++;
+                }
+            }
+
+            if ($updated > 0) {
+                file_put_contents($envPath, $envContent);
+                $this->line("  <info>{$updated} variaveis atualizadas no .env</info>");
+                Artisan::call('config:clear');
+                $this->line('  <info>Cache de config limpo</info>');
+            } else {
+                $this->line('  <comment>.env ja esta sincronizado com o banco</comment>');
+            }
+        } else {
+            $this->error('  Arquivo .env nao encontrado ou sem permissao de escrita!');
+        }
+
+        $this->newLine();
+        $this->comment('Agora teste o envio de e-mail pelo painel admin.');
 
         return self::SUCCESS;
     }

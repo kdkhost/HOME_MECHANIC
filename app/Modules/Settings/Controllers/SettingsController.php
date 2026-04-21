@@ -593,6 +593,18 @@ class SettingsController extends Controller
             $fromAddr   = $request->input('mail_from_address', Setting::get('mail_from_address', 'noreply@homemechanic.com.br'));
             $fromName   = $request->input('mail_from_name',    Setting::get('mail_from_name',    'HomeMechanic'));
 
+            // Sincronizar .env com o banco (garante que o .env esteja atualizado)
+            $this->syncMailToEnv([
+                'mail_driver'       => Setting::get('mail_driver', 'smtp'),
+                'mail_host'         => $host,
+                'mail_port'         => $port,
+                'mail_username'     => $username,
+                'mail_password'     => $password,
+                'mail_encryption'   => $encryption,
+                'mail_from_address' => $fromAddr,
+                'mail_from_name'    => $fromName,
+            ]);
+
             // Diagnostico: verificar se a senha esta vazia
             if (empty($password)) {
                 return response()->json([
