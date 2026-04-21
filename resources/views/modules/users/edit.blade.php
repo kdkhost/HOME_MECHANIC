@@ -153,15 +153,16 @@
                 <p style="font-size:0.82rem;color:var(--hm-text-muted);margin-bottom:0.75rem;">
                     Excluir este usuário é uma ação irreversível.
                 </p>
-                <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm w-100 btn-delete"
-                            data-name="{{ $user->name }}">
-                        <i class="fas fa-trash"></i> Excluir Usuário
-                    </button>
-                </form>
+                <button type="button" class="btn btn-danger btn-sm w-100" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Excluir Usuário
+                </button>
             </div>
         </div>
+
+        {{-- Form de exclusao separado (fora do form principal) --}}
+        <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" id="deleteForm" style="display:none;">
+            @csrf @method('DELETE')
+        </form>
         @endif
 
     </div>
@@ -402,6 +403,13 @@ function checkMatch() {
         msg.innerHTML = '<span style="color:#dc2626;"><i class="fas fa-times-circle me-1"></i>Senhas não coincidem.</span>';
     }
     msg.style.display = 'block';
+}
+
+// ── Confirmar exclusão ─────────────────────────────────
+function confirmDelete() {
+    if (confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível!')) {
+        document.getElementById('deleteForm').submit();
+    }
 }
 </script>
 @endsection
