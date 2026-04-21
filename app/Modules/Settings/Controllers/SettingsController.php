@@ -279,14 +279,23 @@ class SettingsController extends Controller
             ];
 
             foreach ($envMap as $dbKey => $envKey) {
+                // Se nao esta no data (ex: senha com bullets), buscar do banco
                 if (!isset($data[$dbKey]) || $data[$dbKey] === null) {
-                    continue;
+                    if ($dbKey === 'mail_password') {
+                        // Senha especial: buscar do banco diretamente
+                        $value = Setting::where('key', 'mail_password')->value('value') ?? '';
+                        if (empty($value)) {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+                } else {
+                    $value = $data[$dbKey];
                 }
 
-                $value = $data[$dbKey];
-
-                // Nao sobrescrever a senha no .env se nao foi fornecida
-                if ($dbKey === 'mail_password' && (empty($value) || $value === '********')) {
+                // Nao sobrescrever a senha no .env se for placeholder
+                if ($dbKey === 'mail_password' && (empty($value) || preg_match('/^[•\*]+$/', $value))) {
                     continue;
                 }
 
