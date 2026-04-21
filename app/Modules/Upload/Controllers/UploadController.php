@@ -273,7 +273,7 @@ class UploadController extends Controller
                 }
             }
 
-            // Tenta buscar por UUID
+            // Tenta buscar por UUID na tabela uploads
             $upload = $this->uploadService->getByUuid($source);
             $path = $upload ? public_path($upload->path) : public_path(ltrim($source, '/'));
 
@@ -285,10 +285,30 @@ class UploadController extends Controller
                 }
             }
 
+            // Se nao encontrou no banco, tenta carregar diretamente do storage/uploads
+            // Isso resolve imagens antigas salvas apenas como config (site_logo, favicon, etc)
+            if (!file_exists($path) && $upload === null) {
+                $possiblePaths = [
+                    public_path('storage/uploads/' . $source),
+                    public_path('storage/' . $source),
+                    public_path($source),
+                    storage_path('app/public/uploads/' . $source),
+                    storage_path('app/public/' . $source),
+                ];
+
+                foreach ($possiblePaths as $possiblePath) {
+                    if (file_exists($possiblePath) && !is_dir($possiblePath)) {
+                        $path = $possiblePath;
+                        break;
+                    }
+                }
+            }
+
             if (file_exists($path) && !is_dir($path)) {
                 return response()->file($path);
             }
 
+            Log::warning('Arquivo nao encontrado no FilePond load', ['source' => $source, 'tried_path' => $path]);
             return response('File not found: ' . $path, 404);
 
         } catch (\Exception $e) {
