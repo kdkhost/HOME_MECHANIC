@@ -300,11 +300,38 @@ document.getElementById('btnTestSmtp').addEventListener('click', function() {
             resultDiv.style.display = 'block';
         },
         error: function(xhr) {
-            const msg = xhr.responseJSON?.message || 'Erro ao enviar e-mail de teste.';
+            const data = xhr.responseJSON || {};
+            const msg = data.message || 'Erro ao enviar e-mail de teste.';
             toast(msg, 'error');
-            resultContent.innerHTML =
-                '<i class="fas fa-times-circle text-danger me-2"></i>' +
+
+            let html = '<i class="fas fa-times-circle text-danger me-2"></i>' +
                 '<strong>Falha!</strong> ' + msg;
+
+            // Diagnostico
+            if (data.diagnostic) {
+                const d = data.diagnostic;
+                html += '<div style="margin-top:10px;padding:10px;background:rgba(0,0,0,0.05);border-radius:6px;font-size:0.82rem;">';
+                html += '<strong>Diagnóstico:</strong><br>';
+                html += 'Servidor: ' + (d.host || 'N/A') + ':' + (d.port || 'N/A') + '<br>';
+                html += 'Usuário: ' + (d.username || 'N/A') + '<br>';
+                html += 'Criptografia: ' + (d.encryption || 'N/A') + '<br>';
+                html += 'Senha: ' + (d.password_status === 'vazia' ? '<span style="color:#dc2626;">VAZIA</span>' : (d.password_len || 0) + ' caracteres') + '<br>';
+                if (d.raw_password_empty !== undefined) {
+                    html += 'Senha do campo: ' + (d.raw_password_empty ? '<span style="color:#dc2626;">vazia</span>' : 'preenchida') + ' | ';
+                    html += 'Senha no banco: ' + (d.db_password_empty ? '<span style="color:#dc2626;">vazia</span>' : 'salva') + '<br>';
+                }
+                html += '</div>';
+            }
+
+            // Sugestoes
+            if (data.suggestions && data.suggestions.length > 0) {
+                html += '<div style="margin-top:8px;padding:10px;background:#fff8f5;border:1px solid #ffe0cc;border-radius:6px;font-size:0.82rem;">';
+                html += '<strong><i class="fas fa-lightbulb me-1" style="color:#FF6B00;"></i>Sugestões:</strong><ul style="margin:4px 0 0 18px;padding:0;">';
+                data.suggestions.forEach(function(s) { html += '<li>' + s + '</li>'; });
+                html += '</ul></div>';
+            }
+
+            resultContent.innerHTML = html;
             resultContent.style.background = '#f8d7da';
             resultContent.style.color = '#721c24';
             resultDiv.style.display = 'block';

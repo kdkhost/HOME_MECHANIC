@@ -517,6 +517,23 @@ class SettingsController extends Controller
             $fromAddr   = $request->input('mail_from_address', Setting::get('mail_from_address', 'noreply@homemechanic.com.br'));
             $fromName   = $request->input('mail_from_name',    Setting::get('mail_from_name',    'HomeMechanic'));
 
+            // Diagnostico: verificar se a senha esta vazia
+            if (empty($password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Senha SMTP vazia! Digite a senha no campo e envie o teste, ou salve as configurações primeiro.',
+                    'diagnostic' => [
+                        'host' => $host,
+                        'port' => $port,
+                        'username' => $username,
+                        'encryption' => $encryption,
+                        'password_status' => 'vazia',
+                        'raw_password_empty' => empty($rawPassword),
+                        'db_password_empty' => empty(Setting::get('mail_password', '')),
+                    ],
+                ], 422);
+            }
+
             // Suporte a subject/body customizados (enviado da página de templates)
             $customSubject = $request->input('mail_subject');
             $customBody    = $request->input('mail_body');
@@ -556,6 +573,8 @@ class SettingsController extends Controller
                 'username' => $username,
                 'encryption' => $encryption,
                 'password_len' => strlen($password),
+                'password_first' => substr($password, 0, 1),
+                'password_last' => substr($password, -1),
                 'from' => $fromAddr,
             ]);
 
@@ -592,15 +611,42 @@ class SettingsController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            $errorMsg = $e->getMessage();
+            $diagnostic = [
+                'host' => $host ?? 'N/A',
+                'port' => $port ?? 'N/A',
+                'username' => $username ?? 'N/A',
+                'encryption' => $encryption ?? 'N/A',
+                'password_len' => isset($password) ? strlen($password) : 0,
+            ];
+
+            // Sugestoes baseadas no tipo de erro
+            $suggestions = [];
+            if (str_contains($errorMsg, '535') || str_contains($errorMsg, 'Incorrect authentication')) {
+                $suggestions[] = 'A senha SMTP está incorreta. Verifique no cPanel se a conta de e-mail existe e se a senha está certa.';
+                $suggestions[] = 'No cPanel: Contas de E-mail → Gerenciar → Alterar Senha da conta noreply@homemechanic.com.br';
+                $suggestions[] = 'Digite a senha NOVAMENTE no campo e clique em "Salvar" antes de testar.';
+            }
+            if (str_contains($errorMsg, 'Connection refused') || str_contains($errorMsg, 'Connection timed out')) {
+                $suggestions[] = 'O servidor não está acessível na porta configurada. Verifique host e porta.';
+                if (($encryption ?? '') === 'tls' && ($port ?? 0) == 465) {
+                    $suggestions[] = 'Porta 465 requer criptografia SSL (não TLS). Altere para SSL.';
+                }
+            }
+            if (str_contains($errorMsg, 'certificate') || str_contains($errorMsg, 'peer')) {
+                $suggestions[] = 'Erro de certificado SSL. Tente desmarcar "Verificar Certificado SSL".';
+            }
+
             Log::error('Erro no teste SMTP', [
-                'error' => $e->getMessage(),
-                'host' => $request->input('mail_host'),
-                'port' => $request->input('mail_port'),
-                'username' => $request->input('mail_username'),
+                'error' => $errorMsg,
+                'diagnostic' => $diagnostic,
             ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Falha: ' . $e->getMessage(),
+                'message' => 'Falha: ' . $errorMsg,
+                'diagnostic' => $diagnostic,
+                'suggestions' => $suggestions,
             ], 422);
         }
     }
