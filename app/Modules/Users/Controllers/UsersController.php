@@ -110,6 +110,7 @@ class UsersController extends Controller
             'avatar'   => 'nullable', // Pode ser arquivo ou UUID string
             'phone'    => 'nullable|string|max:20',
             'bio'      => 'nullable|string|max:500',
+            'permission_level' => 'nullable|integer|min:10|max:100',
         ]);
 
         try {
@@ -120,6 +121,14 @@ class UsersController extends Controller
                 'email' => $request->email,
                 'role'  => $request->role,
             ];
+
+            // Preservar permission_level ou atualizar se fornecido (apenas superadmin/gerente pode alterar)
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'permission_level')) {
+                if ($request->filled('permission_level') && auth()->user()->canManageUser($user)) {
+                    $data['permission_level'] = $request->permission_level;
+                }
+                // Se nao fornecido, mantem o valor atual (nao inclui no data)
+            }
 
             // Campos opcionais — só inclui se a coluna existir no banco
             if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone')) {
