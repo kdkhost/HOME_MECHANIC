@@ -333,7 +333,14 @@ class UsersController extends Controller
         }
     }
 
-    public function        if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+    /**
+     * Verificar e-mail via link (rota assinada do Laravel)
+     */
+    public function verify(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
+
+        if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
             return redirect()->route('admin.login')->with('error', 'Link de verificação inválido.');
         }
 
