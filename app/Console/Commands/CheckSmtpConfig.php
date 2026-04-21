@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Setting;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 
 class CheckSmtpConfig extends Command
 {
