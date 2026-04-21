@@ -323,11 +323,9 @@ document.getElementById('btnTestSmtp').addEventListener('click', function() {
                 html += 'Servidor: ' + (d.host || 'N/A') + ':' + (d.port || 'N/A') + '<br>';
                 html += 'Usuário: ' + (d.username || 'N/A') + '<br>';
                 html += 'Criptografia: ' + (d.encryption || 'N/A') + '<br>';
-                html += 'Senha: ' + (d.password_status === 'vazia' ? '<span style="color:#dc2626;">VAZIA</span>' : (d.password_len || 0) + ' caracteres') + '<br>';
-                if (d.raw_password_empty !== undefined) {
-                    html += 'Senha do campo: ' + (d.raw_password_empty ? '<span style="color:#dc2626;">vazia</span>' : 'preenchida') + ' | ';
-                    html += 'Senha no banco: ' + (d.db_password_empty ? '<span style="color:#dc2626;">vazia</span>' : 'salva') + '<br>';
-                }
+                html += 'Senha do campo: ' + (d.raw_password_len || 0) + ' chars' + (d.raw_password_is_bullets ? ' (bullets)' : '') + '<br>';
+                html += 'Senha no banco: ' + (d.db_password_len || 0) + ' chars<br>';
+                html += 'Senha final: ' + (d.final_password_len || 0) + ' chars' + (d.password_status === 'vazia' ? ' <span style="color:#dc2626;">VAZIA</span>' : '') + '<br>';
                 html += '</div>';
             }
 

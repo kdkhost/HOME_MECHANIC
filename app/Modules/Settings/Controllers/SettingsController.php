@@ -587,9 +587,18 @@ class SettingsController extends Controller
             $port       = $request->input('mail_port',         Setting::get('mail_port',         '587'));
             $username   = $request->input('mail_username',     Setting::get('mail_username',     ''));
             $rawPassword = $request->input('mail_password', '');
-            // Ler senha diretamente do banco (bypass cache) para evitar problemas de cache desatualizado
+
+            // Ler senha diretamente do banco (bypass cache) — fonte principal
             $dbPassword = Setting::where('key', 'mail_password')->value('value') ?? '';
-            $password   = ($rawPassword !== '' && $rawPassword !== '********') ? $rawPassword : $dbPassword;
+
+            // Se o usuario digitou uma senha nova (nao bullets, nao vazia), usar ela
+            // Senao, usar a senha do banco
+            if ($rawPassword !== '' && !preg_match('/^[•\*]+$/', $rawPassword)) {
+                $password = $rawPassword;
+            } else {
+                $password = $dbPassword;
+            }
+
             $encryption = $request->input('mail_encryption',   Setting::get('mail_encryption',   'tls'));
             $verifyPeer = $request->input('mail_verify_peer') !== null 
                 ? $request->boolean('mail_verify_peer') 
@@ -597,21 +606,25 @@ class SettingsController extends Controller
             $fromAddr   = $request->input('mail_from_address', Setting::get('mail_from_address', 'noreply@homemechanic.com.br'));
             $fromName   = $request->input('mail_from_name',    Setting::get('mail_from_name',    'HomeMechanic'));
 
-            // Diagnostico: verificar se a senha esta vazia
+            // Diagnostico detalhado
+            $diagnostic = [
+                'host' => $host,
+                'port' => $port,
+                'username' => $username,
+                'encryption' => $encryption,
+                'raw_password_len' => strlen($rawPassword),
+                'raw_password_is_bullets' => (bool) preg_match('/^[•\*]+$/', $rawPassword),
+                'db_password_len' => strlen($dbPassword),
+                'final_password_len' => strlen($password),
+            ];
+
+            Log::info('Teste SMTP - diagnostico de senha', $diagnostic);
+
             if (empty($password)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Senha SMTP vazia! Digite a senha no campo e envie o teste, ou salve as configurações primeiro.',
-                    'diagnostic' => [
-                        'host' => $host,
-                        'port' => $port,
-                        'username' => $username,
-                        'encryption' => $encryption,
-                        'password_status' => 'vazia',
-                        'raw_password_empty' => empty($rawPassword),
-                        'db_password_empty' => empty($dbPassword),
-                        'db_password_len' => strlen($dbPassword),
-                    ],
+                    'diagnostic' => array_merge($diagnostic, ['password_status' => 'vazia']),
                 ], 422);
             }
 
