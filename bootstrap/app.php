@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CheckInstalled::class,
             \App\Http\Middleware\MaintenanceMode::class,
             \App\Http\Middleware\TrackAnalytics::class,
+            \App\Http\Middleware\ImpersonationMiddleware::class,
         ]);
 
         // Alias para middleware de permissao
