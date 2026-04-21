@@ -144,6 +144,12 @@
                                 <span class="badge badge-success"><i class="fas fa-check me-1"></i>Verificado</span>
                             @else
                                 <span class="badge badge-warning"><i class="fas fa-clock me-1"></i>Pendente</span>
+                                <button type="button" class="btn btn-outline-primary btn-xs ml-1" onclick="sendVerification({{ $uid }})" title="Reenviar e-mail de verificação" style="font-size:0.68rem;padding:0.1rem 0.4rem;border-width:1px;">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-xs" onclick="verifyManual({{ $uid }})" title="Verificar manualmente" style="font-size:0.68rem;padding:0.1rem 0.4rem;border-width:1px;">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
                             @endif
                         </td>
                         <td style="font-size:0.82rem;color:var(--hm-text-muted);">—</td>
@@ -153,6 +159,11 @@
                                 <a href="{{ route('admin.users.edit', $uid) }}" class="btn btn-warning" title="Editar">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
+                                @if(!$uver)
+                                <button type="button" class="btn btn-info" onclick="sendVerification({{ $uid }})" title="Reenviar verificação">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                @endif
                                 @if(!$isMe)
                                 <form method="POST" action="{{ route('admin.users.destroy', $uid) }}" style="display:inline;">
                                     @csrf @method('DELETE')
@@ -179,4 +190,77 @@
         @endif
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+var CSRF = document.querySelector('meta[name="csrf-token"]').content;
+
+function sendVerification(userId) {
+    Swal.fire({
+        title: 'Reenviar verificação?',
+        text: 'Um e-mail de verificação será enviado para este usuário.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#FF6B00',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fas fa-paper-plane"></i> Enviar',
+        cancelButtonText: 'Cancelar',
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        fetch('{{ route("admin.users.send-verification", 0) }}'.replace('/0', '/' + userId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF,
+                'Accept': 'application/json',
+            },
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                HMToast.success(data.message);
+            } else {
+                HMToast.error(data.message);
+            }
+        })
+        .catch(function() { HMToast.error('Erro ao enviar verificação.'); });
+    });
+}
+
+function verifyManual(userId) {
+    Swal.fire({
+        title: 'Verificar manualmente?',
+        html: '<p style="font-size:0.88rem;color:#64748b;">O e-mail será marcado como verificado sem necessidade de confirmação pelo usuário.</p>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fas fa-user-check"></i> Verificar',
+        cancelButtonText: 'Cancelar',
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        fetch('{{ route("admin.users.verify-manual", 0) }}'.replace('/0', '/' + userId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF,
+                'Accept': 'application/json',
+            },
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                HMToast.success(data.message);
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                HMToast.error(data.message);
+            }
+        })
+        .catch(function() { HMToast.error('Erro ao verificar e-mail.'); });
+    });
+}
+</script>
 @endsection

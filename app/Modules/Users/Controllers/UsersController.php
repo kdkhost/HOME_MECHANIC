@@ -48,7 +48,6 @@ class UsersController extends Controller
                 'email'              => $request->email,
                 'password'           => Hash::make($request->password),
                 'role'               => $request->role,
-                'email_verified_at'  => now(),
             ];
 
             if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone')) {
@@ -63,10 +62,15 @@ class UsersController extends Controller
                 $data['avatar'] = $avatarResolved ?: null;
             }
 
-            User::create($data);
+            $user = User::create($data);
+
+            // Enviar e-mail de verificação
+            if (!$user->hasVerifiedEmail()) {
+                $user->sendEmailVerificationNotification();
+            }
 
             return redirect()->route('admin.users.index')
-                ->with('success', 'Usuário criado com sucesso!');
+                ->with('success', 'Usuário criado com sucesso! Um e-mail de verificação foi enviado para ' . $user->email);
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Erro ao criar usuário: ' . $e->getMessage())
@@ -176,6 +180,84 @@ class UsersController extends Controller
             return redirect()->route('admin.users.index')
                 ->with('error', 'Erro ao excluir usuário: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Enviar/reenviar e-mail de verificação para o usuário
+     */
+    public function sendVerification($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            if ($user->hasVerifiedEmail()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'O e-mail deste usuário já está verificado.',
+                ]);
+            }
+
+            $user->sendEmailVerificationNotification();
+
+            return response()->json([
+                'success' => true,
+                'message' => "E-mail de verificação enviado para {$user->email}!",
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao enviar e-mail: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Verificar e-mail manualmente (marcar como verificado pelo admin)
+     */
+    public function verifyManual($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            if ($user->hasVerifiedEmail()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'O e-mail deste usuário já está verificado.',
+                ]);
+            }
+
+            $user->markEmailAsVerified();
+
+            return response()->json([
+                'success' => true,
+                'message' => "E-mail de {$user->name} verificado manualmente com sucesso!",
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao verificar e-mail: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Verificar e-mail via link (rota assinada do Laravel)
+     */
+    public function verify(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
+
+        if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+            return redirect()->route('admin.login')->with('error', 'Link de verificação inválido.');
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->route('admin.login')->with('success', 'Seu e-mail já está verificado. Faça login para continuar.');
+        }
+
+        $user->markEmailAsVerified();
+
+        return redirect()->route('admin.login')->with('success', 'E-mail verificado com sucesso! Você já pode fazer login.');
     }
 
     // ── Helper ────────────────────────────────────────────────
