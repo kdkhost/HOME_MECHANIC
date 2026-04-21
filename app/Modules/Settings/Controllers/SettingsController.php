@@ -247,6 +247,82 @@ class SettingsController extends Controller
         }
 
         Setting::setMany($data, 'email');
+
+        // Sincronizar com .env para garantir que o Laravel use os valores corretos
+        $this->syncMailToEnv($data);
+    }
+
+    /**
+     * Sincronizar configuracoes de e-mail do banco para o arquivo .env
+     */
+    private function syncMailToEnv(array $data): void
+    {
+        try {
+            $envPath = base_path('.env');
+            if (!file_exists($envPath)) {
+                return;
+            }
+
+            $envContent = file_get_contents($envPath);
+
+            $envMap = [
+                'mail_driver'       => 'MAIL_MAILER',
+                'mail_host'         => 'MAIL_HOST',
+                'mail_port'         => 'MAIL_PORT',
+                'mail_username'     => 'MAIL_USERNAME',
+                'mail_password'     => 'MAIL_PASSWORD',
+                'mail_encryption'   => 'MAIL_ENCRYPTION',
+                'mail_from_address' => 'MAIL_FROM_ADDRESS',
+                'mail_from_name'   => 'MAIL_FROM_NAME',
+            ];
+
+            foreach ($envMap as $dbKey => $envKey) {
+                if (!isset($data[$dbKey]) || $data[$dbKey] === null) {
+                    continue;
+                }
+
+                $value = $data[$dbKey];
+
+                // Nao sobrescrever a senha no .env se nao foi fornecida
+                if ($dbKey === 'mail_password' && (empty($value) || $value === '********')) {
+                    continue;
+                }
+
+                // Formatar valor para .env (aspas se tiver espacos ou caracteres especiais)
+                $envValue = $this->formatEnvValue($value);
+
+                // Substituir ou adicionar a variavel no .env
+                $pattern = '/^' . preg_quote($envKey, '/') . '=.*/m';
+                $replacement = $envKey . '=' . $envValue;
+
+                if (preg_match($pattern, $envContent)) {
+                    $envContent = preg_replace($pattern, $replacement, $envContent);
+                } else {
+                    $envContent .= "\n" . $replacement;
+                }
+            }
+
+            file_put_contents($envPath, $envContent);
+
+            // Limpar cache de config para aplicar os novos valores do .env
+            Artisan::call('config:clear');
+
+            Log::info('Configuracoes SMTP sincronizadas com .env');
+        } catch (\Exception $e) {
+            Log::warning('Erro ao sincronizar SMTP com .env: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Formatar valor para o arquivo .env
+     */
+    private function formatEnvValue(string $value): string
+    {
+        // Se tem espacos, aspas ou caracteres especiais, envolver em aspas duplas
+        if (preg_match('/[\s#"\'\\\\]/', $value) || $value === '') {
+            return '"' . addslashes($value) . '"';
+        }
+        return $value;
     }
 
     private function updateSeo(Request $request): void

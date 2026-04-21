@@ -48,7 +48,30 @@ class CheckSmtpConfig extends Command
         $this->line('  mail.from.address: ' . config('mail.from.address'));
 
         $this->newLine();
-        $this->comment('Execute "php artisan smtp:check" para verificar as configuracoes.');
+
+        // Verificar valores do .env
+        $this->info('=== Valores no .env ===');
+        $this->newLine();
+        $envPath = base_path('.env');
+        if (file_exists($envPath)) {
+            $envContent = file_get_contents($envPath);
+            foreach (['MAIL_MAILER', 'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_ENCRYPTION', 'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME'] as $key) {
+                if (preg_match('/^' . preg_quote($key, '/') . '=(.*)$/m', $envContent, $m)) {
+                    $val = trim($m[1], '"');
+                    if ($key === 'MAIL_PASSWORD' && !empty($val) && $val !== 'null') {
+                        $val = str_repeat('*', strlen($val)) . ' [' . strlen($val) . ' caracteres]';
+                    }
+                    $this->line("  <info>{$key}:</info> {$val}");
+                } else {
+                    $this->line("  <info>{$key}:</info> <error>(nao encontrado)</error>");
+                }
+            }
+        } else {
+            $this->error('  Arquivo .env nao encontrado!');
+        }
+
+        $this->newLine();
+        $this->comment('Se os valores do .env estiverem diferentes do banco, salve as configuracoes pelo painel admin.');
 
         return self::SUCCESS;
     }
