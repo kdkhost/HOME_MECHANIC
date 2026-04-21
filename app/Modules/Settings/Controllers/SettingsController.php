@@ -595,9 +595,25 @@ class SettingsController extends Controller
             // Senao, usar a senha do banco
             if ($rawPassword !== '' && !preg_match('/^[•\*]+$/', $rawPassword)) {
                 $password = $rawPassword;
+                Log::info('Teste SMTP - usando senha do campo (usuario digitou nova)');
             } else {
                 $password = $dbPassword;
+                Log::info('Teste SMTP - usando senha do banco');
             }
+
+            // Log detalhado para debug
+            Log::info('Teste SMTP - valores de senha', [
+                'rawPassword_type' => gettype($rawPassword),
+                'rawPassword_len' => strlen($rawPassword),
+                'rawPassword_empty' => empty($rawPassword),
+                'dbPassword_type' => gettype($dbPassword),
+                'dbPassword_len' => strlen($dbPassword),
+                'dbPassword_empty' => empty($dbPassword),
+                'password_type' => gettype($password),
+                'password_len' => strlen($password),
+                'password_empty' => empty($password),
+                'password_same_as_db' => $password === $dbPassword,
+            ]);
 
             $encryption = $request->input('mail_encryption',   Setting::get('mail_encryption',   'tls'));
             $verifyPeer = $request->input('mail_verify_peer') !== null 
