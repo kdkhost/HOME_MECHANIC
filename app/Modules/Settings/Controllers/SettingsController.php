@@ -109,11 +109,11 @@ class SettingsController extends Controller
     public function email()
     {
         $settings = $this->readSettings($this->emailDefaults, 'email');
-        // Nunca exibir a senha real — apenas indicar se está preenchida e o tamanho
+        // Indicar se a senha está preenchida (mas mostrar valor real no campo para funcionamento correto)
         if (!empty($settings['mail_password'])) {
             $settings['mail_password_set'] = true;
             $settings['mail_password_len'] = strlen($settings['mail_password']);
-            $settings['mail_password']     = str_repeat('•', strlen($settings['mail_password']));
+            // Manter a senha real no campo - bullets causam problemas no salvamento/teste
         }
         return view('modules.settings.email', compact('settings'));
     }
@@ -242,10 +242,9 @@ class SettingsController extends Controller
             'mail_from_name'    => $request->input('mail_from_name'),
         ];
 
-        // Só atualiza a senha se foi preenchida e não for o placeholder de exibição (bullets ou asteriscos)
-        $rawPw = $request->input('mail_password', '');
-        if ($request->filled('mail_password') && !preg_match('/^[•\*]+$/', $rawPw)) {
-            $data['mail_password'] = $rawPw;
+        // Só atualiza a senha se foi preenchida
+        if ($request->filled('mail_password')) {
+            $data['mail_password'] = $request->input('mail_password');
         }
 
         Setting::setMany($data, 'email');
@@ -279,25 +278,11 @@ class SettingsController extends Controller
             ];
 
             foreach ($envMap as $dbKey => $envKey) {
-                // Se nao esta no data (ex: senha com bullets), buscar do banco
                 if (!isset($data[$dbKey]) || $data[$dbKey] === null) {
-                    if ($dbKey === 'mail_password') {
-                        // Senha especial: buscar do banco diretamente
-                        $value = Setting::where('key', 'mail_password')->value('value') ?? '';
-                        if (empty($value)) {
-                            continue;
-                        }
-                    } else {
-                        continue;
-                    }
-                } else {
-                    $value = $data[$dbKey];
-                }
-
-                // Nao sobrescrever a senha no .env se for placeholder
-                if ($dbKey === 'mail_password' && (empty($value) || preg_match('/^[•\*]+$/', $value))) {
                     continue;
                 }
+
+                $value = $data[$dbKey];
 
                 // Formatar valor para .env (aspas se tiver espacos ou caracteres especiais)
                 $envValue = $this->formatEnvValue($value);
@@ -595,34 +580,12 @@ class SettingsController extends Controller
             $host       = $request->input('mail_host',         Setting::get('mail_host',         'smtp.gmail.com'));
             $port       = $request->input('mail_port',         Setting::get('mail_port',         '587'));
             $username   = $request->input('mail_username',     Setting::get('mail_username',     ''));
-            $rawPassword = $request->input('mail_password', '');
+            $password = $request->input('mail_password', '');
 
-            // Ler senha diretamente do banco (bypass cache) — fonte principal
-            $dbPassword = Setting::where('key', 'mail_password')->value('value') ?? '';
-
-            // Se o usuario digitou uma senha nova (nao bullets, nao vazia), usar ela
-            // Senao, usar a senha do banco
-            if ($rawPassword !== '' && !preg_match('/^[•\*]+$/', $rawPassword)) {
-                $password = $rawPassword;
-                Log::info('Teste SMTP - usando senha do campo (usuario digitou nova)');
-            } else {
-                $password = $dbPassword;
-                Log::info('Teste SMTP - usando senha do banco');
+            // Se campo vazio, tentar usar senha do banco
+            if (empty($password)) {
+                $password = Setting::where('key', 'mail_password')->value('value') ?? '';
             }
-
-            // Log detalhado para debug
-            Log::info('Teste SMTP - valores de senha', [
-                'rawPassword_type' => gettype($rawPassword),
-                'rawPassword_len' => strlen($rawPassword),
-                'rawPassword_empty' => empty($rawPassword),
-                'dbPassword_type' => gettype($dbPassword),
-                'dbPassword_len' => strlen($dbPassword),
-                'dbPassword_empty' => empty($dbPassword),
-                'password_type' => gettype($password),
-                'password_len' => strlen($password),
-                'password_empty' => empty($password),
-                'password_same_as_db' => $password === $dbPassword,
-            ]);
 
             $encryption = $request->input('mail_encryption',   Setting::get('mail_encryption',   'tls'));
             $verifyPeer = $request->input('mail_verify_peer') !== null 
@@ -631,19 +594,14 @@ class SettingsController extends Controller
             $fromAddr   = $request->input('mail_from_address', Setting::get('mail_from_address', 'noreply@homemechanic.com.br'));
             $fromName   = $request->input('mail_from_name',    Setting::get('mail_from_name',    'HomeMechanic'));
 
-            // Diagnostico detalhado
+            // Diagnostico
             $diagnostic = [
                 'host' => $host,
                 'port' => $port,
                 'username' => $username,
                 'encryption' => $encryption,
-                'raw_password_len' => strlen($rawPassword),
-                'raw_password_is_bullets' => (bool) preg_match('/^[•\*]+$/', $rawPassword),
-                'db_password_len' => strlen($dbPassword),
-                'final_password_len' => strlen($password),
+                'password_len' => strlen($password),
             ];
-
-            Log::info('Teste SMTP - diagnostico de senha', $diagnostic);
 
             if (empty($password)) {
                 return response()->json([

@@ -76,8 +76,7 @@
                                            name="mail_password" id="mail_password"
                                            value="{{ $settings['mail_password'] ?? '' }}"
                                            placeholder="Sua senha SMTP"
-                                           autocomplete="new-password"
-                                           data-placeholder="{{ $settings['mail_password'] ?? '' }}">
+                                           autocomplete="new-password">
                                     <button type="button" class="btn btn-outline-secondary" id="togglePassword" title="Mostrar/ocultar senha">
                                         <i class="fas fa-eye" id="eyeIcon"></i>
                                     </button>
@@ -285,14 +284,7 @@ document.getElementById('btnTestSmtp').addEventListener('click', function() {
             mail_host:          document.getElementById('mail_host').value,
             mail_port:          document.getElementById('mail_port').value,
             mail_username:      document.getElementById('mail_username').value,
-            mail_password:      (function() {
-                var pwField = document.getElementById('mail_password');
-                var val = pwField.value;
-                var placeholder = pwField.getAttribute('data-placeholder') || '';
-                // Se o valor e igual ao placeholder (bullets), enviar vazio para usar a senha do banco
-                if (val && placeholder && val === placeholder) return '';
-                return val || '';
-            })(),
+            mail_password:      document.getElementById('mail_password').value,
             mail_encryption:    document.getElementById('mail_encryption').value,
             mail_verify_peer:   document.getElementById('mail_verify_peer').checked ? '1' : '0',
             mail_from_address:  document.getElementById('mail_from_address').value,
