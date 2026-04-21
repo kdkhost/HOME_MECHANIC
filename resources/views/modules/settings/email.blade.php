@@ -74,17 +74,18 @@
                                 <div class="input-group">
                                     <input type="password" class="form-control" 
                                            name="mail_password" id="mail_password"
-                                           value=""
-                                           placeholder="{{ ($settings['mail_password_set'] ?? false) ? '•••••••• (manter em branco para usar a senha salva)' : 'Sua senha SMTP' }}"
-                                           autocomplete="new-password">
+                                           value="{{ $settings['mail_password'] ?? '' }}"
+                                           placeholder="Sua senha SMTP"
+                                           autocomplete="new-password"
+                                           data-placeholder="{{ $settings['mail_password'] ?? '' }}">
                                     <button type="button" class="btn btn-outline-secondary" id="togglePassword" title="Mostrar/ocultar senha">
                                         <i class="fas fa-eye" id="eyeIcon"></i>
                                     </button>
                                 </div>
                                 @if($settings['mail_password_set'] ?? false)
                                     <small class="form-text text-success">
-                                        <i class="fas fa-check-circle"></i> Senha já configurada no sistema. 
-                                        <span class="text-muted">Mantenha em branco para não alterar.</span>
+                                        <i class="fas fa-check-circle"></i> Senha configurada ({{ $settings['mail_password_len'] ?? 0 }} caracteres). 
+                                        <span class="text-muted">Altere apenas para trocar a senha.</span>
                                     </small>
                                 @endif
                             </div>
@@ -284,7 +285,14 @@ document.getElementById('btnTestSmtp').addEventListener('click', function() {
             mail_host:          document.getElementById('mail_host').value,
             mail_port:          document.getElementById('mail_port').value,
             mail_username:      document.getElementById('mail_username').value,
-            mail_password:      document.getElementById('mail_password').value || '',
+            mail_password:      (function() {
+                var pwField = document.getElementById('mail_password');
+                var val = pwField.value;
+                var placeholder = pwField.getAttribute('data-placeholder') || '';
+                // Se o valor e igual ao placeholder (bullets), enviar vazio para usar a senha do banco
+                if (val && placeholder && val === placeholder) return '';
+                return val || '';
+            })(),
             mail_encryption:    document.getElementById('mail_encryption').value,
             mail_verify_peer:   document.getElementById('mail_verify_peer').checked ? '1' : '0',
             mail_from_address:  document.getElementById('mail_from_address').value,
