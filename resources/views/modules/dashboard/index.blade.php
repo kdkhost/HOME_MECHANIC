@@ -1304,5 +1304,59 @@ function clearCache() {
         }
     });
 }
+
+// Atualizar dashboard sem refresh
+function loadDashboardData() {
+    const btn = document.getElementById('refreshBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Atualizando...';
+    }
+
+    $.ajax({
+        url: '{{ route("admin.dashboard.data") }}',
+        method: 'GET',
+        success: function(response) {
+            if (response.success && response.data) {
+                const data = response.data;
+
+                // Atualizar contadores principais
+                if (data.counters) {
+                    $('#services-count').text(data.counters.services || 0);
+                    $('#posts-count').text(data.counters.posts_published || 0);
+                    $('#photos-count').text(data.counters.gallery_photos || 0);
+                    $('#messages-count').text(data.counters.unread_messages || 0);
+                }
+
+                // Atualizar timestamp
+                if (response.last_updated) {
+                    $('#last-update').text('Atualizado em: ' + response.last_updated);
+                }
+
+                // Animar contadores
+                $('.counter-card .h2').addClass('pulse');
+                setTimeout(() => $('.counter-card .h2').removeClass('pulse'), 1000);
+
+                // Notificação de sucesso
+                HMToast.success('Dashboard atualizado com sucesso!');
+            } else {
+                HMToast.error('Erro ao atualizar dashboard.');
+            }
+        },
+        error: function(xhr) {
+            let message = 'Erro ao atualizar dashboard.';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                message = xhr.responseJSON.message;
+            }
+            HMToast.error(message);
+        },
+        complete: function() {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Atualizar';
+            }
+        }
+    });
+}
 </script>
 @endsection
