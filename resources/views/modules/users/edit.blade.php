@@ -159,10 +159,6 @@
             </div>
         </div>
 
-        {{-- Form de exclusao separado (fora do form principal) --}}
-        <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" id="deleteForm" style="display:none;">
-            @csrf @method('DELETE')
-        </form>
         @endif
 
     </div>
@@ -210,8 +206,9 @@
                                 <label>Função</label>
                                 <select class="form-control" name="role"
                                         {{ $user->id === auth()->id() ? 'disabled' : '' }}>
-                                    <option value="user"  {{ $user->role === 'user'  ? 'selected' : '' }}>Usuário</option>
-                                    <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Administrador</option>
+                                    <option value="user"       {{ $user->role === 'user'       ? 'selected' : '' }}>Usuário</option>
+                                    <option value="admin"      {{ $user->role === 'admin'      ? 'selected' : '' }}>Administrador</option>
+                                    <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>SuperAdmin</option>
                                 </select>
                                 @if($user->id === auth()->id())
                                     <input type="hidden" name="role" value="{{ $user->role }}">
@@ -309,6 +306,14 @@
 
     </div>
 </form>
+
+{{-- Form de exclusao separado (fora do form principal) --}}
+@if(auth()->user()->canManageUser($user) && $user->id !== auth()->id())
+<form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" id="deleteForm" style="display:none;">
+    @csrf @method('DELETE')
+</form>
+@endif
+
 @endsection
 
 @section('scripts')
