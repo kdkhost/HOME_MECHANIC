@@ -1307,26 +1307,39 @@ function clearCache() {
 
 // Atualizar dashboard sem refresh
 function loadDashboardData() {
+    console.log('Função loadDashboardData() iniciada');
+    
     const btn = document.getElementById('btnRefresh');
-    const icon = document.getElementById('refreshIcon');
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1" id="refreshIcon"></i> Atualizando...';
     }
 
+    console.log('Fazendo requisição AJAX para:', '{{ route("admin.dashboard.data") }}');
+
     $.ajax({
         url: '{{ route("admin.dashboard.data") }}',
         method: 'GET',
         success: function(response) {
+            console.log('Resposta recebida:', response);
+            
             if (response.success && response.data) {
                 const data = response.data;
+                console.log('Dados recebidos:', data);
 
                 // Atualizar contadores principais
                 if (data.counters) {
+                    console.log('Atualizando contadores:', data.counters);
                     $('#services-count').text(data.counters.services || 0);
                     $('#posts-count').text(data.counters.posts_published || 0);
                     $('#photos-count').text(data.counters.gallery_photos || 0);
                     $('#messages-count').text(data.counters.unread_messages || 0);
+                    
+                    // Atualizar mini stats também
+                    $('#kpi-services').text(data.counters.services || 0);
+                    $('#kpi-posts').text(data.counters.posts_published || 0);
+                    $('#kpi-photos').text(data.counters.gallery_photos || 0);
+                    $('#kpi-messages').text(data.counters.unread_messages || 0);
                 }
 
                 // Atualizar timestamp
@@ -1334,17 +1347,18 @@ function loadDashboardData() {
                     $('#last-update').text('Atualizado em: ' + response.last_updated);
                 }
 
-                // Animar contadores
-                $('.counter-card .h2').addClass('pulse');
-                setTimeout(() => $('.counter-card .h2').removeClass('pulse'), 1000);
-
                 // Notificação de sucesso
                 HMToast.success('Dashboard atualizado com sucesso!');
+                console.log('Dashboard atualizado com sucesso!');
             } else {
-                HMToast.error('Erro ao atualizar dashboard.');
+                console.error('Resposta inválida:', response);
+                HMToast.error('Erro ao atualizar dashboard - resposta inválida.');
             }
         },
-        error: function(xhr) {
+        error: function(xhr, status, error) {
+            console.error('Erro AJAX:', status, error);
+            console.error('Resposta do servidor:', xhr.responseText);
+            
             let message = 'Erro ao atualizar dashboard.';
             if (xhr.responseJSON && xhr.responseJSON.message) {
                 message = xhr.responseJSON.message;
@@ -1352,6 +1366,7 @@ function loadDashboardData() {
             HMToast.error(message);
         },
         complete: function() {
+            console.log('Requisição completada');
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Atualizar';
