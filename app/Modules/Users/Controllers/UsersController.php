@@ -52,7 +52,7 @@ class UsersController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role'     => 'required|in:admin,user',
+            'role'     => 'required|in:superadmin,admin,user',
             'avatar'   => 'nullable', // Pode ser arquivo ou UUID string
             'phone'    => 'nullable|string|max:20',
             'bio'      => 'nullable|string|max:500',
@@ -135,7 +135,7 @@ class UsersController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role'     => 'required|in:admin,user',
+            'role'     => 'required|in:superadmin,admin,user',
             'avatar'   => 'nullable', // Pode ser arquivo ou UUID string
             'phone'    => 'nullable|string|max:20',
             'bio'      => 'nullable|string|max:500',
