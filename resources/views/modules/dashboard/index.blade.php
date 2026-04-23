@@ -1126,13 +1126,7 @@ function dashRunMigrations() {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-$(document).ready(function() {
-    // Inicializar gráficos
-    initializeCharts();
-    
-    // Auto-refresh estatísticas a cada 5 minutos
-    setInterval(function() {
-        refreshQuickStats();
+// Função de atualizar dashboard - definida no escopo global
     }, 300000);
 
     // Atividades em tempo real — polling a cada 30s
