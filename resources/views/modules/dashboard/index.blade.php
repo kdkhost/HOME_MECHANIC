@@ -144,9 +144,7 @@
             <h4><i class="fas fa-tachometer-alt me-2"></i>Bem-vindo, {{ auth()->user()->name }}!</h4>
             <p>{{ now()->locale('pt_BR')->isoFormat('dddd, D [de] MMMM [de] YYYY') }} — Painel Home Mechanic</p>
         </div>
-        <button class="btn btn-light btn-sm" onclick="loadDashboardData()" id="btnRefresh" style="cursor:pointer;">
-            <i class="fas fa-sync-alt me-1" id="refreshIcon"></i> Atualizar
-        </button>
+        <span class="badge badge-light" style="font-size:0.75rem;"><i class="fas fa-sync-alt fa-spin me-1"></i>Atualização automática</span>
     </div>
 </div>
 
@@ -192,25 +190,6 @@
             </div>
             <div class="card-body">
                 <div class="chart-wrap">
-                    <canvas id="visitsChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Atividade recente --}}
-    <div class="col-lg-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span class="card-title"><i class="fas fa-history"></i> Atividade Recente</span>
-                <button class="btn btn-sm" onclick="refreshActivity()" title="Atualizar" style="padding:0.15rem 0.4rem;">
-                    <i class="fas fa-sync-alt" id="activityRefreshIcon" style="font-size:0.75rem;"></i>
-                </button>
-            </div>
-            <div class="card-body" id="activityCardBody" style="max-height:280px;overflow-y:auto;padding-top:0.5rem!important;">
-                <div id="activityList">
-                @forelse($data['recent_activity'] as $act)
-                <div class="activity-item">
                     <div class="activity-dot"></div>
                     <div>
                         <div class="activity-action">{{ $act['action'] }} <span style="font-weight:400;color:var(--hm-text-muted);">em {{ $act['model'] }}</span></div>
@@ -560,6 +539,45 @@ function refreshQuickStats() {
         }
     });
 }
+
+// ── Refresh Atividade Recente ───────────────────────────────
+function refreshActivity() {
+    var icon = document.getElementById('activityRefreshIcon');
+    if (icon) icon.className = 'fas fa-spinner fa-spin';
+    
+    $.ajax({
+        url: '{{ route("admin.dashboard.data") }}',
+        method: 'GET',
+        success: function(res) {
+            if (res.success && res.data && res.data.recent_activity) {
+                // Re-render activity list
+                var html = '';
+                if (res.data.recent_activity.length === 0) {
+                    html = '<div class="empty-state" style="padding:1.5rem 0;"><i class="fas fa-history"></i><p>Nenhuma atividade registrada</p></div>';
+                } else {
+                    res.data.recent_activity.forEach(function(act) {
+                        html += '<div class="activity-item"><div class="activity-dot"></div><div><div class="activity-action">' + act.action + ' <span style="font-weight:400;color:var(--hm-text-muted);">em ' + act.model + '</span></div><div class="activity-meta">' + act.user + ' · ' + act.formatted_time + '</div></div></div>';
+                    });
+                }
+                $('#activityList').html(html);
+                HMToast.success('Atividade atualizada!', 2000);
+            }
+        },
+        error: function() { HMToast.error('Erro ao atualizar atividade.'); },
+        complete: function() {
+            if (icon) icon.className = 'fas fa-sync-alt';
+        }
+    });
+}
+
+// ── Atualização automática em 2º plano (a cada 60 segundos) ──
+(function autoRefresh() {
+    console.log('Iniciando atualização automática em 2º plano...');
+    setInterval(function() {
+        console.log('Atualizando dashboard em 2º plano...');
+        refreshQuickStats(); // Atualiza sem mostrar notificação
+    }, 60000); // 60 segundos
+})();
 
 // ── Ferramentas de Manutenção (Dashboard) ─────────────────
 function dashClearType(type) {
