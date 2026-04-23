@@ -144,7 +144,7 @@
             <h4><i class="fas fa-tachometer-alt me-2"></i>Bem-vindo, {{ $user->name }}!</h4>
             <p>{{ now()->locale('pt_BR')->isoFormat('dddd, D [de] MMMM [de] YYYY') }} — Painel Home Mechanic</p>
         </div>
-        <button class="btn btn-light btn-sm" onclick="loadDashboardData()" id="btnRefresh">
+        <button class="btn btn-light btn-sm" onclick="console.log('Botão clicado!'); loadDashboardData();" id="btnRefresh" style="cursor:pointer;position:relative;z-index:100;">
             <i class="fas fa-sync-alt me-1" id="refreshIcon"></i> Atualizar
         </button>
     </div>
