@@ -102,7 +102,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isSuperAdmin(): bool
     {
-        return $this->role === 'admin' || $this->permission_level >= 100;
+        return $this->role === 'superadmin' || $this->role === 'admin' || $this->permission_level >= 100;
     }
 
     /**
