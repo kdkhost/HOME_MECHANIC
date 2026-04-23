@@ -41,6 +41,17 @@
         .filepond--root { font-family: inherit; }
         .filepond--panel-root { background-color: #f8f9fa; border: 2px dashed #dee2e6; }
         .filepond--item-panel { background-color: var(--hm-primary); }
+        
+        /* Navbar fixo ao rolar */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 1040;
+            transition: all 0.3s ease;
+        }
+        .app-header.scrolled {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
     </style>
 
     @yield('styles')
@@ -673,5 +684,22 @@
 </script>
 
 @yield('scripts')
+
+<script>
+// Navbar sticky effect ao rolar
+(function() {
+    const navbar = document.getElementById('mainNavbar');
+    if (!navbar) return;
+    
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 10) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+})();
+</script>
+
 </body>
 </html>
