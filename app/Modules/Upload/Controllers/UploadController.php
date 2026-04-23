@@ -287,13 +287,23 @@ class UploadController extends Controller
 
             // Se nao encontrou no banco, tenta carregar diretamente do storage/uploads
             // Isso resolve imagens antigas salvas apenas como config (site_logo, favicon, etc)
+            // E também imagens de patrocinadores, serviços, etc
             if (!file_exists($path) && $upload === null) {
                 $possiblePaths = [
                     public_path('storage/uploads/' . $source),
                     public_path('storage/' . $source),
                     public_path($source),
+                    public_path('uploads/' . $source),
+                    public_path('uploads/sponsors/' . $source),
+                    public_path('uploads/services/' . $source),
+                    public_path('uploads/gallery/' . $source),
+                    public_path('uploads/testimonials/' . $source),
                     storage_path('app/public/uploads/' . $source),
                     storage_path('app/public/' . $source),
+                    storage_path('app/public/uploads/sponsors/' . $source),
+                    storage_path('app/public/uploads/services/' . $source),
+                    storage_path('app/public/uploads/gallery/' . $source),
+                    storage_path('app/public/uploads/testimonials/' . $source),
                 ];
 
                 foreach ($possiblePaths as $possiblePath) {
