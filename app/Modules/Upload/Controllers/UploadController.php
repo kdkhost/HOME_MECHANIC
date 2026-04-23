@@ -318,7 +318,15 @@ class UploadController extends Controller
                 return response()->file($path);
             }
 
-            Log::warning('Arquivo nao encontrado no FilePond load', ['source' => $source, 'tried_path' => $path]);
+            // Log detalhado para debug
+            Log::warning('Arquivo nao encontrado no FilePond load', [
+                'source' => $source,
+                'tried_path' => $path,
+                'upload_null' => ($upload === null),
+                'possible_paths_checked' => $possiblePaths ?? [],
+                'public_path_value' => public_path(''),
+                'storage_path_value' => storage_path(''),
+            ]);
             return response('File not found: ' . $path, 404);
 
         } catch (\Exception $e) {
