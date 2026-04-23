@@ -294,12 +294,14 @@ function editSponsor(id) {
 
             // Carregar logo existente no FilePond se houver
             var fpInput = document.getElementById('sponsorLogo');
-            if (fpInput && s.logo) {
+            if (fpInput) {
                 var pond = FilePond.find(fpInput);
                 if (pond) {
-                    pond.removeFiles();
-                    var logoUrl = s.logo.startsWith('http') ? s.logo : '/' + s.logo.replace(/^\//, '');
-                    pond.addFile(logoUrl);
+                    pond.removeFiles(); // Sempre limpar primeiro
+                    if (s.logo) {
+                        var logoUrl = s.logo.startsWith('http') ? s.logo : '/' + s.logo.replace(/^\//, '');
+                        pond.addFile(logoUrl);
+                    }
                 }
             }
 
