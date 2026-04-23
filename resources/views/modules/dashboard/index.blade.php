@@ -137,12 +137,16 @@
 
 @section('content')
 
-{{-- Welcome --}}
-<div class="dash-welcome">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-            <h4><i class="fas fa-tachometer-alt me-2"></i>Bem-vindo, {{ $user->name }}!</h4>
-            <p>{{ now()->locale('pt_BR')->isoFormat('dddd, D [de] MMMM [de] YYYY') }} — Painel Home Mechanic</p>
+{{-- Script para atualizar dashboard - definido antes do botão --}}
+<script>
+window.loadDashboardData = function() {
+    console.log('Função loadDashboardData() iniciada');
+    
+    const btn = document.getElementById('btnRefresh');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1" id="refreshIcon"></i> Atualizando...';
+    }
         </div>
         <button class="btn btn-light btn-sm" onclick="console.log('Botão clicado!'); loadDashboardData();" id="btnRefresh" style="cursor:pointer;position:relative;z-index:100;">
             <i class="fas fa-sync-alt me-1" id="refreshIcon"></i> Atualizar
