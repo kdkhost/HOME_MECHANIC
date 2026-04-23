@@ -1307,10 +1307,11 @@ function clearCache() {
 
 // Atualizar dashboard sem refresh
 function loadDashboardData() {
-    const btn = document.getElementById('refreshBtn');
+    const btn = document.getElementById('btnRefresh');
+    const icon = document.getElementById('refreshIcon');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Atualizando...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1" id="refreshIcon"></i> Atualizando...';
     }
 
     $.ajax({
