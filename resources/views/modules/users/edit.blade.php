@@ -91,7 +91,9 @@
                 <div style="font-weight:700;font-size:1.2rem;margin-bottom:0.25rem;">{{ $user->name }}</div>
                 <div style="font-size:0.88rem;color:var(--hm-text-muted);">{{ $user->email }}</div>
                 <div class="mt-2">
-                    @if($user->role === 'admin')
+                    @if($user->role === 'superadmin')
+                        <span class="badge badge-dark" style="font-size:0.75rem;background:#dc2626;"><i class="fas fa-crown me-1"></i>SuperAdmin</span>
+                    @elseif($user->role === 'admin')
                         <span class="badge badge-danger" style="font-size:0.75rem;"><i class="fas fa-shield-alt me-1"></i>Administrador</span>
                     @else
                         <span class="badge badge-info" style="font-size:0.75rem;"><i class="fas fa-user me-1"></i>Usuário</span>
