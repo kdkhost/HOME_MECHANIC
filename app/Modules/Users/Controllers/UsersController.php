@@ -11,7 +11,7 @@ use App\Helpers\FileUploadHelper;
 
 class UsersController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $currentUser = auth()->user();
 
@@ -19,17 +19,35 @@ class UsersController extends Controller
             // Filtrar usuarios de acordo com hierarquia
             if ($currentUser->isSuperAdmin()) {
                 // Superadmin ve todos (inclusive outros admins)
-                $users = User::orderBy('created_at', 'desc')->get();
+                $query = User::query();
             } elseif ($currentUser->permission_level >= 50) {
                 // Admin so ve usuarios de nivel inferior (nivel 10)
-                $users = User::where('permission_level', '<', $currentUser->permission_level)
-                    ->orWhere('id', $currentUser->id)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
+                $query = User::where(function($q) use ($currentUser) {
+                    $q->where('permission_level', '<', $currentUser->permission_level)
+                      ->orWhere('id', $currentUser->id);
+                });
             } else {
                 // Usuario comum so ve a si mesmo
-                $users = User::where('id', $currentUser->id)->get();
+                $query = User::where('id', $currentUser->id);
             }
+
+            // Aplicar filtro de busca por nome ou email
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('email', 'like', '%' . $search . '%');
+                });
+            }
+
+            // Aplicar filtro por role
+            if ($request->filled('role')) {
+                $role = $request->input('role');
+                $query->where('role', $role);
+            }
+
+            $users = $query->orderBy('created_at', 'desc')->get();
+
         } catch (\Exception $e) {
             $users = collect([[
                 'id' => 1, 'name' => 'Administrador',
