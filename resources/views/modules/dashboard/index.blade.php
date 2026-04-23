@@ -137,68 +137,16 @@
 
 @section('content')
 
-{{-- Script para atualizar dashboard - definido antes do botão --}}
-<script>
-window.loadDashboardData = function() {
-    console.log('Função loadDashboardData() iniciada');
-    
-    const btn = document.getElementById('btnRefresh');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1" id="refreshIcon"></i> Atualizando...';
-    }
+{{-- Welcome --}}
+<div class="dash-welcome">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h4><i class="fas fa-tachometer-alt me-2"></i>Bem-vindo, {{ auth()->user()->name }}!</h4>
+            <p>{{ now()->locale('pt_BR')->isoFormat('dddd, D [de] MMMM [de] YYYY') }} — Painel Home Mechanic</p>
         </div>
-        <button class="btn btn-light btn-sm" onclick="console.log('Botão clicado!'); loadDashboardData();" id="btnRefresh" style="cursor:pointer;position:relative;z-index:100;">
+        <button class="btn btn-light btn-sm" onclick="loadDashboardData()" id="btnRefresh" style="cursor:pointer;">
             <i class="fas fa-sync-alt me-1" id="refreshIcon"></i> Atualizar
         </button>
-    </div>
-</div>
-
-{{-- KPI Cards --}}
-<div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
-        <div class="card kpi-card h-100" style="background:linear-gradient(135deg,#FF6B00,#E55A00) !important;color:#fff !important;">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="kpi-num" id="kpi-services" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['services'] }}</div>
-                    <div class="kpi-lbl" style="color:rgba(255,255,255,0.9)!important;font-size:0.78rem;">Serviços Ativos</div>
-                </div>
-                <i class="fas fa-tools" style="font-size:2rem;opacity:0.7;color:#fff!important;"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card kpi-card h-100" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="kpi-num" id="kpi-posts" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['posts_published'] }}</div>
-                    <div class="kpi-lbl" style="color:rgba(255,255,255,0.9)!important;font-size:0.78rem;">Posts Publicados</div>
-                </div>
-                <i class="fas fa-newspaper" style="font-size:2rem;opacity:0.7;color:#fff!important;"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card kpi-card h-100" style="background:linear-gradient(135deg,#0891b2,#0e7490) !important;color:#fff !important;">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="kpi-num" id="kpi-photos" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['gallery_photos'] }}</div>
-                    <div class="kpi-lbl" style="color:rgba(255,255,255,0.9)!important;font-size:0.78rem;">Fotos na Galeria</div>
-                </div>
-                <i class="fas fa-images" style="font-size:2rem;opacity:0.7;color:#fff!important;"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card kpi-card h-100" style="background:linear-gradient(135deg,#d97706,#b45309) !important;color:#fff !important;">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="kpi-num" id="kpi-messages" style="color:#fff!important;font-size:2rem;font-weight:700;">{{ $data['counters']['unread_messages'] }}</div>
-                    <div class="kpi-lbl" style="color:rgba(255,255,255,0.9)!important;font-size:0.78rem;">Mensagens Não Lidas</div>
-                </div>
-                <i class="fas fa-envelope" style="font-size:2rem;opacity:0.7;color:#fff!important;"></i>
-            </div>
-        </div>
     </div>
 </div>
 
