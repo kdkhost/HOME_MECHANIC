@@ -105,8 +105,8 @@
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title m-0">
                     <i class="bi bi-image mr-2"></i>
                     @if($category)
                         Fotos: {{ $category->name }}
@@ -114,17 +114,17 @@
                         Todas as Fotos
                     @endif
                 </h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#photoModal">
-                        <i class="bi bi-plus"></i> Nova Foto
-                    </button>
-                    <button type="button" class="btn btn-success ml-2" data-bs-toggle="modal" data-bs-target="#massUploadModal">
-                        <i class="bi bi-clouds"></i> Upload em Massa
-                    </button>
-                    <a href="{{ route('admin.gallery.index') }}" class="btn btn-secondary ml-2">
-                        <i class="bi bi-arrow-left"></i> Voltar
-                    </a>
-                </div>
+            <div class="card-tools d-flex align-items-center">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#photoModal">
+                    <i class="bi bi-plus"></i> Nova Foto
+                </button>
+                <button type="button" class="btn btn-success ml-2" data-bs-toggle="modal" data-bs-target="#massUploadModal">
+                    <i class="bi bi-clouds"></i> Upload em Massa
+                </button>
+                <a href="{{ route('admin.gallery.index') }}" class="btn btn-secondary ml-2">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
             </div>
             
             <div class="card-body">
@@ -370,10 +370,7 @@ class PhotosManager {
                 sort_by: $('#sortBy').val()
             });
 
-            const categoryId = $('#categoryFilter').val();
-            const url = categoryId 
-                ? `{{ route('admin.gallery.photos', '') }}/${categoryId}?${params}`
-                : `{{ route('admin.gallery.photos') }}?${params}`;
+            const url = `{{ route('admin.gallery.photos') }}?${params}`;
 
             const response = await fetch(url, {
                 headers: {
@@ -639,7 +636,7 @@ class PhotosManager {
                     didOpen: () => Swal.showLoading()
                 });
 
-                const response = await fetch(`{{ route('admin.gallery.photos.rename-file', '') }}/${id}`, {
+                const response = await fetch(`{{ route('admin.gallery.photos') }}/${id}/rename-file`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -828,7 +825,7 @@ class PhotosManager {
 
         if (result.isConfirmed) {
             try {
-                const response = await fetch(`{{ route('admin.gallery.photos.destroy', '') }}/${id}`, {
+                const response = await fetch(`{{ route('admin.gallery.photos') }}/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
@@ -848,7 +845,7 @@ class PhotosManager {
 
     async toggleActive(id) {
         try {
-            const response = await fetch(`{{ route('admin.gallery.photos.toggle-active', '') }}/${id}`, {
+            const response = await fetch(`{{ route('admin.gallery.photos') }}/${id}/toggle-active`, {
                 method: 'PATCH',
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),

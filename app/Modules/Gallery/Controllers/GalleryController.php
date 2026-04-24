@@ -268,20 +268,22 @@ class GalleryController extends Controller
             $query = GalleryPhoto::with(['category']);
             $category = null;
 
-            // Resolver parâmetro {id?} — pode ser categoria ou photo_id
-            if ($id) {
-                // Primeiro tentar como categoria
-                $category = GalleryCategory::find($id);
+            // Resolver categoria - Priorizar category_id da request, depois $id da rota
+            $categoryId = $request->input('category_id') ?: $id;
+            
+            if ($categoryId) {
+                // Tentar encontrar a categoria primeiro
+                $category = GalleryCategory::find($categoryId);
                 if ($category) {
                     $query->where('category_id', $category->id);
-                } else {
-                    // Se não é categoria, tentar como photo_id
+                } else if ($id && !$request->has('category_id')) {
+                    // Se não é categoria e veio apenas via rota, tentar como photo_id
                     $query->where('id', $id);
                 }
             }
 
-            // Filtros
-            if ($request->has('search') && $request->filled('search')) {
+            // Filtros Adicionais
+            if ($request->filled('search')) {
                 $query->search($request->input('search'));
             }
 
@@ -289,12 +291,8 @@ class GalleryController extends Controller
                 $query->where('active', $request->boolean('active'));
             }
 
-            if ($request->has('category_id') && $request->filled('category_id')) {
-                $query->where('category_id', $request->input('category_id'));
-            }
-
-            // Filtro por ID da foto (usado pelo editPhoto JS)
-            if ($request->has('photo_id') && $request->filled('photo_id')) {
+            // Filtro por ID da foto específico (usado pelo editPhoto JS)
+            if ($request->filled('photo_id')) {
                 $query->where('id', $request->input('photo_id'));
             }
 
