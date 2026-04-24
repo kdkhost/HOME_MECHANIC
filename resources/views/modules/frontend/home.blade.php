@@ -233,7 +233,8 @@
 /* ── Testimonials ──────────────────────────────────────────── */
 .testimonials-section { background: var(--black); }
 .testimonials-swiper {
-    padding-bottom: 3rem !important;
+    padding-bottom: 1rem !important;
+    overflow: visible !important;
 }
 .testimonial-card {
     background: var(--dark2);
@@ -260,9 +261,6 @@
 }
 .testimonial-name { font-weight: 600; font-size: 0.9rem; }
 .testimonial-car  { color: var(--orange); font-size: 0.78rem; }
-
-.swiper-pagination-bullet { background: rgba(255,255,255,0.2) !important; opacity: 1 !important; }
-.swiper-pagination-bullet-active { background: var(--orange) !important; }
 
 /* ── CTA ───────────────────────────────────────────────────── */
 .cta-section {
@@ -576,8 +574,7 @@
                 <div class="swiper-slide text-center text-muted py-5">Nenhum depoimento cadastrado.</div>
                 @endforelse
             </div>
-            {{-- Paginação --}}
-            <div class="swiper-pagination"></div>
+            {{-- Paginação removida para manter visual da foto --}}
         </div>
     </div>
 </section>
@@ -650,10 +647,6 @@ $(function() {
             delay: 5000,
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
         },
         breakpoints: {
             768: {
