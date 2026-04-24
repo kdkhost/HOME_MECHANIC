@@ -39,11 +39,35 @@ class FileUploadHelper
 
         // 2) UUID retornado pelo FilePond (upload assincrono)
         $val = $request->input($field);
-        if (is_string($val) && preg_match(self::UUID_REGEX, $val)) {
-            $upload = \App\Modules\Upload\Models\Upload::where('uuid', $val)->first();
-            if ($upload) {
-                if ($oldPath) static::delete($oldPath);
-                return $upload->path;
+        
+        // Se for array, pega o primeiro elemento (FilePond as vezes envia como array)
+        if (is_array($val)) {
+            $val = reset($val);
+        }
+
+        if (is_string($val) && !empty($val)) {
+            $uuid = null;
+            
+            // Tenta validar como UUID direto
+            if (preg_match(self::UUID_REGEX, $val)) {
+                $uuid = $val;
+            } 
+            // Tenta validar se é um JSON contendo o UUID (comum no FilePond)
+            else if (str_starts_with($val, '{')) {
+                $json = json_decode($val, true);
+                if (isset($json['data']['uuid'])) {
+                    $uuid = $json['data']['uuid'];
+                } else if (isset($json['uuid'])) {
+                    $uuid = $json['uuid'];
+                }
+            }
+
+            if ($uuid) {
+                $upload = \App\Modules\Upload\Models\Upload::where('uuid', $uuid)->first();
+                if ($upload) {
+                    if ($oldPath) static::delete($oldPath);
+                    return $upload->path;
+                }
             }
         }
 

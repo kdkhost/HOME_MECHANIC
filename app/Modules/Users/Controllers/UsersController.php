@@ -175,36 +175,36 @@ class UsersController extends Controller
                 'role'  => $request->role,
             ];
 
-            // Preservar permission_level ou atualizar se fornecido (apenas superadmin/gerente pode alterar)
-            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'permission_level')) {
-                if ($request->filled('permission_level') && auth()->user()->canManageUser($user)) {
-                    $data['permission_level'] = $request->permission_level;
-                }
-                // Se nao fornecido, mantem o valor atual (nao inclui no data)
+            // Atualizar nível de permissão se fornecido (apenas superadmin/gerente pode alterar)
+            if ($request->filled('permission_level') && auth()->user()->canManageUser($user)) {
+                $data['permission_level'] = $request->permission_level;
             }
 
-            // Campos opcionais — só inclui se a coluna existir no banco
-            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone')) {
-                $data['phone'] = $request->phone;
-            }
-            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'bio')) {
-                $data['bio'] = $request->bio;
-            }
+            // Campos opcionais
+            $data['phone'] = $request->phone;
+            $data['bio'] = $request->bio;
 
             if ($request->filled('password')) {
                 $data['password'] = Hash::make($request->password);
             }
 
-            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar')) {
-                // remove_avatar manual OU _clear do FilePond
-                if ($request->input('remove_avatar') === '1' || $request->input('avatar_clear') === '1') {
-                    FileUploadHelper::delete($user->avatar);
-                    $data['avatar'] = null;
-                } else {
-                    $avatarResolved = FileUploadHelper::resolveFromRequest($request, 'avatar', 'uploads/avatars', $user->avatar);
-                    if ($avatarResolved !== null) {
-                        $data['avatar'] = $avatarResolved ?: null;
-                    }
+            // Processamento de Avatar
+            Log::info('UsersController@update: Processando avatar', [
+                'avatar_input' => $request->input('avatar'),
+                'avatar_files' => $request->file('avatar'),
+                'avatar_clear' => $request->input('avatar_clear'),
+            ]);
+
+            // remove_avatar manual OU _clear do FilePond
+            if ($request->input('remove_avatar') === '1' || $request->input('avatar_clear') === '1') {
+                FileUploadHelper::delete($user->avatar);
+                $data['avatar'] = null;
+            } else {
+                $avatarResolved = FileUploadHelper::resolveFromRequest($request, 'avatar', 'uploads/avatars', $user->avatar);
+                Log::info('UsersController@update: Resultado resolveFromRequest', ['path' => $avatarResolved]);
+                
+                if ($avatarResolved !== null) {
+                    $data['avatar'] = $avatarResolved ?: null;
                 }
             }
 
