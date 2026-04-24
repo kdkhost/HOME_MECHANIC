@@ -291,6 +291,11 @@
     #navbar.scrolled .nav-brand.has-logo .nav-logo-floating {
         height: 96px;
     }
+    @media (max-width: 767px) {
+        #navbar.scrolled .nav-brand.has-logo .nav-logo-floating {
+            height: 60px; /* Logo menor no mobile scroll */
+        }
+    }
     .nav-brand {
         font-family: var(--font-head);
         font-size: 1.6rem; font-weight: 700;

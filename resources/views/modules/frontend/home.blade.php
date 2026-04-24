@@ -542,32 +542,34 @@
             <div class="divider-orange mx-auto"></div>
         </div>
         
-        <div class="row g-4" id="testimonials-grid">
-            @forelse($testimonials as $i => $t)
-            <div class="col-md-4 testimonial-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}" style="{{ $i >= 3 ? 'display:none;' : '' }}">
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">
-                        @for($k=1; $k<=5; $k++)
-                            <i class="{{ $k <= $t->rating ? 'bi bi-star-fill' : 'bi bi-star' }}"></i>
-                        @endfor
-                    </div>
-                    <p class="testimonial-content">"{{ $t->content }}"</p>
-                    <div class="testimonial-author">
-                        @if($t->photo_url)
-                            <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" class="testimonial-img" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-                        @else
-                            <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
-                        @endif
-                        <div>
-                            <div class="testimonial-author-name">{{ $t->name }}</div>
-                            <div class="testimonial-author-role">{{ $t->role }}</div>
+        <div class="swiper testimonials-rotate" data-aos="fade-up" data-aos-delay="100">
+            <div class="swiper-wrapper">
+                @forelse($testimonials as $t)
+                <div class="swiper-slide col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            @for($k=1; $k<=5; $k++)
+                                <i class="{{ $k <= $t->rating ? 'bi bi-star-fill' : 'bi bi-star' }}"></i>
+                            @endfor
+                        </div>
+                        <p class="testimonial-text">"{{ $t->content }}"</p>
+                        <div class="testimonial-author">
+                            @if($t->photo_url)
+                                <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                            @else
+                                <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
+                            @endif
+                            <div>
+                                <div class="testimonial-name">{{ $t->name }}</div>
+                                <div class="testimonial-car">{{ $t->role }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+                @empty
+                <div class="col-12 text-center text-muted">Nenhum depoimento cadastrado.</div>
+                @endforelse
             </div>
-            @empty
-            <div class="col-12 text-center text-muted">Nenhum depoimento cadastrado.</div>
-            @endforelse
         </div>
     </div>
 </section>
@@ -630,30 +632,30 @@
 @section('scripts')
 <script>
 $(function() {
-    const $items = $('.testimonial-item');
-    let currentIndex = 0;
-    const itemsPerPage = 3;
-
-    if ($items.length > itemsPerPage) {
-        setInterval(function() {
-            // Fade out os itens atuais
-            const $currentBatch = $items.slice(currentIndex, currentIndex + itemsPerPage);
-            
-            $currentBatch.fadeOut(600, function() {
-                // Avança o index
-                currentIndex = (currentIndex + itemsPerPage) % $items.length;
-                
-                // Se o próximo lote não tiver 3 itens completos (fim da lista), volta pro início
-                if (currentIndex + itemsPerPage > $items.length) {
-                    currentIndex = 0;
-                }
-
-                // Fade in o novo lote
-                const $nextBatch = $items.slice(currentIndex, currentIndex + itemsPerPage);
-                $nextBatch.fadeIn(600);
-            });
-        }, 15000); // 15 segundos
-    }
+    // ── Rotating Testimonials (Dinâmico no mobile, Estático no desktop)
+    new Swiper('.testimonials-rotate', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        speed: 1000,
+        autoplay: {
+            delay: 15000, // 15 segundos
+            disableOnInteraction: false,
+        },
+        // Configurações Mobile
+        allowTouchMove: true,
+        grabCursor: true,
+        
+        breakpoints: {
+            // Desktop
+            1200: {
+                slidesPerView: 3,
+                slidesPerGroup: 3,    // Muda os 3 de uma vez para manter visual fixo
+                allowTouchMove: false, // Desativa arraste no desktop
+                grabCursor: false,
+            }
+        }
+    });
 });
 </script>
 @endsection
