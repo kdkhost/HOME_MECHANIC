@@ -245,7 +245,7 @@ function renderServices(services) {
             '<button class="btn btn-warning" onclick="editService(' + s.id + ')" title="Editar"><i class="fas fa-pencil-alt"></i></button>' +
             '<button class="btn btn-' + (s.active ? 'secondary' : 'success') + '" onclick="toggleActive(' + s.id + ')" title="' + (s.active ? 'Desativar' : 'Ativar') + '"><i class="fas fa-' + (s.active ? 'pause' : 'play') + '"></i></button>' +
             '<button class="btn btn-' + (s.featured ? 'secondary' : 'warning') + '" onclick="toggleFeatured(' + s.id + ')" title="' + (s.featured ? 'Remover destaque' : 'Destacar') + '"><i class="fas fa-star' + (s.featured ? '' : '-o') + '"></i></button>' +
-            '<button class="btn btn-danger btn-delete" onclick="deleteService(' + s.id + ', \'' + s.title.replace(/'/g,'') + '\')" title="Excluir"><i class="fas fa-trash"></i></button>' +
+            '<button class="btn btn-danger btn-delete" onclick="event.preventDefault(); deleteService(' + s.id + ', \'' + (s.title || '').replace(/'/g,'') + '\'); return false;" title="Excluir"><i class="fas fa-trash"></i></button>' +
             '</div></div></div></div>';
     });
     html += '</div>';
