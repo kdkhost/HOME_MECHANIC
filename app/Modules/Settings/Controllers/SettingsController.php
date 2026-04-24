@@ -151,6 +151,8 @@ class SettingsController extends Controller
                     return back()->with('error', 'Seção inválida.');
             }
 
+            \App\Models\AuditLog::record('settings_updated', null, [], ['section' => $section]);
+
             return back()->with('success', 'Configurações salvas com sucesso!');
 
         } catch (\Exception $e) {
@@ -541,6 +543,7 @@ class SettingsController extends Controller
             $output = Artisan::output();
 
             if ($exitCode === 0) {
+                \App\Models\AuditLog::record('cron_manual_run', null, [], ['command' => $command]);
                 return response()->json(['success' => true, 'message' => 'Tarefa executada com sucesso.', 'output' => trim($output)]);
             }
 
@@ -718,6 +721,8 @@ class SettingsController extends Controller
                             ->from($fromAddr, $fromName)
                             ->subject($subjectParsed)
             );
+
+            \App\Models\AuditLog::record('smtp_test_sent', null, [], ['to' => $request->input('test_email')]);
 
             return response()->json([
                 'success' => true,

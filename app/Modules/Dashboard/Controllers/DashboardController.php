@@ -143,6 +143,10 @@ class DashboardController extends Controller
             ? ($type === 'all' ? 'Todos os caches foram limpos!' : 'Cache limpo com sucesso!')
             : 'Concluído com ' . $errors . ' erro(s).';
 
+        if ($errors === 0) {
+            \App\Models\AuditLog::record('cache_cleared', null, [], ['type' => $type]);
+        }
+
         return response()->json([
             'success' => $errors === 0,
             'message' => $message,
@@ -163,6 +167,8 @@ class DashboardController extends Controller
                 'user_id' => \Illuminate\Support\Facades\Auth::id(),
                 'output'  => $output,
             ]);
+
+            \App\Models\AuditLog::record('migrations_run', null, [], ['output' => trim($output)]);
 
             return response()->json([
                 'success' => true,
@@ -321,24 +327,26 @@ class DashboardController extends Controller
     private function getRecentActivity(): array
     {
         try {
-            return DB::table('audit_logs')
-                ->leftJoin('users', 'audit_logs.user_id', '=', 'users.id')
-                ->select([
-                    'audit_logs.action',
-                    'audit_logs.model_type',
-                    'audit_logs.created_at',
-                    'users.name as user_name'
-                ])
-                ->orderBy('audit_logs.created_at', 'desc')
+            return \App\Models\AuditLog::with('user')
+                ->orderBy('created_at', 'desc')
                 ->limit(10)
                 ->get()
-                ->map(function ($item) {
+                ->map(function ($log) {
+                    $modelName = $log->model_name;
+                    $actionName = $log->action_name;
+                    
+                    // Evitar redundância: "Login no Sistema em Sistema" -> "Login no Sistema"
+                    $displayText = ($modelName === 'Sistema' || empty($modelName))
+                        ? $actionName 
+                        : "{$actionName} em {$modelName}";
+
                     return [
-                        'action' => $item->action,
-                        'model' => $this->formatModelName($item->model_type),
-                        'user' => $item->user_name ?? 'Sistema',
-                        'time' => $item->created_at,
-                        'formatted_time' => \Carbon\Carbon::parse($item->created_at)->diffForHumans()
+                        'action' => $actionName,
+                        'model' => $modelName,
+                        'display' => $displayText,
+                        'user' => $log->user?->name ?? 'Sistema',
+                        'time' => $log->created_at,
+                        'formatted_time' => $log->created_at?->diffForHumans() ?? 'Agora'
                     ];
                 })
                 ->toArray();
@@ -539,7 +547,8 @@ class DashboardController extends Controller
             'App\\Modules\\Blog\\Models\\Post' => 'Post',
             'App\\Modules\\Gallery\\Models\\GalleryPhoto' => 'Foto',
             'App\\Modules\\Testimonials\\Models\\Testimonial' => 'Depoimento',
-            'App\\Modules\\Contact\\Models\\ContactMessage' => 'Mensagem'
+            'App\\Modules\\Contact\\Models\\ContactMessage' => 'Mensagem',
+            'System' => 'Sistema'
         ];
 
         return $modelNames[$modelType] ?? class_basename($modelType);

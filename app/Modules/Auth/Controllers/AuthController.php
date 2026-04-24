@@ -82,6 +82,8 @@ class AuthController extends Controller
                 'user_agent' => $request->userAgent()
             ]);
 
+            \App\Models\AuditLog::record('user_login', Auth::user());
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login realizado com sucesso!',
@@ -118,6 +120,7 @@ class AuthController extends Controller
                 'email' => Auth::user()->email,
                 'ip' => $request->ip()
             ]);
+            \App\Models\AuditLog::record('user_logout', Auth::user());
         }
 
         // Fazer logout
@@ -270,6 +273,10 @@ class AuthController extends Controller
             ]);
 
             if ($status === Password::RESET_LINK_SENT) {
+                // Registrar log (sem usuário logado)
+                $user = \App\Models\User::where('email', $email)->first();
+                \App\Models\AuditLog::record('password_reset_requested', $user);
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Enviamos o link de recuperação para o seu e-mail!'
@@ -342,6 +349,9 @@ class AuthController extends Controller
         );
 
         if ($status === Password::PASSWORD_RESET) {
+            $user = \App\Models\User::where('email', $request->email)->first();
+            \App\Models\AuditLog::record('password_reset_success', $user);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Sua senha foi redefinida com sucesso!',

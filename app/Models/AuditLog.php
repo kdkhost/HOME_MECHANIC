@@ -42,13 +42,13 @@ class AuditLog extends Model
     /**
      * Registrar ação no audit log
      */
-    public static function record(string $action, Model $model, array $oldValues = [], array $newValues = []): self
+    public static function record(string $action, ?Model $model = null, array $oldValues = [], array $newValues = []): self
     {
         return static::create([
             'user_id' => Auth::id(),
             'action' => $action,
-            'model_type' => get_class($model),
-            'model_id' => $model->getKey(),
+            'model_type' => $model ? get_class($model) : 'System',
+            'model_id' => $model ? $model->getKey() : 0,
             'old_values' => $oldValues,
             'new_values' => $newValues,
             'ip_address' => request()->ip(),
@@ -125,6 +125,17 @@ class AuditLog extends Model
             'maintenance_toggled' => 'Modo de Manutenção Alterado',
             'maintenance_ip_added' => 'IP de Manutenção Adicionado',
             'maintenance_ip_removed' => 'IP de Manutenção Removido',
+            'cron_manual_run' => 'Tarefa Agendada Executada (Manual)',
+            'backup_manual_run' => 'Backup Gerado (Manual)',
+            'backup_manual_delete' => 'Backup Excluído',
+            'schedule_run' => 'Agendamentos Executados (Manual)',
+            'cache_cleared' => 'Cache do Sistema Limpo',
+            'migrations_run' => 'Estrutura de Banco Atualizada (Migrations)',
+            'smtp_test_sent' => 'Teste de E-mail Enviado',
+            'user_login' => 'Login no Sistema',
+            'user_logout' => 'Logout do Sistema',
+            'password_reset_requested' => 'Recuperação de Senha Solicitada',
+            'password_reset_success' => 'Senha Redefinida com Sucesso',
             default => ucfirst(str_replace('_', ' ', $this->action))
         };
     }
@@ -144,6 +155,7 @@ class AuditLog extends Model
             'App\Modules\Contact\Models\ContactMessage' => 'Mensagem de Contato',
             'App\Modules\Settings\Models\Setting' => 'Configuração',
             'App\Modules\Maintenance\Models\MaintenanceIp' => 'IP de Manutenção',
+            'System' => 'Sistema',
             default => class_basename($this->model_type)
         };
     }

@@ -93,6 +93,8 @@ class BackupController extends Controller
 
             Log::info("Backup gerado: {$filename} (" . $this->formatSize($fileSize) . ")");
 
+            \App\Models\AuditLog::record('backup_manual_run', null, [], ['filename' => $filename, 'size' => $this->formatSize($fileSize)]);
+
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -163,6 +165,7 @@ class BackupController extends Controller
 
         if ($disk->exists($relativePath)) {
             $disk->delete($relativePath);
+            \App\Models\AuditLog::record('backup_manual_delete', null, [], ['filename' => $filename]);
             return response()->json(['success' => true, 'message' => 'Backup excluído.']);
         }
 

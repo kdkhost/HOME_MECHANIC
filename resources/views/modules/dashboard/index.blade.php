@@ -209,7 +209,7 @@
                 <div class="activity-item">
                     <div class="activity-dot"></div>
                     <div>
-                        <div class="activity-action">{{ $act['action'] }} <span style="font-weight:400;color:var(--hm-text-muted);">em {{ $act['model'] }}</span></div>
+                        <div class="activity-action">{{ $act['display'] }}</div>
                         <div class="activity-meta">{{ $act['user'] }} · {{ $act['formatted_time'] }}</div>
                     </div>
                 </div>
@@ -573,7 +573,7 @@ function refreshActivity() {
                     html = '<div class="empty-state" style="padding:1.5rem 0;"><i class="fas fa-history"></i><p>Nenhuma atividade registrada</p></div>';
                 } else {
                     res.data.recent_activity.forEach(function(act) {
-                        html += '<div class="activity-item"><div class="activity-dot"></div><div><div class="activity-action">' + act.action + ' <span style="font-weight:400;color:var(--hm-text-muted);">em ' + act.model + '</span></div><div class="activity-meta">' + act.user + ' · ' + act.formatted_time + '</div></div></div>';
+                        html += '<div class="activity-item"><div class="activity-dot"></div><div><div class="activity-action">' + act.display + '</div><div class="activity-meta">' + act.user + ' · ' + act.formatted_time + '</div></div></div>';
                     });
                 }
                 $('#activityList').html(html);
