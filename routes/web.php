@@ -14,7 +14,8 @@ Route::get('/', function () {
 })->name('home');
 
 // Rotas do frontend
-Route::get('/servicos',      [FrontendController::class, 'services'])->name('services');
+Route::get('/servicos',          [FrontendController::class, 'services'])->name('services');
+Route::get('/servicos/{slug}',   [FrontendController::class, 'serviceDetail'])->name('services.show');
 Route::get('/galeria',       [FrontendController::class, 'gallery'])->name('gallery');
 Route::get('/blog',          [FrontendController::class, 'blog'])->name('blog');
 Route::get('/blog/{slug}',   [FrontendController::class, 'blogPost'])->name('blog.post');

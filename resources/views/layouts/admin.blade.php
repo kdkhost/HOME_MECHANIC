@@ -228,8 +228,8 @@
     <aside class="app-sidebar bg-dark shadow" data-bs-theme="dark">
 
         <!--begin::Brand-->
-        <div class="sidebar-brand">
-            <a href="{{ route('admin.dashboard.index') }}" class="brand-link">
+        <div class="sidebar-brand" style="position:relative; overflow:visible;">
+            <a href="{{ route('admin.dashboard.index') }}" class="brand-link" style="position:relative; overflow:visible; min-height:56px; display:flex; align-items:center;">
                 @php
                     $adminLogo = \App\Models\Setting::get('site_logo', '');
                     if ($adminLogo && !str_starts_with($adminLogo, 'http') && !str_contains($adminLogo, '/')) {
@@ -238,7 +238,24 @@
                     }
                 @endphp
                 @if($adminLogo)
-                    <img src="{{ str_starts_with($adminLogo, 'http') ? $adminLogo : asset(ltrim($adminLogo, '/')) }}" alt="HomeMechanic" style="height:40px;width:auto;object-fit:contain;">
+                    {{-- Logo flutuante — sai do fluxo, maior que o container, igual ao frontend --}}
+                    <img src="{{ str_starts_with($adminLogo, 'http') ? $adminLogo : asset(ltrim($adminLogo, '/')) }}"
+                         alt="HomeMechanic"
+                         style="
+                             position: absolute;
+                             left: 12px;
+                             top: 50%;
+                             transform: translateY(-50%);
+                             height: 90px;
+                             width: auto;
+                             max-width: none;
+                             object-fit: contain;
+                             z-index: 100;
+                             filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+                             pointer-events: none;
+                         ">
+                    {{-- Espaço reservado para não colapsar o container --}}
+                    <span style="display:inline-block; width:180px; height:56px;"></span>
                 @else
                     <i class="fas fa-tools" style="color:var(--hm-primary);font-size:1.3rem;margin-right:0.5rem;"></i>
                     <span class="brand-text fw-bold" style="color:var(--hm-primary);">HomeMechanic</span>

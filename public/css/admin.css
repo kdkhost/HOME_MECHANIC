@@ -50,8 +50,34 @@ body.sidebar-collapse .app-sidebar:hover .nav-arrow { display: block !important;
     border-bottom: 2px solid var(--hm-primary);
     background: transparent;
     transition: var(--hm-transition);
+    min-height: 64px;
+    overflow: visible;
+    position: relative;
 }
 .sidebar-brand .brand-link:hover { background: rgba(0,0,0,0.1); }
+
+/* Logo grande com overflow — sai para cima do sidebar */
+.sidebar-brand .brand-link .admin-logo {
+    height: 80px;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    filter: drop-shadow(0 4px 14px rgba(0,0,0,0.5));
+    z-index: 100;
+    pointer-events: none;
+    transition: height 0.3s ease, transform 0.3s ease;
+}
+/* Sidebar recolhida — logo menor e inline */
+body.sidebar-collapse .sidebar-brand .brand-link .admin-logo {
+    height: 34px;
+    position: static;
+    transform: none;
+    filter: none;
+}
 
 /* ── Sidebar nav links ────────────────────────────────────── */
 .sidebar-menu .nav-link {

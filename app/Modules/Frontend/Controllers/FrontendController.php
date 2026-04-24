@@ -37,6 +37,25 @@ class FrontendController extends Controller
         return view('modules.frontend.services', compact('services'));
     }
 
+    public function serviceDetail(string $slug)
+    {
+        try {
+            $service = \App\Modules\Services\Models\Service::active()
+                ->where('slug', $slug)
+                ->firstOrFail();
+            $related = \App\Modules\Services\Models\Service::active()
+                ->where('id', '!=', $service->id)
+                ->ordered()
+                ->limit(3)
+                ->get();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404);
+        } catch (\Exception $e) {
+            abort(404);
+        }
+        return view('modules.frontend.service-detail', compact('service', 'related'));
+    }
+
     public function gallery()
     {
         try {

@@ -81,10 +81,42 @@
         <div class="row g-4">
             @foreach($services as $i => $s)
             <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ ($loop->index % 3) * 80 }}">
-                <div class="service-full-card h-100">
+                <a href="{{ route('services.show', $s->slug) }}" style="text-decoration:none;display:block;height:100%;">
+                <div class="service-full-card h-100" style="cursor:pointer;transition:transform 0.3s,box-shadow 0.3s;">
                     @php
-                        // Garantir que sempre tenha uma imagem
                         $imgUrl = $s->cover_image;
+                        if (empty($imgUrl)) {
+                            $titleLower = strtolower($s->title);
+                            if (str_contains($titleLower, 'oleo') || str_contains($titleLower, 'filtro')) { $imgUrl = 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&h=500&fit=crop'; }
+                            elseif (str_contains($titleLower, 'freio') || str_contains($titleLower, 'suspensao')) { $imgUrl = 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=500&fit=crop'; }
+                            elseif (str_contains($titleLower, 'motor') || str_contains($titleLower, 'mecanica')) { $imgUrl = 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=500&fit=crop'; }
+                            elseif (str_contains($titleLower, 'tuning') || str_contains($titleLower, 'stage')) { $imgUrl = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=500&fit=crop'; }
+                            elseif (str_contains($titleLower, 'estetica') || str_contains($titleLower, 'polimento')) { $imgUrl = 'https://images.unsplash.com/photo-1600712242805-5f7d787c568d?w=800&h=500&fit=crop'; }
+                            elseif (str_contains($titleLower, 'funilaria') || str_contains($titleLower, 'pintura')) { $imgUrl = 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&h=500&fit=crop'; }
+                            elseif (str_contains($titleLower, 'cambio') || str_contains($titleLower, 'transmissao')) { $imgUrl = 'https://images.unsplash.com/photo-1449130016994-a5ef73008ef5?w=800&h=500&fit=crop'; }
+                            elseif (str_contains($titleLower, 'revisao')) { $imgUrl = 'https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=800&h=500&fit=crop'; }
+                            else { $imgUrl = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop'; }
+                        } elseif (!str_starts_with($imgUrl, 'http')) {
+                            $imgUrl = '/' . ltrim($imgUrl, '/');
+                        }
+                    @endphp
+                    <div class="service-full-img-wrap">
+                        <img src="{{ $imgUrl }}" alt="{{ $s->title }}" class="service-full-img" loading="lazy"
+                             onerror="this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop'">
+                    </div>
+                    <div class="service-full-body">
+                        <div class="service-full-icon"><i class="bi {{ $s->icon ?? 'bi-tools' }}"></i></div>
+                        <div class="service-full-title">{{ $s->title }}</div>
+                        <p class="service-full-text">{{ $s->description }}</p>
+                        <div style="margin-top:1rem;display:inline-flex;align-items:center;gap:0.4rem;color:var(--orange);font-size:0.8rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;">
+                            Ver detalhes <i class="bi bi-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+                </a>
+            </div>
+            @endforeach
+        </div>
                         if (empty($imgUrl)) {
                             // Imagens fallback por tipo de servico
                             $titleLower = strtolower($s->title);
