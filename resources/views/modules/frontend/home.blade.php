@@ -230,33 +230,50 @@
     font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
 }
 
-/* ── Testimonials ──────────────────────────────────────────── */
-.testimonials-section { background: var(--black); }
+/* ── Testimonials Carousel ──────────────────────────────────── */
+.testimonials-section { background: var(--black); overflow: hidden; }
+.testimonials-swiper {
+    padding: 2rem 1rem 4rem !important;
+    overflow: visible !important;
+}
 .testimonial-card {
     background: var(--dark2);
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 4px;
-    padding: 2rem;
+    padding: 2.5rem;
     height: 100%;
     transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
-.testimonial-card:hover { border-color: rgba(255,107,0,0.3); }
-.testimonial-stars { color: var(--orange); font-size: 0.9rem; margin-bottom: 1rem; }
+.testimonial-card:hover { border-color: rgba(255,107,0,0.3); transform: translateY(-5px); }
+.testimonial-stars { color: var(--orange); font-size: 0.9rem; margin-bottom: 1.25rem; }
 .testimonial-text {
     color: rgba(255,255,255,0.75);
-    font-size: 0.92rem; line-height: 1.8;
-    font-style: italic; margin-bottom: 1.5rem;
+    font-size: 0.95rem; line-height: 1.8;
+    font-style: italic; margin-bottom: 2rem;
+    position: relative;
 }
-.testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
+.testimonial-text::before {
+    content: '"';
+    position: absolute; left: -1.2rem; top: -0.5rem;
+    font-size: 3rem; color: rgba(255,107,0,0.1);
+    font-family: var(--font-head);
+}
+.testimonial-author { display: flex; align-items: center; gap: 0.75rem; margin-top: auto; }
 .testimonial-avatar {
-    width: 44px; height: 44px; border-radius: 50%;
+    width: 48px; height: 48px; border-radius: 50%;
     background: var(--orange); color: var(--black);
     display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-head); font-size: 1.1rem; font-weight: 700;
+    font-family: var(--font-head); font-size: 1.2rem; font-weight: 700;
     flex-shrink: 0;
 }
-.testimonial-name { font-weight: 600; font-size: 0.9rem; }
-.testimonial-car  { color: var(--orange); font-size: 0.78rem; }
+.testimonial-name { font-weight: 600; font-size: 0.95rem; color: var(--white); }
+.testimonial-car  { color: var(--orange); font-size: 0.78rem; font-weight: 500; }
+
+.swiper-pagination-bullet { background: rgba(255,255,255,0.2) !important; opacity: 1 !important; }
+.swiper-pagination-bullet-active { background: var(--orange) !important; }
 
 /* ── CTA ───────────────────────────────────────────────────── */
 .cta-section {
@@ -534,39 +551,44 @@
 </section>
 
 <!-- Testimonials -->
-<section class="testimonials-section" style="padding:5rem 0;">
+<section class="testimonials-section" style="padding:6rem 0;">
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <div class="section-label justify-content-center">Depoimentos</div>
             <h2 class="section-title">O Que Nossos <span>Clientes</span> Dizem</h2>
             <div class="divider-orange mx-auto"></div>
         </div>
-        <div class="row g-4">
-            @forelse($testimonials as $i => $t)
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">
-                        @for($k=1; $k<=5; $k++)
-                            <i class="{{ $k <= $t->rating ? 'bi bi-star-fill' : 'bi bi-star' }}"></i>
-                        @endfor
-                    </div>
-                    <p class="testimonial-text">"{{ $t->content }}"</p>
-                    <div class="testimonial-author">
-                        @if($t->photo_url)
-                            <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-                        @else
-                            <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
-                        @endif
-                        <div>
-                            <div class="testimonial-name">{{ $t->name }}</div>
-                            <div class="testimonial-car">{{ $t->role }}</div>
+        
+        <div class="swiper testimonials-swiper" data-aos="fade-up" data-aos-delay="100">
+            <div class="swiper-wrapper">
+                @forelse($testimonials as $t)
+                <div class="swiper-slide h-auto">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            @for($k=1; $k<=5; $k++)
+                                <i class="{{ $k <= $t->rating ? 'bi bi-star-fill' : 'bi bi-star' }}"></i>
+                            @endfor
+                        </div>
+                        <p class="testimonial-text">"{{ $t->content }}"</p>
+                        <div class="testimonial-author">
+                            @if($t->photo_url)
+                                <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                            @else
+                                <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
+                            @endif
+                            <div>
+                                <div class="testimonial-name">{{ $t->name }}</div>
+                                <div class="testimonial-car">{{ $t->role }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+                @empty
+                <div class="swiper-slide text-center text-muted py-5">Nenhum depoimento cadastrado.</div>
+                @endforelse
             </div>
-            @empty
-            <div class="col-12 text-center text-muted">Nenhum depoimento cadastrado.</div>
-            @endforelse
+            {{-- Paginação --}}
+            <div class="swiper-pagination"></div>
         </div>
     </div>
 </section>
@@ -624,4 +646,35 @@
     </div>
 </section>
 
+@endsection
+
+@section('scripts')
+<script>
+$(function() {
+    // ── Testimonials Carousel ──────────────────────────────────
+    new Swiper('.testimonials-swiper', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        breakpoints: {
+            768: {
+                slidesPerView: 2,
+            },
+            1200: {
+                slidesPerView: 3,
+            }
+        },
+        grabCursor: true,
+    });
+});
+</script>
 @endsection
