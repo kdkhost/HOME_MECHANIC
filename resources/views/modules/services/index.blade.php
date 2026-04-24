@@ -427,6 +427,9 @@ document.getElementById('svcForm').addEventListener('submit', function(e) {
     });
 });
 
+// Flag para evitar multiplas chamadas do delete
+var deleteModalOpen = false;
+
 // ── Toggle / Delete ───────────────────────────────────────
 function toggleActive(id) {
     $.ajax({
@@ -449,7 +452,15 @@ function toggleFeatured(id) {
 }
 
 function deleteService(id, name) {
-    console.log('deleteService chamado - id:', id, 'name:', name);
+    console.log('deleteService chamado - id:', id, 'name:', name, 'deleteModalOpen:', deleteModalOpen);
+    
+    if (deleteModalOpen) {
+        console.log('Modal já está aberto, ignorando chamada');
+        return;
+    }
+    
+    deleteModalOpen = true;
+    
     Swal.fire({
         title: 'Excluir serviço?',
         text: 'Deseja excluir "' + name + '"? Esta ação não pode ser desfeita.',
@@ -460,37 +471,37 @@ function deleteService(id, name) {
         confirmButtonText: 'Excluir',
         cancelButtonText: 'Cancelar',
         allowOutsideClick: false,
-        allowEscapeKey: true,
-        focusConfirm: false,
-        focusCancel: true
+        allowEscapeKey: true
     }).then(function(result) {
+        deleteModalOpen = false;
         console.log('SweetAlert result:', result);
-        if (!result.isConfirmed) {
-            console.log('Exclusão cancelada pelo usuário');
-            return;
-        }
-
-        var deleteUrl = '{{ url("admin/services") }}/' + id;
-        console.log('Enviando DELETE para:', deleteUrl);
         
-        $.ajax({
-            url: deleteUrl,
-            method: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
-            success: function(d) { 
-                console.log('Delete success:', d);
-                if (d.success) { 
-                    HMToast.success(d.message); 
-                    loadServices(currentPage); 
-                } else {
-                    HMToast.error(d.message); 
+        if (result.isConfirmed) {
+            console.log('Usuário confirmou exclusão');
+            var deleteUrl = '{{ url("admin/services") }}/' + id;
+            console.log('Enviando DELETE para:', deleteUrl);
+            
+            $.ajax({
+                url: deleteUrl,
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
+                success: function(d) { 
+                    console.log('Delete success:', d);
+                    if (d.success) { 
+                        HMToast.success(d.message); 
+                        loadServices(currentPage); 
+                    } else {
+                        HMToast.error(d.message); 
+                    }
+                },
+                error: function(xhr) { 
+                    console.error('Erro ao excluir serviço:', xhr);
+                    HMToast.error('Erro de conexão.'); 
                 }
-            },
-            error: function(xhr) { 
-                console.error('Erro ao excluir serviço:', xhr);
-                HMToast.error('Erro de conexão.'); 
-            }
-        });
+            });
+        } else {
+            console.log('Exclusão cancelada ou dispensada');
+        }
     });
 }
 
