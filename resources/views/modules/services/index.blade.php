@@ -114,6 +114,9 @@
 .icon-name-label { word-break: break-all; text-align: center; line-height: 1.2; font-weight: 500; }
 #iconPickerEmpty { color: #94a3b8; }
 @keyframes ipFadeIn { from { opacity:0; } to { opacity:1; } }
+.ip-tab { border: 1.5px solid #e2e8f0 !important; color: #475569 !important; background: #f8fafc !important; }
+.ip-tab.active { background: var(--hm-primary) !important; color: #fff !important; border-color: var(--hm-primary) !important; }
+.ip-tab:hover:not(.active) { border-color: var(--hm-primary) !important; color: var(--hm-primary) !important; }
 </style>
 @endsection
 
@@ -182,10 +185,10 @@
                                 <button type="button" class="btn btn-danger btn-sm mt-1 w-100 d-none" id="btnRemoveImg" onclick="removeCoverImage()"><i class="fas fa-trash me-1"></i> Remover imagem</button>
                             </div>
                             <div class="form-group">
-                                <label>Icone (Bootstrap Icons)</label>
+                                <label>Icone</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i id="iconPreview" class="bi bi-tools"></i></span>
-                                    <input type="text" class="form-control" name="icon" id="svcIcon" placeholder="bi-tools" maxlength="100" oninput="document.getElementById('iconPreview').className='bi '+this.value">
+                                    <input type="text" class="form-control" name="icon" id="svcIcon" placeholder="ex: fas fa-car" maxlength="100" oninput="previewIconField(this.value)">
                                     <button type="button" class="btn btn-outline-secondary" id="btnOpenIconPicker" onclick="openIconPicker()" title="Escolher icone visualmente">
                                         <i class="bi bi-grid-3x3-gap-fill"></i>
                                     </button>
@@ -223,13 +226,20 @@
 <div id="iconPickerPanel" role="dialog" aria-label="Seletor de Icones">
     <div class="ip-header">
         <span class="ip-header-title">
-            <i class="bi bi-grid-3x3-gap-fill"></i> Escolher Icone Bootstrap
+            <i class="bi bi-grid-3x3-gap-fill"></i> Escolher Icone
         </span>
         <button class="ip-close-btn" onclick="closeIconPicker()" title="Fechar"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="ip-search-wrap">
-        <input type="text" id="iconSearchInput" class="form-control" placeholder="&#xF52A;  Pesquisar icone... (car, wrench, tools, fuel...)" oninput="filterIcons(this.value)">
-        <div class="ip-search-hint"><i class="bi bi-hand-index me-1"></i>Clique no icone para aplicar automaticamente</div>
+        <input type="text" id="iconSearchInput" class="form-control" placeholder="Pesquisar icone... (car, wrench, tools, star...)" autocomplete="off">
+        <div class="d-flex gap-1 mt-2 flex-wrap" id="ipTabs">
+            <button class="btn btn-xs ip-tab active" data-provider="" onclick="setIpTab(this,'')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">Todos</button>
+            <button class="btn btn-xs ip-tab" data-provider="bi" onclick="setIpTab(this,'bi')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">Bootstrap Icons</button>
+            <button class="btn btn-xs ip-tab" data-provider="fas" onclick="setIpTab(this,'fas')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">FA Solid</button>
+            <button class="btn btn-xs ip-tab" data-provider="far" onclick="setIpTab(this,'far')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">FA Regular</button>
+            <button class="btn btn-xs ip-tab" data-provider="fab" onclick="setIpTab(this,'fab')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">FA Brands</button>
+        </div>
+        <div class="ip-search-hint mt-1"><i class="bi bi-hand-index me-1"></i>Clique no icone para aplicar automaticamente</div>
     </div>
     <div class="ip-body">
         <div class="icon-grid" id="iconGrid"></div>
@@ -298,25 +308,130 @@ var BI_ICONS = [
   'lightbulb-off','battery-charging','battery-full','plug-fill','snow2','fire','thermometer-sun'
 ];
 
-var _iconsRendered = false;
+/* helpers */
+function parseIconCls(v) {
+    if (!v) return 'bi bi-tools';
+    if (v.indexOf(' ') !== -1) return v;
+    if (v.indexOf('bi-') === 0) return 'bi ' + v;
+    return v;
+}
+function previewIconField(v) {
+    document.getElementById('iconPreview').className = parseIconCls(v) || 'bi bi-tools';
+}
+
+/* ===== ICON PICKER ===== */
+var ICON_DATA = (function(){
+    var bi = ['alarm','alarm-fill','archive','archive-fill','award','award-fill',
+      'bag','bag-fill','bar-chart','bar-chart-fill','battery','battery-charging','battery-full',
+      'bell','bell-fill','bicycle','bookmark','bookmark-fill','box','box-seam','briefcase',
+      'brush','building','building-fill','calendar','calendar-fill','calendar-check',
+      'camera','camera-fill','car-front','car-front-fill','cart','cart-fill','cash','cash-coin',
+      'check-circle','check-circle-fill','clock','clock-fill','cloud','cloud-upload','code',
+      'cpu','cpu-fill','credit-card','credit-card-fill','database','database-fill',
+      'droplet','droplet-fill','envelope','envelope-fill','eye','eye-fill','fan',
+      'file','file-earmark','file-pdf','file-text','filter','fire','flag','flag-fill',
+      'folder','folder-fill','fuel-pump','fuel-pump-fill','funnel','gear','gear-fill',
+      'gear-wide','gift','gift-fill','globe','globe2','graph-up','graph-down','hammer',
+      'hand-thumbs-up','headphones','heart','heart-fill','house','house-fill','house-door',
+      'image','info-circle','info-circle-fill','key','key-fill','lightning','lightning-fill',
+      'list','list-check','lock','lock-fill','map','map-fill','megaphone','mic','mic-fill',
+      'moon','nut','nut-fill','palette','pencil','pencil-fill','pencil-square',
+      'people','people-fill','person','person-fill','person-circle','phone','phone-fill',
+      'pie-chart','pin','pin-fill','plug','plug-fill','printer','puzzle','qr-code',
+      'rocket','rocket-fill','save','save-fill','scissors','search','send','send-fill',
+      'server','shield','shield-fill','shield-check','shop','shop-window','sliders',
+      'sliders2','speedometer','speedometer2','star','star-fill','star-half','stopwatch',
+      'sun','sun-fill','table','tag','tag-fill','telephone','telephone-fill',
+      'thermometer','three-dots','three-dots-vertical','tools','trash','trash-fill',
+      'truck','truck-fill','truck-front','truck-front-fill','tv','upload','wallet',
+      'wallet-fill','watch','water','wifi','wind','wrench','wrench-adjustable',
+      'x-circle','x-circle-fill','zoom-in','zoom-out','screwdriver','lightbulb','lightbulb-fill',
+      'snow2','snow','recycle','robot','recycle','translate','toggles','trophy','trophy-fill'];
+    var fas = ['car','car-side','truck','truck-monster','motorcycle','bus','taxi','ship','plane',
+      'wrench','tools','screwdriver','hammer','cog','cogs','bolt','fire','tint','oil-can',
+      'gas-pump','battery-full','battery-half','battery-empty','battery-quarter',
+      'tachometer-alt','gauge','road','map','map-marked','map-marker','map-pin',
+      'star','star-half','heart','thumbs-up','thumbs-down','check','check-circle',
+      'times','times-circle','info-circle','exclamation-triangle','exclamation-circle',
+      'question-circle','plus','plus-circle','minus','minus-circle','arrow-up','arrow-down',
+      'arrow-left','arrow-right','home','user','users','user-circle','user-shield',
+      'phone','phone-alt','envelope','envelope-open','comment','comments','sms',
+      'calendar','calendar-alt','calendar-check','clock','stopwatch','hourglass',
+      'bell','bell-slash','tag','tags','bookmark','bookmarks','flag','flag-checkered',
+      'trash','trash-alt','edit','pencil-alt','pen','save','file','file-alt','file-pdf',
+      'folder','folder-open','image','images','camera','video','play','pause','stop',
+      'search','filter','sort','sort-alpha-down','sort-amount-down','bars','list','th',
+      'th-large','th-list','table','chart-bar','chart-line','chart-pie','chart-area',
+      'dollar-sign','coins','wallet','credit-card','receipt','cash-register','shopping-cart',
+      'shopping-bag','box','boxes','cube','cubes','layer-group','database','server',
+      'cloud','cloud-upload-alt','cloud-download-alt','wifi','bluetooth','satellite',
+      'shield-alt','shield-check','lock','unlock','key','fingerprint','eye','eye-slash',
+      'award','medal','trophy','crown','gem','diamond','magic','palette','paint-brush',
+      'print','qrcode','barcode','toggle-on','toggle-off','sliders-h','sliders-v',
+      'industry','warehouse','store','building','city','tree','leaf','seedling','sun',
+      'moon','cloud-sun','snow','umbrella','wind','thermometer','tachometer','gauge-high',
+      'spray-can','brush','broom','soap','hand-sparkles','recycle','trash-restore',
+      'running','walking','biking','swimmer','dumbbell','football','futbol','basketball',
+      'globe','globe-americas','compass','directions','route','road','traffic-light',
+      'parking','charging-station','wheelchair','baby','child','user-graduate',
+      'stethoscope','heartbeat','medkit','prescription','pills','syringe',
+      'rocket','space-shuttle','satellite-dish','microchip','robot','android','apple',
+      'laptop','desktop','mobile-alt','tablet-alt','keyboard','mouse','headset',
+      'code','code-branch','terminal','bug','cog','cogs','wrench','tools','toolbox',
+      'hard-hat','helmet-safety','vest','traffic-cone','sign','exclamation'];
+    var far = ['clock','calendar','calendar-alt','bookmark','heart','star','star-half',
+      'comment','comments','envelope','image','images','file','file-alt','folder',
+      'folder-open','bell','flag','eye','eye-slash','check-circle','times-circle',
+      'question-circle','plus-square','minus-square','edit','trash-alt','save',
+      'user','user-circle','smile','frown','meh','thumbs-up','thumbs-down',
+      'hand-point-up','hand-point-down','hand-point-left','hand-point-right',
+      'lightbulb','paper-plane','compass','map','life-ring','credit-card','gem',
+      'chart-bar','dot-circle','circle','square','keyboard','clipboard','sticky-note',
+      'id-card','address-book','address-card','building','hospital','money-bill-alt',
+      'lemon','snowflake','sun','moon','hourglass'];
+    var fab = ['whatsapp','facebook','instagram','twitter','youtube','google','apple',
+      'android','windows','linux','github','gitlab','npm','wordpress','shopify',
+      'paypal','stripe','amazon','google-pay','apple-pay','cc-visa','cc-mastercard',
+      'cc-amex','cc-paypal','chrome','firefox','safari','edge','opera','telegram',
+      'linkedin','pinterest','tiktok','discord','slack','skype','spotify','airbnb',
+      'uber','lyft','bluetooth','usb','wifi','cc-stripe'];
+    var out = [];
+    bi.forEach(function(n){ out.push({cls:'bi bi-'+n, name:n, provider:'bi'}); });
+    fas.forEach(function(n){ out.push({cls:'fas fa-'+n, name:n, provider:'fas'}); });
+    far.forEach(function(n){ out.push({cls:'far fa-'+n, name:n, provider:'far'}); });
+    fab.forEach(function(n){ out.push({cls:'fab fa-'+n, name:n, provider:'fab'}); });
+    return out;
+})();
+
+var _iconsRendered = false, _ipTab = '', _ipSearch = '';
+
 function openIconPicker() {
-    if (!_iconsRendered) { renderIconGrid(BI_ICONS); _iconsRendered = true; }
+    if (!_iconsRendered) { renderIconGrid(); _iconsRendered = true; }
     var current = document.getElementById('svcIcon').value;
     document.getElementById('iconGrid').querySelectorAll('.icon-item').forEach(function(el){
         el.classList.toggle('selected', el.dataset.icon === current);
     });
     document.getElementById('iconSearchInput').value = '';
-    filterIcons('');
+    _ipSearch = ''; _ipTab = '';
+    document.querySelectorAll('.ip-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.provider === ''); });
+    applyIpFilter();
     var bd = document.getElementById('iconPickerBackdrop');
     var pn = document.getElementById('iconPickerPanel');
     bd.style.display = 'block';
     pn.style.display = 'flex';
-    requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
-            pn.classList.add('ip-open');
-            setTimeout(function(){ document.getElementById('iconSearchInput').focus(); }, 200);
-        });
-    });
+    /* Desativa focus-trap do BS5 modal principal */
+    try { var bm = bootstrap.Modal.getInstance(document.getElementById('svcModal')); if(bm && bm._focustrap) bm._focustrap.deactivate(); } catch(e){}
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+        pn.classList.add('ip-open');
+        var inp = document.getElementById('iconSearchInput');
+        setTimeout(function(){ inp.focus(); }, 150);
+        /* loop de foco para caso o BS5 tente resgatar */
+        var attempts = 0;
+        var keepFocus = setInterval(function(){
+            if (document.activeElement !== inp) inp.focus();
+            if (++attempts > 10) clearInterval(keepFocus);
+        }, 100);
+    }); });
 }
 function closeIconPicker() {
     var pn = document.getElementById('iconPickerPanel');
@@ -325,40 +440,58 @@ function closeIconPicker() {
         pn.style.display = 'none';
         document.getElementById('iconPickerBackdrop').style.display = 'none';
     }, 260);
+    /* Reativa focus-trap do BS5 */
+    try { var bm = bootstrap.Modal.getInstance(document.getElementById('svcModal')); if(bm && bm._focustrap) bm._focustrap.activate(); } catch(e){}
 }
-function renderIconGrid(icons) {
-    var grid = document.getElementById('iconGrid');
-    var html = '';
-    var unique = [...new Set(icons)];
-    unique.forEach(function(ic){
-        var cls = 'bi-' + ic;
-        html += '<div class="icon-item" data-icon="bi-'+ic+'" onclick="selectIcon(\'bi-'+ic+'\')" title="bi-'+ic+'">';
-        html += '<i class="bi '+cls+'"></i>';
-        html += '<span class="icon-name-label">'+ic+'</span>';
-        html += '</div>';
-    });
-    grid.innerHTML = html;
+function setIpTab(btn, provider) {
+    _ipTab = provider;
+    document.querySelectorAll('.ip-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.provider === provider); });
+    applyIpFilter();
 }
-function filterIcons(q) {
-    q = q.toLowerCase().trim();
+function filterIcons(q) { _ipSearch = q; applyIpFilter(); }
+function applyIpFilter() {
+    var q = _ipSearch.toLowerCase().trim();
     var items = document.getElementById('iconGrid').querySelectorAll('.icon-item');
     var found = 0;
     items.forEach(function(el){
-        var match = !q || el.dataset.icon.indexOf(q) !== -1;
-        el.style.display = match ? '' : 'none';
-        if (match) found++;
+        var matchQ = !q || el.dataset.name.indexOf(q) !== -1 || el.dataset.icon.indexOf(q) !== -1;
+        var matchT = !_ipTab || el.dataset.provider === _ipTab;
+        var show = matchQ && matchT;
+        el.style.display = show ? '' : 'none';
+        if (show) found++;
     });
     document.getElementById('iconPickerEmpty').classList.toggle('d-none', found > 0);
 }
+function renderIconGrid() {
+    var grid = document.getElementById('iconGrid');
+    var html = '';
+    var provColors = {bi:'#0d6efd', fas:'#198754', far:'#6f42c1', fab:'#dc3545'};
+    ICON_DATA.forEach(function(ic){
+        var badge = '<span style="font-size:0.52rem;padding:1px 4px;border-radius:10px;background:'+(provColors[ic.provider]||'#64748b')+';color:#fff;line-height:1.4;">'+ic.provider+'</span>';
+        html += '<div class="icon-item" data-icon="'+ic.cls+'" data-name="'+ic.name+'" data-provider="'+ic.provider+'" onclick="selectIcon(\''+ic.cls+'\')" title="'+ic.cls+'">';
+        html += '<i class="'+ic.cls+'"></i>';
+        html += '<span class="icon-name-label">'+ic.name+'</span>';
+        html += badge+'</div>';
+    });
+    grid.innerHTML = html;
+}
 function selectIcon(iconClass) {
     document.getElementById('svcIcon').value = iconClass;
-    document.getElementById('iconPreview').className = 'bi ' + iconClass;
+    document.getElementById('iconPreview').className = iconClass;
     document.getElementById('iconGrid').querySelectorAll('.icon-item').forEach(function(el){
         el.classList.toggle('selected', el.dataset.icon === iconClass);
     });
     closeIconPicker();
     HMToast.success('Icone selecionado: ' + iconClass);
 }
+/* listener direto no documento para garantir busca mesmo com focus-trap */
+document.addEventListener('DOMContentLoaded', function(){
+    var inp = document.getElementById('iconSearchInput');
+    if (inp) {
+        inp.addEventListener('input', function(){ filterIcons(this.value); });
+        inp.addEventListener('keyup', function(){ filterIcons(this.value); });
+    }
+});
 /* ===== FIM ICON PICKER ===== */
 
 var snDesc = { lang:'pt-BR', height:110, toolbar:[['style',['bold','italic','underline','clear']],['para',['ul','ol']],['view',['codeview']]], placeholder:'Descricao curta...', callbacks:{ onImageUpload:function(){ HMToast.warning('Use o campo de imagem de capa.'); } } };
@@ -487,6 +620,7 @@ function resetForm() {
     document.getElementById('removeImage').value='0';
     document.getElementById('svcActive').checked=true;
     document.getElementById('iconPreview').className='bi bi-tools';
+    document.getElementById('svcIcon').value='';
     document.getElementById('imgPreviewWrap').innerHTML='<i class="fas fa-cloud-upload-alt" style="font-size:1.8rem;color:var(--hm-primary);opacity:0.7;"></i><div style="font-size:0.8rem;color:var(--hm-text-muted);">Clique ou arraste aqui</div><div style="font-size:0.72rem;color:#94a3b8;">JPG, PNG, WebP - max 5MB</div>';
     document.getElementById('btnRemoveImg').classList.add('d-none');
     try{ $('#svcDesc').summernote('destroy'); }catch(e){}
@@ -502,11 +636,11 @@ function editService(id) {
             document.getElementById('svcTitle').value=s.title||'';
             document.getElementById('svcDesc').value=s.description||'';
             document.getElementById('svcContent').value=s.content||'';
-            document.getElementById('svcIcon').value=s.icon||'';
+            document.getElementById('svcIcon').value=s.icon||'bi-tools';
             document.getElementById('svcOrder').value=s.sort_order||'';
             document.getElementById('svcFeatured').checked=!!s.featured;
             document.getElementById('svcActive').checked=!!s.active;
-            document.getElementById('iconPreview').className='bi '+(s.icon||'bi-tools');
+            document.getElementById('iconPreview').className=parseIconCls(s.icon||'bi-tools');
             if(s.cover_image_url){ document.getElementById('imgPreviewWrap').innerHTML='<img src="'+s.cover_image_url+'" style="max-height:100px;border-radius:6px;object-fit:cover;">'; document.getElementById('btnRemoveImg').classList.remove('d-none'); }
             document.getElementById('modalTitle').innerHTML='<i class="fas fa-pencil-alt me-2"></i>Editar Servico';
             var modal=new bootstrap.Modal(document.getElementById('svcModal')); modal.show();
