@@ -92,7 +92,7 @@
                 </span>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="svcForm" enctype="multipart/form-data">
+            <form id="svcForm" method="POST" action="" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" id="svcId" name="_id">
                 <input type="hidden" name="_method" id="svcMethod" value="POST">
@@ -301,11 +301,13 @@ function renderPagination(p) {
 // ── Modal ─────────────────────────────────────────────────
 function openModal(id) {
     resetForm();
+    var form = document.getElementById('svcForm');
     if (id) {
         editingId = id;
         document.getElementById('modalTitle').innerHTML = '<i class="fas fa-pencil-alt me-2"></i>Editar Serviço';
     } else {
         document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Novo Serviço';
+        form.action = '{{ route("admin.services.store") }}';
     }
     var modal = new bootstrap.Modal(document.getElementById('svcModal'));
     modal.show();
@@ -328,7 +330,7 @@ function resetForm() {
 
 function editService(id) {
     $.ajax({
-        url: '{{ route("admin.services.index") }}/' + id,
+        url: '{{ route("admin.services.show", ":id") }}'.replace(':id', id),
         headers: { 'Accept': 'application/json' },
         success: function(data) {
             if (!data.success) { HMToast.error('Erro ao carregar serviço.'); return; }
@@ -349,6 +351,8 @@ function editService(id) {
                     '<img src="' + s.cover_image_url + '" style="max-height:120px;border-radius:6px;">';
                 document.getElementById('btnRemoveImg').classList.remove('d-none');
             }
+            // Define o action do form para a rota de update
+            document.getElementById('svcForm').action = '{{ route("admin.services.index") }}/' + s.id;
             openModal(id);
         },
         error: function() { HMToast.error('Erro de conexão.'); }

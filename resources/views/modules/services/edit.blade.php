@@ -29,7 +29,7 @@
                 </div>
             </div>
             
-            <form id="serviceForm" action="{{ route('admin.services.update', $service) }}" method="POST">
+            <form id="serviceForm" method="POST" action="{{ route('admin.services.update', $service->id) }}" enctype="multipart/form-data" class="needs-validation" novalidate>
                 @csrf
                 @method('PUT')
                 <div class="card-body">
@@ -54,16 +54,8 @@
 <script>
 $(document).ready(function() {
     
-    // Preencher formulário com dados do serviço
+    // Valores já preenchidos pelo Blade no HTML
     const service = @json($service);
-    
-    $('#title').val(service.title);
-    $('#slug').val(service.slug);
-    $('#description').val(service.description);
-    $('#content').val(service.content);
-    $('#icon').val(service.icon);
-    $('#featured').prop('checked', service.featured);
-    $('#sort_order').val(service.sort_order);
     $('#active').prop('checked', service.active);
     
     if (service.icon) {

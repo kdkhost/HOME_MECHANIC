@@ -32,6 +32,8 @@ class Service extends Model
         'updated_at' => 'datetime'
     ];
 
+    protected $appends = ['cover_image_url'];
+
     /**
      * Relacionamento com uploads
      */

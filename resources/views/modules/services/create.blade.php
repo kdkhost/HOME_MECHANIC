@@ -29,7 +29,7 @@
                 </div>
             </div>
             
-            <form id="serviceForm" action="{{ route('admin.services.store') }}" method="POST">
+            <form id="serviceForm" action="{{ route('admin.services.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="card-body">
                     @include('modules.services._form')

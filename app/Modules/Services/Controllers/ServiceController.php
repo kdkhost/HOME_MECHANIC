@@ -122,6 +122,7 @@ class ServiceController extends Controller
     {
         $request->validate([
             'title'       => 'required|string|max:255',
+            'slug'        => 'nullable|string|max:255',
             'description' => 'required|string|max:500',
             'content'     => 'nullable|string',
             'icon'        => 'nullable|string|max:100',
@@ -131,7 +132,7 @@ class ServiceController extends Controller
 
         try {
             $service = Service::findOrFail($id);
-            $data = $request->only(['title','description','content','icon','sort_order']);
+            $data = $request->only(['title','slug','description','content','icon','sort_order']);
             $data['featured'] = $request->boolean('featured');
             $data['active']   = $request->boolean('active', true);
 
