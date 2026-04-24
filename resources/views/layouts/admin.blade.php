@@ -718,16 +718,21 @@ $(function() {
             
             // Alerta sonoro se o número de notificações aumentou e não é a carga inicial
             if (!initialLoad && data.count > lastNotifCount) {
-                document.getElementById('notifSound').play().catch(e => console.log("Audio play blocked by browser. Interaction needed."));
+                const sound = document.getElementById('notifSound');
+                if (sound) {
+                    sound.currentTime = 0;
+                    sound.play().catch(e => {
+                        console.log("Clique na página para habilitar o som de notificações.");
+                    });
+                }
                 
-                // Notificação visual Toasty se estiver em outra aba
                 Toastify({
-                    text: "🔔 Nova notificação recebida!",
-                    duration: 5000,
+                    text: "🔔 Nova notificação!",
+                    duration: 7000,
                     close: true,
                     gravity: "top",
                     position: "right",
-                    backgroundColor: "linear-gradient(to right, #FF6B00, #E55A00)",
+                    style: { background: "linear-gradient(to right, #FF6B00, #E55A00)" },
                 }).showToast();
             }
             lastNotifCount = data.count;
@@ -764,23 +769,27 @@ $(function() {
                     </div>
                 </a>`;
             });
+            // Link para histórico no final
+            html += `<a href="{{ route('admin.contact.index') }}" class="dropdown-item text-center p-2 text-primary border-top" style="font-size:0.75rem; font-weight:600;">Ver Histórico de Contatos</a>`;
             list.html(html);
         } else {
-            list.html('<div class="text-center py-4 text-muted"><i class="bi bi-bell-slash d-block mb-2" style="font-size:1.8rem; opacity:0.4;"></i><small>Nenhuma notificação</small></div>');
+            list.html('<div class="text-center py-4 text-muted"><i class="bi bi-bell-slash d-block mb-2" style="font-size:1.8rem; opacity:0.4;"></i><small>Nenhuma notificação pendente</small><br><a href="{{ route('admin.contact.index') }}" class="btn btn-link btn-sm mt-2">Ver histórico</a></div>');
         }
     }
 
     // Polling a cada 30 segundos
     setInterval(fetchNotifications, 30000);
-    fetchNotifications(); // Carga inicial
+    fetchNotifications(); 
 
-    // Marcar como lida ao clicar
+    // Marcar como lida e Redirecionar
     $(document).on('click', '.mark-read', function(e) {
         const id = $(this).data('id');
         const href = $(this).attr('href');
-        if (id) {
+        
+        if (id && href !== '#') {
+            e.preventDefault();
             $.post("{{ url('admin/notifications') }}/" + id + "/read", { _token: "{{ csrf_token() }}" }, function() {
-                if (href === '#') fetchNotifications();
+                window.location.href = href;
             });
         }
     });
@@ -790,7 +799,7 @@ $(function() {
         e.preventDefault();
         $.post("{{ route('admin.notifications.clear-all') }}", { _token: "{{ csrf_token() }}" }, function() {
             fetchNotifications();
-            Toastify({ text: "Notificações limpas", backgroundColor: "#64748b" }).showToast();
+            Toastify({ text: "Notificações limpas", style: { background: "#64748b" } }).showToast();
         });
     });
 });
