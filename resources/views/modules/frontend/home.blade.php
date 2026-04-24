@@ -230,47 +230,36 @@
     font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
 }
 
-/* ── Testimonials Carousel ──────────────────────────────────── */
-.testimonials-section { background: var(--black); overflow: hidden; }
+/* ── Testimonials ──────────────────────────────────────────── */
+.testimonials-section { background: var(--black); }
 .testimonials-swiper {
-    padding: 2rem 1rem 4rem !important;
-    overflow: visible !important;
+    padding-bottom: 3rem !important;
 }
 .testimonial-card {
     background: var(--dark2);
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 4px;
-    padding: 2.5rem;
+    padding: 2rem;
     height: 100%;
     transition: var(--transition);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
-.testimonial-card:hover { border-color: rgba(255,107,0,0.3); transform: translateY(-5px); }
-.testimonial-stars { color: var(--orange); font-size: 0.9rem; margin-bottom: 1.25rem; }
+.testimonial-card:hover { border-color: rgba(255,107,0,0.3); }
+.testimonial-stars { color: var(--orange); font-size: 0.9rem; margin-bottom: 1rem; }
 .testimonial-text {
     color: rgba(255,255,255,0.75);
-    font-size: 0.95rem; line-height: 1.8;
-    font-style: italic; margin-bottom: 2rem;
-    position: relative;
+    font-size: 0.92rem; line-height: 1.8;
+    font-style: italic; margin-bottom: 1.5rem;
 }
-.testimonial-text::before {
-    content: '"';
-    position: absolute; left: -1.2rem; top: -0.5rem;
-    font-size: 3rem; color: rgba(255,107,0,0.1);
-    font-family: var(--font-head);
-}
-.testimonial-author { display: flex; align-items: center; gap: 0.75rem; margin-top: auto; }
+.testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
 .testimonial-avatar {
-    width: 48px; height: 48px; border-radius: 50%;
+    width: 44px; height: 44px; border-radius: 50%;
     background: var(--orange); color: var(--black);
     display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-head); font-size: 1.2rem; font-weight: 700;
+    font-family: var(--font-head); font-size: 1.1rem; font-weight: 700;
     flex-shrink: 0;
 }
-.testimonial-name { font-weight: 600; font-size: 0.95rem; color: var(--white); }
-.testimonial-car  { color: var(--orange); font-size: 0.78rem; font-weight: 500; }
+.testimonial-name { font-weight: 600; font-size: 0.9rem; }
+.testimonial-car  { color: var(--orange); font-size: 0.78rem; }
 
 .swiper-pagination-bullet { background: rgba(255,255,255,0.2) !important; opacity: 1 !important; }
 .swiper-pagination-bullet-active { background: var(--orange) !important; }
@@ -572,7 +561,7 @@
                         <p class="testimonial-text">"{{ $t->content }}"</p>
                         <div class="testimonial-author">
                             @if($t->photo_url)
-                                <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                             @else
                                 <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
                             @endif
@@ -654,6 +643,7 @@ $(function() {
     // ── Testimonials Carousel ──────────────────────────────────
     new Swiper('.testimonials-swiper', {
         slidesPerView: 1,
+        slidesPerGroup: 1,
         spaceBetween: 30,
         loop: true,
         autoplay: {
