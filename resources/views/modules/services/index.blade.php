@@ -348,12 +348,12 @@ function editService(id) {
             document.getElementById('svcActive').checked   = !!s.active;
             document.getElementById('iconPreview').className = 'bi ' + (s.icon || 'bi-tools');
 
-            // Carregar imagem no FilePond se existir
-            if (s.cover_image) {
+            // Carregar imagem no FilePond se existir (usar URL completa)
+            if (s.cover_image_url) {
                 var pondElement = document.getElementById('svcCoverImage');
                 if (pondElement && pondElement.filepond) {
                     pondElement.filepond.removeFiles();
-                    pondElement.filepond.addFile(s.cover_image);
+                    pondElement.filepond.addFile(s.cover_image_url);
                 }
             }
             
@@ -364,6 +364,13 @@ function editService(id) {
             document.getElementById('modalTitle').innerHTML = '<i class="fas fa-pencil-alt me-2"></i>Editar Serviço';
             var modal = new bootstrap.Modal(document.getElementById('svcModal'));
             modal.show();
+            
+            // Reinicializar Summernote e setar conteúdo
+            if ($('#svcContent').length && typeof $.fn.summernote !== 'undefined') {
+                $('#svcContent').summernote('destroy');
+                $('#svcContent').val(s.content || '');
+                initSummernote();
+            }
         },
         error: function(xhr) { 
             console.error('Erro AJAX:', xhr);
@@ -378,6 +385,29 @@ $('#svcModal').on('hidden.bs.modal', function() {
     if (pondElement && pondElement.filepond) {
         pondElement.filepond.removeFiles();
     }
+});
+
+// ── Inicializar Summernote no campo Conteúdo ──────────────
+function initSummernote() {
+    if ($('#svcContent').length && typeof $.fn.summernote !== 'undefined') {
+        $('#svcContent').summernote({
+            height: 200,
+            placeholder: 'Descrição detalhada do serviço...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough', 'superscript', 'subscript']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            lang: 'pt-BR'
+        });
+    }
+}
+
+// Inicializar ao carregar a página
+$(document).ready(function() {
+    initSummernote();
 });
 
 // ── Submit ────────────────────────────────────────────────
