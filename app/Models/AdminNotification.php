@@ -15,7 +15,7 @@ class AdminNotification extends Model
     /**
      * Helper para criar notificação facilmente
      */
-    public static function push($title, $message = null, $link = null, $type = 'info')
+    public static function send($title, $message = null, $link = null, $type = 'info')
     {
         return self::create([
             'title' => $title,

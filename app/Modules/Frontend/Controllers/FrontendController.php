@@ -144,7 +144,7 @@ class FrontendController extends Controller
 
             // ── Notificação Administrativa (Tempo Real) ──────────
             try {
-                \App\Models\AdminNotification::push(
+                \App\Models\AdminNotification::send(
                     'Nova Mensagem de Contato',
                     $request->input('name') . ' enviou uma mensagem sobre: ' . $request->input('subject'),
                     route('admin.contact.index'),
