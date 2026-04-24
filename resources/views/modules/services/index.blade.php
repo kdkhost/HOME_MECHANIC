@@ -348,12 +348,12 @@ function editService(id) {
             document.getElementById('svcActive').checked   = !!s.active;
             document.getElementById('iconPreview').className = 'bi ' + (s.icon || 'bi-tools');
 
-            // Carregar imagem no FilePond se existir (usar URL completa)
+            // Carregar imagem no FilePond se existir (usar URL completa, tipo local para nao fazer upload)
             if (s.cover_image_url) {
                 var pondElement = document.getElementById('svcCoverImage');
                 if (pondElement && pondElement.filepond) {
                     pondElement.filepond.removeFiles();
-                    pondElement.filepond.addFile(s.cover_image_url);
+                    pondElement.filepond.addFile(s.cover_image_url, { type: 'local' });
                 }
             }
             
@@ -365,12 +365,14 @@ function editService(id) {
             var modal = new bootstrap.Modal(document.getElementById('svcModal'));
             modal.show();
             
-            // Reinicializar Summernote e setar conteúdo
-            if ($('#svcContent').length && typeof $.fn.summernote !== 'undefined') {
-                $('#svcContent').summernote('destroy');
-                $('#svcContent').val(s.content || '');
-                initSummernote();
-            }
+            // Reinicializar Summernote e setar conteúdo (com delay para modal estar visível)
+            setTimeout(function() {
+                if ($('#svcContent').length && typeof $.fn.summernote !== 'undefined') {
+                    $('#svcContent').summernote('destroy');
+                    $('#svcContent').val(s.content || '');
+                    initSummernote();
+                }
+            }, 100);
         },
         error: function(xhr) { 
             console.error('Erro AJAX:', xhr);
