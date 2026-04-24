@@ -46,8 +46,9 @@
             acceptedFileTypes: @json($fileTypes),
             server: {
                 process: '{{ route("admin.upload.store") }}',
-                load: '{{ route("admin.upload.load") }}',
-                revert: '{{ route("admin.upload.destroy") }}',
+                load: '{{ route("admin.upload.load") }}?file=',
+                revert: '{{ url("admin/upload/revert") }}',
+                restore: '{{ url("admin/upload/restore") }}',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 }
