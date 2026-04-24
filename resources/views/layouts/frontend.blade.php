@@ -67,7 +67,7 @@
     /* ── Floating Buttons ──────────────────────────────────── */
     .floating-buttons {
         position: fixed;
-        bottom: 90px;
+        bottom: 110px; /* Mais alto em mobile por causa do bottom nav */
         right: 20px;
         z-index: 9999;
         display: flex;
@@ -76,7 +76,7 @@
     }
     @media (min-width: 768px) {
         .floating-buttons {
-            bottom: 30px;
+            bottom: 70px; /* Mais alto em desktop para não cobrir o rodapé */
             right: 30px;
         }
     }
