@@ -297,7 +297,9 @@ function openModal(id) {
     if (id) {
         editingId = id;
         document.getElementById('modalTitle').innerHTML = '<i class="fas fa-pencil-alt me-2"></i>Editar Serviço';
+        form.action = '{{ url("admin/services") }}/' + id;
     } else {
+        editingId = null;
         document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Novo Serviço';
         form.action = '{{ route("admin.services.store") }}';
     }
@@ -329,6 +331,12 @@ function editService(id) {
         success: function(data) {
             if (!data.success) { HMToast.error('Erro ao carregar serviço.'); return; }
             var s = data.data;
+            
+            // Limpar e preparar form antes de preencher
+            resetForm();
+            editingId = id;
+            
+            // Preencher dados
             document.getElementById('svcId').value       = s.id;
             document.getElementById('svcMethod').value   = 'PUT';
             document.getElementById('svcTitle').value    = s.title || '';
@@ -348,11 +356,19 @@ function editService(id) {
                     pondElement.filepond.addFile(s.cover_image);
                 }
             }
+            
             // Define o action do form para a rota de update
-            document.getElementById('svcForm').action = '{{ route("admin.services.index") }}/' + s.id;
-            openModal(id);
+            document.getElementById('svcForm').action = '{{ url("admin/services") }}/' + s.id;
+            
+            // Abrir modal sem chamar resetForm novamente
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-pencil-alt me-2"></i>Editar Serviço';
+            var modal = new bootstrap.Modal(document.getElementById('svcModal'));
+            modal.show();
         },
-        error: function() { HMToast.error('Erro de conexão.'); }
+        error: function(xhr) { 
+            console.error('Erro AJAX:', xhr);
+            HMToast.error('Erro de conexão ao carregar serviço.'); 
+        }
     });
 }
 
