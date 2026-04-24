@@ -81,7 +81,7 @@
 <div class="modal fade" id="modalAdd">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.testimonials.store') }}" method="POST" class="ajax-form">
+            <form action="{{ route('admin.testimonials.store') }}" method="POST" class="ajax-form" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header"><h5 class="modal-title">Novo Depoimento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
@@ -96,6 +96,11 @@
                     <div class="mb-3">
                         <label>Função ou Veículo</label>
                         <input type="text" name="role" class="form-control" placeholder="Ex: Dono de Golf GTI">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Foto do Cliente</label>
+                        <x-filepond name="photo" />
+                        <small class="text-muted">Avatar ou foto do perfil (Quadrada recomendada).</small>
                     </div>
                     <div class="mb-3">
                         <label>Avaliação (Estrelas)</label>
@@ -129,7 +134,7 @@
 <div class="modal fade" id="modalEdit">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="formEdit" method="POST" class="ajax-form">
+            <form id="formEdit" method="POST" class="ajax-form" enctype="multipart/form-data">
                 @csrf @method('PUT')
                 <div class="modal-header"><h5 class="modal-title">Editar Depoimento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
@@ -144,6 +149,11 @@
                     <div class="mb-3">
                         <label>Função ou Veículo</label>
                         <input type="text" name="role" id="edit_role" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Alterar Foto</label>
+                        <x-filepond name="photo" id="edit_photo" />
+                        <small class="text-muted">Deixe em branco para manter a foto atual.</small>
                     </div>
                     <div class="mb-3">
                         <label>Avaliação (Estrelas)</label>
@@ -199,6 +209,20 @@ $(function(){
             }
         });
     }
+
+    // Toggle Status
+    $('.toggle-switch').change(function() {
+        var url = $(this).data('url');
+        var checked = $(this).is(':checked');
+        $.post(url, { _token: '{{ csrf_token() }}' })
+         .done(function(res) {
+             if(res.success) HMToast.success(res.message);
+         })
+         .fail(function() {
+             HMToast.error('Erro ao alterar status');
+             $(this).prop('checked', !checked);
+         });
+    });
 });
 </script>
 @endsection

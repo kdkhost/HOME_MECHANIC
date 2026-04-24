@@ -56,11 +56,12 @@ class TestimonialController extends Controller
             'content'   => 'required|string',
             'rating'    => 'required|integer|min:1|max:5',
             'is_active' => 'boolean',
+            'photo'     => 'nullable|image|max:2048',
         ]);
 
         try {
             DB::beginTransaction();
-            $testimonial = Testimonial::create([
+            $data = [
                 'name'      => $request->name,
                 'email'     => $request->email ?: null,
                 'role'      => $request->role,
@@ -69,7 +70,13 @@ class TestimonialController extends Controller
                 'is_active' => $request->boolean('is_active', true),
                 'sort_order'=> Testimonial::max('sort_order') + 1,
                 'source'    => 'manual',
-            ]);
+            ];
+
+            if ($request->hasFile('photo')) {
+                $data['photo'] = $request->file('photo')->store('testimonials', 'public');
+            }
+
+            $testimonial = Testimonial::create($data);
             AuditLog::record('testimonial_created', $testimonial, [], $testimonial->toArray());
             DB::commit();
 
@@ -93,18 +100,29 @@ class TestimonialController extends Controller
             'role'      => 'nullable|string|max:255',
             'content'   => 'required|string',
             'rating'    => 'required|integer|min:1|max:5',
+            'photo'     => 'nullable|image|max:2048',
         ]);
 
         try {
             DB::beginTransaction();
             $oldData = $testimonial->toArray();
-            $testimonial->update([
+            $data = [
                 'name'    => $request->name,
                 'email'   => $request->email ?: null,
                 'role'    => $request->role,
                 'content' => $request->content,
                 'rating'  => $request->rating,
-            ]);
+            ];
+
+            if ($request->hasFile('photo')) {
+                // Remover foto antiga se existir
+                if ($testimonial->photo && !str_starts_with($testimonial->photo, 'http')) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($testimonial->photo);
+                }
+                $data['photo'] = $request->file('photo')->store('testimonials', 'public');
+            }
+
+            $testimonial->update($data);
             AuditLog::record('testimonial_updated', $testimonial, $oldData, $testimonial->toArray());
             DB::commit();
 
