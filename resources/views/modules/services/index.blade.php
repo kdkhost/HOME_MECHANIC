@@ -7,6 +7,9 @@
 
 @section('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css">
+<link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+<link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
+<link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-brands/css/uicons-brands.css'>
 <style>
 .svc-card { transition: var(--hm-transition); }
 .svc-card:hover { transform: translateY(-2px); box-shadow: var(--hm-shadow-md) !important; }
@@ -238,6 +241,9 @@
             <button class="btn btn-xs ip-tab" data-provider="fas" onclick="setIpTab(this,'fas')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">FA Solid</button>
             <button class="btn btn-xs ip-tab" data-provider="far" onclick="setIpTab(this,'far')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">FA Regular</button>
             <button class="btn btn-xs ip-tab" data-provider="fab" onclick="setIpTab(this,'fab')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">FA Brands</button>
+            <button class="btn btn-xs ip-tab" data-provider="fi-rr" onclick="setIpTab(this,'fi-rr')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">Flaticon Regular</button>
+            <button class="btn btn-xs ip-tab" data-provider="fi-sr" onclick="setIpTab(this,'fi-sr')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">Flaticon Solid</button>
+            <button class="btn btn-xs ip-tab" data-provider="fi-brands" onclick="setIpTab(this,'fi-brands')" style="font-size:0.72rem;padding:2px 8px;border-radius:20px;">Flaticon Brands</button>
         </div>
         <div class="ip-search-hint mt-1"><i class="bi bi-hand-index me-1"></i>Clique no icone para aplicar automaticamente</div>
     </div>
@@ -395,11 +401,17 @@ var ICON_DATA = (function(){
       'cc-amex','cc-paypal','chrome','firefox','safari','edge','opera','telegram',
       'linkedin','pinterest','tiktok','discord','slack','skype','spotify','airbnb',
       'uber','lyft','bluetooth','usb','wifi','cc-stripe'];
+    var fi_rr = ['settings', 'car', 'wrench', 'tool-box-gear', 'oil-can', 'gas-pump', 'steering-wheel', 'engine', 'car-battery', 'dashboard', 'user', 'home', 'search', 'check', 'cross', 'trash', 'pencil', 'document', 'envelope', 'bell', 'tools', 'mechanic', 'car-garage'];
+    var fi_sr = ['settings', 'car', 'wrench', 'tool-box-gear', 'oil-can', 'gas-pump', 'steering-wheel', 'engine', 'car-battery', 'dashboard', 'user', 'home', 'search', 'check', 'cross', 'trash', 'pencil', 'document', 'envelope', 'bell', 'tools', 'mechanic', 'car-garage'];
+    var fi_brands = ['whatsapp', 'facebook', 'instagram', 'twitter', 'youtube', 'google', 'apple', 'android', 'tiktok', 'linkedin', 'github'];
     var out = [];
     bi.forEach(function(n){ out.push({cls:'bi bi-'+n, name:n, provider:'bi'}); });
     fas.forEach(function(n){ out.push({cls:'fas fa-'+n, name:n, provider:'fas'}); });
     far.forEach(function(n){ out.push({cls:'far fa-'+n, name:n, provider:'far'}); });
     fab.forEach(function(n){ out.push({cls:'fab fa-'+n, name:n, provider:'fab'}); });
+    fi_rr.forEach(function(n){ out.push({cls:'fi fi-rr-'+n, name:n, provider:'fi-rr'}); });
+    fi_sr.forEach(function(n){ out.push({cls:'fi fi-sr-'+n, name:n, provider:'fi-sr'}); });
+    fi_brands.forEach(function(n){ out.push({cls:'fi fi-brands-'+n, name:n, provider:'fi-brands'}); });
     return out;
 })();
 
@@ -465,7 +477,10 @@ function applyIpFilter() {
 function renderIconGrid() {
     var grid = document.getElementById('iconGrid');
     var html = '';
-    var provColors = {bi:'#0d6efd', fas:'#198754', far:'#6f42c1', fab:'#dc3545'};
+    var provColors = {
+        bi:'#0d6efd', fas:'#198754', far:'#6f42c1', fab:'#dc3545',
+        'fi-rr':'#e67e22', 'fi-sr':'#c0392b', 'fi-brands':'#16a085'
+    };
     ICON_DATA.forEach(function(ic){
         var badge = '<span style="font-size:0.52rem;padding:1px 4px;border-radius:10px;background:'+(provColors[ic.provider]||'#64748b')+';color:#fff;line-height:1.4;">'+ic.provider+'</span>';
         html += '<div class="icon-item" data-icon="'+ic.cls+'" data-name="'+ic.name+'" data-provider="'+ic.provider+'" onclick="selectIcon(\''+ic.cls+'\')" title="'+ic.cls+'">';
@@ -515,7 +530,7 @@ function renderServices(services) {
     services.forEach(function(s){
         var img = s.cover_image_url
             ? '<img src="'+s.cover_image_url+'" class="svc-img" alt="'+s.title+'">'
-            : '<div class="svc-img-placeholder"><i class="bi '+(s.icon||'bi-tools')+'"></i></div>';
+            : '<div class="svc-img-placeholder"><i class="'+parseIconCls(s.icon||'bi-tools')+'"></i></div>';
 
         // Botões — btn-group horizontal padronizado (mesmo modelo anterior)
         var btnEdit     = '<button class="btn btn-warning" onclick="editService('+s.id+')" title="Editar"><i class="fas fa-pencil-alt"></i></button>';
