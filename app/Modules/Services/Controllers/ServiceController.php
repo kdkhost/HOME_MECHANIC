@@ -75,12 +75,17 @@ class ServiceController extends Controller
             $data['active']     = $request->boolean('active', true);
             $data['sort_order'] = $data['sort_order'] ?? (Service::max('sort_order') + 1);
 
+            Log::info('Store service - cover_image received:', ['value' => $request->input('cover_image')]);
+            
             $coverResolved = FileUploadHelper::resolveFromRequest($request, 'cover_image', 'uploads/services');
+            Log::info('Store service - coverResolved:', ['value' => $coverResolved]);
+            
             if ($coverResolved !== null) {
                 $data['cover_image'] = $coverResolved ?: null;
             }
 
             $service = Service::create($data);
+            Log::info('Store service - created:', ['id' => $service->id, 'cover_image' => $service->cover_image]);
 
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => true, 'message' => 'Serviço criado com sucesso!', 'data' => $service]);
