@@ -47,7 +47,6 @@ body.sidebar-collapse .app-sidebar:hover .nav-arrow { display: block !important;
 .sidebar-brand .brand-link {
     display: flex; align-items: center;
     padding: 0.9rem 1rem; text-decoration: none;
-    border-bottom: 2px solid var(--hm-primary);
     background: transparent;
     transition: var(--hm-transition);
     min-height: 64px;
