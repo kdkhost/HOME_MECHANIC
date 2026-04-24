@@ -321,7 +321,7 @@ function resetForm() {
 
 function editService(id) {
     $.ajax({
-        url: '{{ route("admin.services.show", ":id") }}'.replace(':id', id),
+        url: '{{ url("admin/services") }}/' + id,
         headers: { 
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
