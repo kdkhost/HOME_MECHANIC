@@ -106,12 +106,12 @@
                             </div>
                             <div class="form-group">
                                 <label>Descrição Curta <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="description" id="svcDesc" rows="3" required maxlength="500"
+                                <textarea class="form-control summernote" name="description" id="svcDesc" rows="3" required maxlength="500"
                                           placeholder="Aparece nos cards e listagens (máx. 500 caracteres)"></textarea>
                             </div>
                             <div class="form-group mb-0">
                                 <label>Conteúdo Completo</label>
-                                <textarea class="form-control" name="content" id="svcContent" rows="5"
+                                <textarea class="form-control summernote" name="content" id="svcContent" rows="5"
                                           placeholder="Descrição detalhada do serviço (aceita HTML)"></textarea>
                             </div>
                         </div>
