@@ -30,6 +30,7 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         Route::get('/cron/list',   [SettingsController::class, 'cronList'])->name('cron.list');
         Route::post('/cron/run',   [SettingsController::class, 'cronRun'])->name('cron.run');
         Route::post('/cron/toggle', [SettingsController::class, 'cronToggle'])->name('cron.toggle');
+        Route::post('/cron/google-test', [SettingsController::class, 'googleSyncTest'])->name('cron.google-test');
 
         // reCAPTCHA
         Route::get('/recaptcha',  [RecaptchaController::class, 'index'])->name('recaptcha');

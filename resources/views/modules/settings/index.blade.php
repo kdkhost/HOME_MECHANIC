@@ -360,8 +360,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-3 d-flex align-items-center gap-2">
                         <small class="text-muted">Apos salvar, execute no servidor: <code>php artisan google:sync-reviews</code></small>
+                        <button type="button" class="btn btn-sm btn-outline-info ms-auto" onclick="testGoogleSync()">
+                            <i class="fas fa-vial me-1"></i> Testar Conexão
+                        </button>
                     </div>
 
                 </div>
@@ -461,6 +464,41 @@ function showMap() {
         })
         .catch(function() {
             HMToast.error('Erro ao carregar o mapa.');
+        });
+    });
+}
+
+// ── Testar Google Sync ────────────────────────────────────
+function testGoogleSync() {
+    Swal.fire({
+        title: 'Testar Conexão Google?',
+        text: 'Isso fará uma chamada de teste à API do Google Places para validar suas chaves.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#FF6B00',
+        confirmButtonText: 'Testar Agora',
+        cancelButtonText: 'Cancelar'
+    }).then(function(r) {
+        if (!r.isConfirmed) return;
+
+        Swal.fire({ title: 'Testando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+        $.ajax({
+            url: '{{ route("admin.settings.cron.google-test") }}',
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            success: function(res) {
+                Swal.close();
+                if (res.success) {
+                    Swal.fire({ title: '✅ Sucesso!', text: res.message, icon: 'success', confirmButtonColor: '#FF6B00' });
+                } else {
+                    Swal.fire({ title: '❌ Falha', text: res.message, icon: 'error', confirmButtonColor: '#FF6B00' });
+                }
+            },
+            error: function() {
+                Swal.close();
+                Swal.fire({ title: '❌ Erro', text: 'Erro ao tentar se comunicar com a API do Google.', icon: 'error', confirmButtonColor: '#FF6B00' });
+            }
         });
     });
 }

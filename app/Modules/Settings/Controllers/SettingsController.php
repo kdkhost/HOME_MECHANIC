@@ -597,6 +597,55 @@ class SettingsController extends Controller
         return $map[$expression] ?? $expression;
     }
 
+    /**
+     * Testar sincronizacao do Google Places
+     */
+    public function googleSyncTest(Request $request)
+    {
+        try {
+            $apiKey  = Setting::get('google_places_api_key');
+            $placeId = Setting::get('google_place_id');
+
+            if (!$apiKey || !$placeId) {
+                return response()->json(['success' => false, 'message' => 'Configure a API Key e o Place ID antes de testar.']);
+            }
+
+            $response = \Illuminate\Support\Facades\Http::get('https://maps.googleapis.com/maps/api/place/details/json', [
+                'place_id' => $placeId,
+                'fields'   => 'reviews',
+                'language' => 'pt-BR',
+                'key'      => $apiKey,
+            ]);
+
+            if (!$response->successful()) {
+                return response()->json(['success' => false, 'message' => 'Erro na API do Google: HTTP ' . $response->status()]);
+            }
+
+            $data = $response->json();
+
+            if (($data['status'] ?? '') !== 'OK') {
+                $error = $data['error_message'] ?? 'Status: ' . ($data['status'] ?? 'desconhecido');
+                return response()->json(['success' => false, 'message' => 'Google retornou erro: ' . $error]);
+            }
+
+            $reviews = $data['result']['reviews'] ?? [];
+            $count = count($reviews);
+
+            if ($count === 0) {
+                return response()->json(['success' => true, 'message' => 'Conexão OK, mas nenhuma avaliação foi retornada. Verifique se o Place ID está correto e se o local possui avaliações públicas.']);
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => "Conexão bem-sucedida! Foram encontradas {$count} avaliações prontas para sincronização.",
+                'reviews' => array_map(fn($r) => ['author' => $r['author_name'], 'rating' => $r['rating']], $reviews)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erro técnico: ' . $e->getMessage()]);
+        }
+    }
+
     // ── Test SMTP ──────────────────────────────────────────
 
     public function testEmail(Request $request)
