@@ -413,7 +413,37 @@ function editService(id) {
     });
 }
 
-// ── Limpar FilePond ao fechar modal ─────────────────────
+// ── Inicializar Summernote quando modal abrir ─────────────
+$('#svcModal').on('shown.bs.modal', function() {
+    if (typeof $.fn.summernote !== 'undefined') {
+        // Inicializar Descrição Curta
+        $('#svcDesc').summernote({
+            height: 100,
+            placeholder: 'Aparece nos cards e listagens...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['view', ['codeview']]
+            ],
+            lang: 'pt-BR'
+        });
+        // Inicializar Conteúdo Completo
+        $('#svcContent').summernote({
+            height: 200,
+            placeholder: 'Descrição detalhada do serviço...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough', 'superscript', 'subscript']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            lang: 'pt-BR'
+        });
+    }
+});
+
+// ── Limpar FilePond e Summernote ao fechar modal ──────────
 $('#svcModal').on('hidden.bs.modal', function() {
     var pondElement = document.getElementById('svcCoverImage');
     if (pondElement && pondElement.filepond) {
