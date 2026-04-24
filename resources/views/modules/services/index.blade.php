@@ -12,9 +12,28 @@
 .svc-card:hover { transform: translateY(-2px); box-shadow: var(--hm-shadow-md) !important; }
 .svc-img { width:100%; height:160px; object-fit:cover; border-radius:var(--hm-radius) var(--hm-radius) 0 0; }
 .svc-img-placeholder { width:100%; height:160px; background:var(--hm-primary-light); display:flex; align-items:center; justify-content:center; border-radius:var(--hm-radius) var(--hm-radius) 0 0; color:var(--hm-primary); font-size:2.5rem; }
+
+/* Botões dos cards — padronizados */
+.svc-btn {
+    flex: 1;
+    height: 34px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.82rem !important;
+    border-radius: 6px !important;
+    transition: var(--hm-transition) !important;
+}
+.svc-btn:hover { transform: translateY(-1px); }
+.svc-btn i { font-size: 0.85rem; }
+
+/* Upload area */
 .img-upload-area { border:2px dashed var(--hm-border); border-radius:8px; padding:1.25rem; text-align:center; cursor:pointer; transition:var(--hm-transition); background:#fafafa; min-height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem; }
 .img-upload-area:hover { border-color:var(--hm-primary); background:var(--hm-primary-light); }
 .img-upload-area img { max-height:100px; border-radius:6px; object-fit:cover; }
+
+/* Summernote */
 .note-editor.note-frame { border:1.5px solid var(--hm-border) !important; border-radius:0 0 6px 6px !important; }
 .note-toolbar { background:#f8fafc !important; border:1.5px solid var(--hm-border) !important; border-bottom:none !important; border-radius:6px 6px 0 0 !important; }
 .note-toolbar .note-btn:hover, .note-toolbar .note-btn.active { background:var(--hm-primary) !important; color:#fff !important; border-color:var(--hm-primary) !important; }
@@ -147,13 +166,70 @@ function renderServices(services) {
     if(!services.length){ c.innerHTML='<div class="empty-state"><i class="fas fa-tools"></i><h5>Nenhum servico encontrado</h5><p>Crie o primeiro servico.</p></div>'; return; }
     var html='<div class="row g-3" id="svcList">';
     services.forEach(function(s){
-        var img = s.cover_image_url ? '<img src="'+s.cover_image_url+'" class="svc-img" alt="'+s.title+'">' : '<div class="svc-img-placeholder"><i class="bi '+(s.icon||'bi-tools')+'"></i></div>';
-        html+='<div class="col-md-4 col-lg-3" data-id="'+s.id+'"><div class="card svc-card">'+img+'<div class="card-body pb-2"><div class="d-flex align-items-start justify-content-between gap-1"><div style="font-weight:700;font-size:0.9rem;color:var(--hm-text);">'+s.title+'</div><i class="fas fa-grip-vertical drag-handle" style="color:#94a3b8;cursor:move;flex-shrink:0;margin-top:2px;"></i></div><p style="font-size:0.78rem;color:var(--hm-text-muted);margin:0.35rem 0 0.5rem;line-height:1.4;">'+(s.description||'').substring(0,80)+((s.description||'').length>80?'...':'')+'</p><div class="d-flex gap-1 flex-wrap">'+(s.active?'<span class="badge badge-success">Ativo</span>':'<span class="badge badge-secondary">Inativo</span>')+(s.featured?'<span class="badge badge-warning">Destaque</span>':'')+'</div></div><div class="card-footer py-2"><div class="btn-group btn-group-sm w-100"><button class="btn btn-warning" onclick="editService('+s.id+')" title="Editar"><i class="fas fa-pencil-alt"></i></button><button class="btn btn-'+(s.active?'secondary':'success')+'" onclick="toggleActive('+s.id+')" title="'+(s.active?'Desativar':'Ativar')+'"><i class="fas fa-'+(s.active?'pause':'play')+'"></i></button><button class="btn btn-'+(s.featured?'secondary':'warning')+'" onclick="toggleFeatured('+s.id+')" title="'+(s.featured?'Remover destaque':'Destacar')+'"><i class="fas fa-star'+(s.featured?'':'-o')+'"></i></button><button class="btn btn-danger" onclick="deleteService('+s.id+',\''+((s.title||'').replace(/\'/g,''))+'\')" title="Excluir"><i class="fas fa-trash"></i></button></div></div></div></div>';
+        var img = s.cover_image_url
+            ? '<img src="'+s.cover_image_url+'" class="svc-img" alt="'+s.title+'">'
+            : '<div class="svc-img-placeholder"><i class="bi '+(s.icon||'bi-tools')+'"></i></div>';
+
+        // Botões padronizados — todos mesma altura, ícones corretos, sem recarregar página
+        var btnEdit     = '<button class="btn btn-warning btn-sm svc-btn" onclick="editService('+s.id+')" title="Editar"><i class="fas fa-pencil-alt"></i></button>';
+        var btnToggle   = s.active
+            ? '<button class="btn btn-secondary btn-sm svc-btn" onclick="toggleActive('+s.id+')" title="Desativar"><i class="fas fa-eye-slash"></i></button>'
+            : '<button class="btn btn-success btn-sm svc-btn" onclick="toggleActive('+s.id+')" title="Ativar"><i class="fas fa-eye"></i></button>';
+        var btnFeatured = s.featured
+            ? '<button class="btn btn-info btn-sm svc-btn" onclick="toggleFeatured('+s.id+')" title="Remover destaque"><i class="fas fa-star"></i></button>'
+            : '<button class="btn btn-outline-secondary btn-sm svc-btn" onclick="toggleFeatured('+s.id+')" title="Destacar"><i class="far fa-star"></i></button>';
+        var btnDelete   = '<button class="btn btn-danger btn-sm svc-btn" onclick="deleteService('+s.id+',\''+((s.title||'').replace(/\'/g,''))+'\')" title="Excluir"><i class="fas fa-trash"></i></button>';
+
+        html += '<div class="col-md-4 col-lg-3" data-id="'+s.id+'">'
+            + '<div class="card svc-card h-100 d-flex flex-column">'
+            + img
+            + '<div class="card-body pb-2 flex-grow-1">'
+            + '<div class="d-flex align-items-start justify-content-between gap-1 mb-1">'
+            + '<div style="font-weight:700;font-size:0.88rem;color:var(--hm-text);line-height:1.3;">'+s.title+'</div>'
+            + '<i class="fas fa-grip-vertical drag-handle" style="color:#94a3b8;cursor:move;flex-shrink:0;margin-top:2px;font-size:0.85rem;"></i>'
+            + '</div>'
+            + '<p style="font-size:0.78rem;color:var(--hm-text-muted);margin:0 0 0.5rem;line-height:1.4;">'+(s.description||'').replace(/<[^>]*>/g,'').substring(0,80)+((s.description||'').length>80?'…':'')+'</p>'
+            + '<div class="d-flex gap-1 flex-wrap">'
+            + (s.active ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-secondary">Inativo</span>')
+            + (s.featured ? '<span class="badge badge-warning">Destaque</span>' : '')
+            + '</div>'
+            + '</div>'
+            + '<div class="card-footer py-2 px-2">'
+            + '<div class="d-flex gap-1 justify-content-between">'
+            + btnEdit + btnToggle + btnFeatured + btnDelete
+            + '</div>'
+            + '</div>'
+            + '</div></div>';
     });
-    html+='</div>'; c.innerHTML=html;
+    html += '</div>';
+    c.innerHTML = html;
+
+    // Tooltips Bootstrap
+    document.querySelectorAll('.svc-btn[title]').forEach(function(el) {
+        new bootstrap.Tooltip(el, { trigger: 'hover', placement: 'top' });
+    });
+
+    // Sortable
     if(sortable) sortable.destroy();
-    var list=document.getElementById('svcList');
-    if(list){ sortable=Sortable.create(list,{ handle:'.drag-handle', ghostClass:'opacity-50', onEnd:function(){ var items=[]; document.querySelectorAll('#svcList [data-id]').forEach(function(el,i){ items.push({id:parseInt(el.dataset.id),sort_order:i+1}); }); $.ajax({ url:'{{ route("admin.services.reorder") }}', method:'POST', contentType:'application/json', headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')}, data:JSON.stringify({services:items}), success:function(r){ if(r.success) HMToast.success('Ordem salva!'); } }); } }); }
+    var list = document.getElementById('svcList');
+    if(list){
+        sortable = Sortable.create(list, {
+            handle: '.drag-handle', ghostClass: 'opacity-50',
+            onEnd: function(){
+                var items = [];
+                document.querySelectorAll('#svcList [data-id]').forEach(function(el, i){
+                    items.push({ id: parseInt(el.dataset.id), sort_order: i+1 });
+                });
+                $.ajax({
+                    url: '{{ route("admin.services.reorder") }}', method: 'POST',
+                    contentType: 'application/json',
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    data: JSON.stringify({ services: items }),
+                    success: function(r){ if(r.success) HMToast.success('Ordem salva!'); }
+                });
+            }
+        });
+    }
 }
 
 function renderPagination(p) {
