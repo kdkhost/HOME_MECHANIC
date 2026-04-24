@@ -232,10 +232,6 @@
 
 /* ── Testimonials ──────────────────────────────────────────── */
 .testimonials-section { background: var(--black); }
-.testimonials-swiper {
-    padding-bottom: 1rem !important;
-    overflow: visible !important;
-}
 .testimonial-card {
     background: var(--dark2);
     border: 1px solid rgba(255,255,255,0.06);
@@ -549,7 +545,7 @@
         <div class="swiper testimonials-swiper" data-aos="fade-up" data-aos-delay="100">
             <div class="swiper-wrapper">
                 @forelse($testimonials as $t)
-                <div class="swiper-slide h-auto">
+                <div class="swiper-slide col-md-4">
                     <div class="testimonial-card">
                         <div class="testimonial-stars">
                             @for($k=1; $k<=5; $k++)
