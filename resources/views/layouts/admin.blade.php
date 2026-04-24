@@ -788,8 +788,19 @@ $(function() {
         
         if (id && href !== '#') {
             e.preventDefault();
-            $.post("{{ url('admin/notifications') }}/" + id + "/read", { _token: "{{ csrf_token() }}" }, function() {
-                window.location.href = href;
+            const $this = $(this);
+            $this.css('opacity', '0.5'); // Feedback visual
+
+            $.ajax({
+                url: "{{ url('admin/notifications') }}/" + id + "/read",
+                type: 'POST',
+                data: { _token: "{{ csrf_token() }}" },
+                complete: function() {
+                    // Pequeno delay para garantir que a sessão/banco processou
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 300);
+                }
             });
         }
     });
