@@ -154,7 +154,15 @@
                                 </button>
                             @endif
                         </td>
-                        <td style="font-size:0.82rem;color:var(--hm-text-muted);">—</td>
+                        <td style="font-size:0.82rem;color:var(--hm-text-muted);">
+                            @php
+                                $lastLogin = is_object($u) ? $u->last_login_at : ($u['last_login_at'] ?? null);
+                                if ($lastLogin && is_string($lastLogin)) {
+                                    $lastLogin = \Carbon\Carbon::parse($lastLogin);
+                                }
+                            @endphp
+                            {{ $lastLogin ? $lastLogin->format('d/m/Y H:i') : 'Nunca' }}
+                        </td>
                         <td style="font-size:0.82rem;color:var(--hm-text-muted);">{{ $udate->format('d/m/Y') }}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
