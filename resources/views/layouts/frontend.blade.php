@@ -696,10 +696,11 @@
         display: flex; align-items: center; justify-content: center; gap: 0.6rem;
         background: linear-gradient(135deg, var(--orange-dark), var(--orange)) !important;
         color: var(--black) !important;
-        font-weight: 700; font-size: 0.88rem;
-        letter-spacing: 1.5px; text-transform: uppercase;
-        padding: 0.9rem; border-radius: 6px;
+        font-weight: 700; font-size: 0.78rem; /* Fonte menor */
+        letter-spacing: 1px; text-transform: uppercase;
+        padding: 0.7rem 1rem; border-radius: 6px; /* Padding menor */
         text-decoration: none !important;
+        white-space: nowrap; /* Força linha única */
         transition: var(--transition);
         outline: none !important;
         -webkit-tap-highlight-color: transparent;
