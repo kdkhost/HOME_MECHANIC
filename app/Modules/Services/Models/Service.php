@@ -166,19 +166,13 @@ class Service extends Model
     }
 
     /**
-     * Serialização para JSON
+     * Serialização para JSON — inclui cover_image_url sempre
      */
     public function toArray(): array
     {
         $array = parent::toArray();
-        
-        // Adicionar URLs das imagens
-        $array['cover_image_url'] = $this->cover_image_url;
-        $array['cover_thumbnail_url'] = $this->cover_thumbnail_url;
-        
-        // Adicionar contagem de uploads
-        $array['uploads_count'] = $this->uploads()->count();
-        
+        $array['cover_image_url']       = $this->cover_image_url;
+        $array['cover_thumbnail_url']   = $this->cover_thumbnail_url;
         return $array;
     }
 }

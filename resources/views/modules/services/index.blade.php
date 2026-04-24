@@ -83,7 +83,7 @@
                                         <div style="font-size:0.72rem;color:#94a3b8;">JPG, PNG, WebP - max 5MB</div>
                                     </div>
                                 </div>
-                                <input type="file" id="coverImageInput" name="cover_image" accept="image/jpeg,image/png,image/webp" class="d-none" onchange="previewCoverImage(this)">
+                                <input type="file" id="coverImageInput" name="cover_image" accept="image/jpeg,image/png,image/webp" class="d-none" data-no-filepond onchange="previewCoverImage(this)">
                                 <button type="button" class="btn btn-danger btn-sm mt-1 w-100 d-none" id="btnRemoveImg" onclick="removeCoverImage()"><i class="fas fa-trash me-1"></i> Remover imagem</button>
                             </div>
                             <div class="form-group">
