@@ -132,7 +132,7 @@ class FrontendController extends Controller
 
         // ── Salvar no banco ───────────────────────────────────
         try {
-            ContactMessage::create([
+            $contact = ContactMessage::create([
                 'name'    => $request->input('name'),
                 'email'   => $request->input('email'),
                 'phone'   => $request->input('phone'),
@@ -141,6 +141,18 @@ class FrontendController extends Controller
                 'ip'      => $request->ip(),
                 'read'    => false,
             ]);
+
+            // ── Notificação Administrativa (Tempo Real) ──────────
+            try {
+                \App\Models\AdminNotification::push(
+                    'Nova Mensagem de Contato',
+                    $request->input('name') . ' enviou uma mensagem sobre: ' . $request->input('subject'),
+                    route('admin.contact.index'),
+                    'info'
+                );
+            } catch (\Exception $e) {
+                Log::warning('Falha ao gerar notificação administrativa', ['error' => $e->getMessage()]);
+            }
         } catch (\Exception $e) {
             Log::error('Erro ao salvar mensagem de contato', ['error' => $e->getMessage()]);
             return back()->withInput()->with('error', 'Erro ao enviar mensagem. Tente novamente.');

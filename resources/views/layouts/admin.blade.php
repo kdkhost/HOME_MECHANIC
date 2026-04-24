@@ -702,6 +702,100 @@
 
 @yield('scripts')
 
+<!-- Notificações Audio -->
+<audio id="notifSound" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+$(function() {
+    let lastNotifCount = 0;
+    let initialLoad = true;
+
+    function fetchNotifications() {
+        $.get("{{ route('admin.notifications.unread') }}", function(data) {
+            updateNotifUI(data);
+            
+            // Alerta sonoro se o número de notificações aumentou e não é a carga inicial
+            if (!initialLoad && data.count > lastNotifCount) {
+                document.getElementById('notifSound').play().catch(e => console.log("Audio play blocked by browser. Interaction needed."));
+                
+                // Notificação visual Toasty se estiver em outra aba
+                Toastify({
+                    text: "🔔 Nova notificação recebida!",
+                    duration: 5000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #FF6B00, #E55A00)",
+                }).showToast();
+            }
+            lastNotifCount = data.count;
+            initialLoad = false;
+        });
+    }
+
+    function updateNotifUI(data) {
+        const badge = $('#notifBadge');
+        const list = $('#notifList');
+        
+        if (data.count > 0) {
+            badge.text(data.count).show();
+        } else {
+            badge.hide();
+        }
+
+        if (data.notifications.length > 0) {
+            let html = '';
+            data.notifications.forEach(n => {
+                const typeColor = n.type === 'danger' ? 'danger' : (n.type === 'warning' ? 'warning' : 'primary');
+                html += `
+                <a href="${n.link || '#'}" class="dropdown-item d-flex align-items-start py-3 px-3 border-bottom mark-read" data-id="${n.id}">
+                    <div class="me-3">
+                        <span class="badge rounded-circle p-2 text-bg-${typeColor}">
+                            <i class="bi bi-bell"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0" style="font-size:0.85rem; font-weight:700;">${n.title}</h6>
+                        </div>
+                        <p class="text-muted mb-0" style="font-size:0.8rem; line-height:1.4;">${n.message || ''}</p>
+                    </div>
+                </a>`;
+            });
+            list.html(html);
+        } else {
+            list.html('<div class="text-center py-4 text-muted"><i class="bi bi-bell-slash d-block mb-2" style="font-size:1.8rem; opacity:0.4;"></i><small>Nenhuma notificação</small></div>');
+        }
+    }
+
+    // Polling a cada 30 segundos
+    setInterval(fetchNotifications, 30000);
+    fetchNotifications(); // Carga inicial
+
+    // Marcar como lida ao clicar
+    $(document).on('click', '.mark-read', function(e) {
+        const id = $(this).data('id');
+        const href = $(this).attr('href');
+        if (id) {
+            $.post("{{ url('admin/notifications') }}/" + id + "/read", { _token: "{{ csrf_token() }}" }, function() {
+                if (href === '#') fetchNotifications();
+            });
+        }
+    });
+
+    // Limpar tudo
+    $('#clearNotifs').on('click', function(e) {
+        e.preventDefault();
+        $.post("{{ route('admin.notifications.clear-all') }}", { _token: "{{ csrf_token() }}" }, function() {
+            fetchNotifications();
+            Toastify({ text: "Notificações limpas", backgroundColor: "#64748b" }).showToast();
+        });
+    });
+});
+</script>
+
 <script>
 // Navbar sticky effect ao rolar
 (function() {
