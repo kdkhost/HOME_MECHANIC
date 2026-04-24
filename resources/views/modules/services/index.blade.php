@@ -322,7 +322,10 @@ function resetForm() {
 function editService(id) {
     $.ajax({
         url: '{{ route("admin.services.show", ":id") }}'.replace(':id', id),
-        headers: { 'Accept': 'application/json' },
+        headers: { 
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         success: function(data) {
             if (!data.success) { HMToast.error('Erro ao carregar serviço.'); return; }
             var s = data.data;
