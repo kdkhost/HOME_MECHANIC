@@ -374,7 +374,7 @@ document.getElementById('svcForm').addEventListener('submit', function(e) {
     var id     = document.getElementById('svcId').value;
     var method = document.getElementById('svcMethod').value;
     var url    = id
-        ? '{{ route("admin.services.index") }}/' + id
+        ? '{{ url("admin/services") }}/' + id
         : '{{ route("admin.services.store") }}';
 
     var fd = new FormData(this);
