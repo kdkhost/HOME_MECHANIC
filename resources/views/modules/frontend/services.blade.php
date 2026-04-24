@@ -99,13 +99,14 @@
                         } elseif (!str_starts_with($imgUrl, 'http')) {
                             $imgUrl = '/' . ltrim($imgUrl, '/');
                         }
+                        $iconCls = empty($s->icon) ? 'bi bi-tools' : (strpos($s->icon, ' ') !== false ? $s->icon : (str_starts_with($s->icon, 'bi-') ? 'bi '.$s->icon : $s->icon));
                     @endphp
                     <div class="service-full-img-wrap">
                         <img src="{{ $imgUrl }}" alt="{{ $s->title }}" class="service-full-img" loading="lazy"
                              onerror="this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop'">
                     </div>
                     <div class="service-full-body">
-                        <div class="service-full-icon"><i class="bi {{ $s->icon ?? 'bi-tools' }}"></i></div>
+                        <div class="service-full-icon"><i class="{{ $iconCls }}"></i></div>
                         <div class="service-full-title">{{ $s->title }}</div>
                         <p class="service-full-text">{{ $s->description }}</p>
                         <div style="margin-top:1rem;display:inline-flex;align-items:center;gap:0.4rem;color:var(--orange);font-size:0.8rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;">
@@ -121,12 +122,12 @@
         {{-- Fallback estático quando não há serviços cadastrados --}}
         @php
         $staticServices = [
-            ['img'=>'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80','icon'=>'bi-speedometer2','title'=>'Tuning de Motor','text'=>'Reprogramação de ECU, upgrades de turbo, intercooler de alta performance e sistemas de injeção otimizados.'],
-            ['img'=>'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80','icon'=>'bi-gear-wide-connected','title'=>'Suspensão Sport','text'=>'Kits de rebaixamento ajustáveis, amortecedores de competição e geometria de precisão.'],
-            ['img'=>'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80','icon'=>'bi-disc','title'=>'Freios Performance','text'=>'Sistemas de freio de alta performance para máxima segurança em altas velocidades.'],
-            ['img'=>'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80','icon'=>'bi-stars','title'=>'Estética Premium','text'=>'Envelopamento, polimento de alto brilho, proteção de pintura PPF e detalhamento completo.'],
-            ['img'=>'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80','icon'=>'bi-cpu','title'=>'Diagnóstico Digital','text'=>'Leitura completa de todos os sistemas eletrônicos com equipamentos de última geração.'],
-            ['img'=>'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80','icon'=>'bi-wrench-adjustable','title'=>'Manutenção Preventiva','text'=>'Revisões completas seguindo os protocolos das fabricantes com peças originais.'],
+            ['img'=>'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80','icon'=>'bi bi-speedometer2','title'=>'Tuning de Motor','text'=>'Reprogramação de ECU, upgrades de turbo, intercooler de alta performance e sistemas de injeção otimizados.'],
+            ['img'=>'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80','icon'=>'bi bi-gear-wide-connected','title'=>'Suspensão Sport','text'=>'Kits de rebaixamento ajustáveis, amortecedores de competição e geometria de precisão.'],
+            ['img'=>'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80','icon'=>'bi bi-disc','title'=>'Freios Performance','text'=>'Sistemas de freio de alta performance para máxima segurança em altas velocidades.'],
+            ['img'=>'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80','icon'=>'bi bi-stars','title'=>'Estética Premium','text'=>'Envelopamento, polimento de alto brilho, proteção de pintura PPF e detalhamento completo.'],
+            ['img'=>'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80','icon'=>'bi bi-cpu','title'=>'Diagnóstico Digital','text'=>'Leitura completa de todos os sistemas eletrônicos com equipamentos de última geração.'],
+            ['img'=>'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80','icon'=>'bi bi-wrench-adjustable','title'=>'Manutenção Preventiva','text'=>'Revisões completas seguindo os protocolos das fabricantes com peças originais.'],
         ];
         @endphp
         <div class="row g-4">
@@ -137,7 +138,7 @@
                         <img src="{{ $s['img'] }}" alt="{{ $s['title'] }}" class="service-full-img">
                     </div>
                     <div class="service-full-body">
-                        <div class="service-full-icon"><i class="bi {{ $s['icon'] }}"></i></div>
+                        <div class="service-full-icon"><i class="{{ $s['icon'] }}"></i></div>
                         <div class="service-full-title">{{ $s['title'] }}</div>
                         <p class="service-full-text">{{ $s['text'] }}</p>
                     </div>

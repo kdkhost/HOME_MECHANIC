@@ -486,7 +486,10 @@
                         <img src="{{ $svcImg ?? 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' }}" alt="{{ $s->title }}" class="service-img">
                     </div>
                     <div class="service-body">
-                        <div class="service-icon"><i class="{{ empty($s->icon) ? 'bi bi-tools' : $s->icon }}"></i></div>
+                        @php
+                            $iconCls = empty($s->icon) ? 'bi bi-tools' : (strpos($s->icon, ' ') !== false ? $s->icon : (str_starts_with($s->icon, 'bi-') ? 'bi '.$s->icon : $s->icon));
+                        @endphp
+                        <div class="service-icon"><i class="{{ $iconCls }}"></i></div>
                         <div class="service-title">{{ $s->title }}</div>
                         <p class="service-text">{{ Str::limit($s->description, 90) }}</p>
                         <a href="{{ route('services') }}" class="service-link">
