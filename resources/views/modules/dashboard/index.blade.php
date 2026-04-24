@@ -190,6 +190,23 @@
             </div>
             <div class="card-body">
                 <div class="chart-wrap">
+                    <canvas id="visitsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Atividade recente --}}
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-history"></i> Atividade Recente</span>
+                <span class="badge badge-info" style="font-size:0.65rem;">Auto</span>
+            </div>
+            <div class="card-body" id="activityCardBody" style="max-height:280px;overflow-y:auto;padding-top:0.5rem!important;">
+                <div id="activityList">
+                @forelse($data['recent_activity'] as $act)
+                <div class="activity-item">
                     <div class="activity-dot"></div>
                     <div>
                         <div class="activity-action">{{ $act['action'] }} <span style="font-weight:400;color:var(--hm-text-muted);">em {{ $act['model'] }}</span></div>
