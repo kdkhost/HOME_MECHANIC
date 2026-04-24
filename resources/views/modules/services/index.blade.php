@@ -452,14 +452,19 @@ function deleteService(id, name) {
     console.log('deleteService chamado - id:', id, 'name:', name);
     Swal.fire({
         title: 'Excluir serviço?',
-        html: 'Deseja excluir <strong>' + name + '</strong>?<br><small style="color:#64748b;">Esta ação não pode ser desfeita.</small>',
+        text: 'Deseja excluir "' + name + '"? Esta ação não pode ser desfeita.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc2626',
         cancelButtonColor: '#64748b',
-        confirmButtonText: '<i class="fas fa-trash me-1"></i> Excluir',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
+        confirmButtonText: 'Excluir',
+        cancelButtonText: 'Cancelar',
+        allowOutsideClick: false,
+        allowEscapeKey: true,
+        focusConfirm: false,
+        focusCancel: true
+    }).then(function(result) {
+        console.log('SweetAlert result:', result);
         if (!result.isConfirmed) {
             console.log('Exclusão cancelada pelo usuário');
             return;
@@ -472,7 +477,15 @@ function deleteService(id, name) {
             url: deleteUrl,
             method: 'DELETE',
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
-            success: function(d) { if (d.success) { HMToast.success(d.message); loadServices(currentPage); } else HMToast.error(d.message); },
+            success: function(d) { 
+                console.log('Delete success:', d);
+                if (d.success) { 
+                    HMToast.success(d.message); 
+                    loadServices(currentPage); 
+                } else {
+                    HMToast.error(d.message); 
+                }
+            },
             error: function(xhr) { 
                 console.error('Erro ao excluir serviço:', xhr);
                 HMToast.error('Erro de conexão.'); 
