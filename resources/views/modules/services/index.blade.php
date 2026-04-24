@@ -96,7 +96,6 @@
                 @csrf
                 <input type="hidden" id="svcId" name="_id">
                 <input type="hidden" name="_method" id="svcMethod" value="POST">
-                <input type="hidden" name="remove_image" id="removeImage" value="0">
 
                 <div class="modal-body">
                     <div class="row g-3">
@@ -120,19 +119,12 @@
                             {{-- Imagem --}}
                             <div class="form-group">
                                 <label>Imagem de Capa</label>
-                                <div class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('coverImageInput').click()">
-                                    <div id="imgPreview">
-                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color:var(--hm-primary);"></i>
-                                        <div style="font-size:0.82rem;color:var(--hm-text-muted);">Clique para selecionar</div>
-                                        <div style="font-size:0.72rem;color:#94a3b8;">JPG, PNG, WebP — máx. 5MB</div>
-                                    </div>
-                                </div>
-                                <input type="file" id="coverImageInput" name="cover_image"
-                                       accept="image/jpeg,image/png,image/webp" class="d-none"
-                                       onchange="previewImage(this)">
-                                <button type="button" class="btn btn-danger btn-sm mt-1 w-100 d-none" id="btnRemoveImg" onclick="removeImage()">
-                                    <i class="fas fa-trash"></i> Remover imagem
-                                </button>
+                                <x-filepond 
+                                    name="cover_image" 
+                                    id="svcCoverImage"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    max-file-size="5MB"
+                                />
                             </div>
                             {{-- Ícone --}}
                             <div class="form-group">
@@ -318,12 +310,11 @@ function resetForm() {
     document.getElementById('svcForm').reset();
     document.getElementById('svcId').value = '';
     document.getElementById('svcMethod').value = 'POST';
-    document.getElementById('removeImage').value = '0';
-    document.getElementById('imgPreview').innerHTML =
-        '<i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color:var(--hm-primary);"></i>' +
-        '<div style="font-size:0.82rem;color:var(--hm-text-muted);">Clique para selecionar</div>' +
-        '<div style="font-size:0.72rem;color:#94a3b8;">JPG, PNG, WebP — máx. 5MB</div>';
-    document.getElementById('btnRemoveImg').classList.add('d-none');
+    // Limpar FilePond se existir
+    var pondElement = document.getElementById('svcCoverImage');
+    if (pondElement && pondElement.filepond) {
+        pondElement.filepond.removeFiles();
+    }
     document.getElementById('svcActive').checked = true;
     document.getElementById('iconPreview').className = 'bi bi-tools';
 }
@@ -346,10 +337,13 @@ function editService(id) {
             document.getElementById('svcActive').checked   = !!s.active;
             document.getElementById('iconPreview').className = 'bi ' + (s.icon || 'bi-tools');
 
-            if (s.cover_image_url) {
-                document.getElementById('imgPreview').innerHTML =
-                    '<img src="' + s.cover_image_url + '" style="max-height:120px;border-radius:6px;">';
-                document.getElementById('btnRemoveImg').classList.remove('d-none');
+            // Carregar imagem no FilePond se existir
+            if (s.cover_image) {
+                var pondElement = document.getElementById('svcCoverImage');
+                if (pondElement && pondElement.filepond) {
+                    pondElement.filepond.removeFiles();
+                    pondElement.filepond.addFile(s.cover_image);
+                }
             }
             // Define o action do form para a rota de update
             document.getElementById('svcForm').action = '{{ route("admin.services.index") }}/' + s.id;
@@ -359,32 +353,13 @@ function editService(id) {
     });
 }
 
-// ── Preview imagem ────────────────────────────────────────
-function previewImage(input) {
-    if (!input.files || !input.files[0]) return;
-    if (input.files[0].size > 5 * 1024 * 1024) {
-        HMToast.error('Imagem muito grande. Máximo 5MB.');
-        input.value = '';
-        return;
+// ── Limpar FilePond ao fechar modal ─────────────────────
+$('#svcModal').on('hidden.bs.modal', function() {
+    var pondElement = document.getElementById('svcCoverImage');
+    if (pondElement && pondElement.filepond) {
+        pondElement.filepond.removeFiles();
     }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('imgPreview').innerHTML =
-            '<img src="' + e.target.result + '" style="max-height:120px;border-radius:6px;">';
-        document.getElementById('btnRemoveImg').classList.remove('d-none');
-        document.getElementById('removeImage').value = '0';
-    };
-    reader.readAsDataURL(input.files[0]);
-}
-
-function removeImage() {
-    document.getElementById('coverImageInput').value = '';
-    document.getElementById('removeImage').value = '1';
-    document.getElementById('imgPreview').innerHTML =
-        '<i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color:var(--hm-primary);"></i>' +
-        '<div style="font-size:0.82rem;color:var(--hm-text-muted);">Clique para selecionar</div>';
-    document.getElementById('btnRemoveImg').classList.add('d-none');
-}
+});
 
 // ── Submit ────────────────────────────────────────────────
 document.getElementById('svcForm').addEventListener('submit', function(e) {

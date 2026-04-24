@@ -39,17 +39,26 @@
         if (!input_{{ $uid }} || input_{{ $uid }}.__filepond_init) return;
         input_{{ $uid }}.__filepond_init = true;
 
-        var opts_{{ $uid }} = {
+        // Mesclar com config global do FilePond (definida em admin.blade.php)
+        var opts_{{ $uid }} = Object.assign({}, window.FilePondGlobalConfig || {}, {
             allowMultiple: {{ $multiple ? 'true' : 'false' }},
             maxFileSize: @json($maxFileSize),
             acceptedFileTypes: @json($fileTypes),
+            server: {
+                process: '{{ route("admin.upload.store") }}',
+                load: '{{ route("admin.upload.load") }}',
+                revert: '{{ route("admin.upload.destroy") }}',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            },
             @if($loadSource)
             files: [{
                 source: @json($loadSource),
                 options: { type: 'local' }
             }],
             @endif
-        };
+        });
 
         var pond_{{ $uid }} = FilePond.create(input_{{ $uid }}, opts_{{ $uid }});
 
