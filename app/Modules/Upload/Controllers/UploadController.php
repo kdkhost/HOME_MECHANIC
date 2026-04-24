@@ -254,7 +254,7 @@ class UploadController extends Controller
      */
     public function load(Request $request)
     {
-        $source = $request->input('load');
+        $source = $request->input('load') ?? $request->input('file');
 
         if (!$source) {
             return response('Source not provided', 400);
