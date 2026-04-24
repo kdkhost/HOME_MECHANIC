@@ -839,7 +839,7 @@
 <div class="mobile-drawer" id="mobileDrawer">
     <div class="drawer-header">
         @if(!empty($siteSettings['site_logo']))
-            <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="height:40px;width:auto;object-fit:contain;">
+            <img src="{{ str_starts_with($siteSettings['site_logo'], 'http') ? $siteSettings['site_logo'] : asset(ltrim($siteSettings['site_logo'], '/')) }}" alt="{{ $siteSettings['site_name'] ?? 'HomeMechanic' }}" style="height:55px;width:auto;object-fit:contain;">
         @else
             <div class="drawer-brand">HOME<span>MECHANIC</span></div>
         @endif
