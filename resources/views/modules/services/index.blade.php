@@ -31,22 +31,89 @@
 .note-toolbar .note-btn:hover, .note-toolbar .note-btn.active { background:var(--hm-primary) !important; color:#fff !important; border-color:var(--hm-primary) !important; }
 .note-editable { min-height:100px !important; font-size:0.88rem !important; padding:10px !important; }
 
-/* Icon Picker */
-#iconPickerModal .modal-body { max-height: 420px; overflow-y: auto; }
-.icon-picker-search { position: sticky; top: 0; z-index: 10; background: #fff; padding: 10px 0 8px; }
-.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+/* ===== Icon Picker Floating Panel ===== */
+#iconPickerBackdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,0.55);
+    backdrop-filter: blur(3px);
+    z-index: 9998;
+    animation: ipFadeIn .2s ease;
+}
+#iconPickerPanel {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.92) translateY(12px);
+    width: min(780px, 94vw);
+    max-height: 82vh;
+    background: #fff;
+    border-radius: 18px;
+    z-index: 9999;
+    box-shadow:
+        0 2px 4px rgba(0,0,0,.06),
+        0 8px 24px rgba(0,0,0,.14),
+        0 24px 56px rgba(0,0,0,.22),
+        0 0 0 1px rgba(255,255,255,.6) inset;
+    overflow: hidden;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity .22s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+#iconPickerPanel.ip-open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) translateY(0);
+}
+.ip-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px 12px;
+    background: linear-gradient(135deg, var(--hm-primary) 0%, #e05c00 100%);
+    border-radius: 18px 18px 0 0;
+    flex-shrink: 0;
+}
+.ip-header-title { font-weight: 700; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+.ip-close-btn {
+    background: rgba(255,255,255,.2); border: none; border-radius: 50%;
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    color: #fff; cursor: pointer; transition: background .15s; font-size: 1rem;
+}
+.ip-close-btn:hover { background: rgba(255,255,255,.35); }
+.ip-search-wrap {
+    padding: 12px 16px 8px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+.ip-search-wrap input {
+    border-radius: 10px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    padding: 8px 12px !important;
+    font-size: 0.88rem !important;
+    transition: border-color .15s;
+}
+.ip-search-wrap input:focus { border-color: var(--hm-primary) !important; outline: none; box-shadow: 0 0 0 3px rgba(234,88,12,.12) !important; }
+.ip-search-hint { font-size: 0.72rem; color: #94a3b8; margin-top: 4px; }
+.ip-body {
+    overflow-y: auto; padding: 12px 14px 14px;
+    flex: 1;
+    scroll-behavior: smooth;
+}
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 7px; }
 .icon-item {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 8px 4px; border-radius: 8px; cursor: pointer; border: 2px solid transparent;
-    transition: all .18s; font-size: 0.65rem; color: #475569; background: #f8fafc;
-    gap: 4px; min-height: 64px;
+    padding: 9px 4px 7px; border-radius: 10px; cursor: pointer; border: 2px solid transparent;
+    transition: all .16s cubic-bezier(.4,0,.2,1); font-size: 0.62rem; color: #475569; background: #f8fafc;
+    gap: 5px; min-height: 66px; user-select: none;
 }
-.icon-item i { font-size: 1.4rem; color: #334155; }
-.icon-item:hover { border-color: var(--hm-primary); background: var(--hm-primary-light); color: var(--hm-primary); }
-.icon-item:hover i { color: var(--hm-primary); }
-.icon-item.selected { border-color: var(--hm-primary); background: var(--hm-primary); color: #fff; }
-.icon-item.selected i { color: #fff; }
-.icon-name-label { word-break: break-all; text-align: center; line-height: 1.2; }
+.icon-item i { font-size: 1.5rem; color: #334155; transition: transform .15s; }
+.icon-item:hover { border-color: var(--hm-primary); background: var(--hm-primary-light); color: var(--hm-primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(234,88,12,.18); }
+.icon-item:hover i { color: var(--hm-primary); transform: scale(1.15); }
+.icon-item:active { transform: scale(.95); }
+.icon-item.selected { border-color: var(--hm-primary); background: var(--hm-primary); color: #fff; box-shadow: 0 4px 14px rgba(234,88,12,.35); }
+.icon-item.selected i { color: #fff; transform: scale(1.1); }
+.icon-name-label { word-break: break-all; text-align: center; line-height: 1.2; font-weight: 500; }
+#iconPickerEmpty { color: #94a3b8; }
+@keyframes ipFadeIn { from { opacity:0; } to { opacity:1; } }
 </style>
 @endsection
 
@@ -151,27 +218,25 @@
     </div>
 </div>
 
-{{-- Modal Icon Picker --}}
-<div class="modal fade" id="iconPickerModal" tabindex="-1" style="z-index:1060">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background:var(--hm-primary);">
-                <span class="modal-title" style="font-weight:700;font-size:1rem;color:#fff;">
-                    <i class="bi bi-grid-3x3-gap-fill me-2"></i>Escolher Icone Bootstrap
-                </span>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="icon-picker-search">
-                    <input type="text" id="iconSearchInput" class="form-control form-control-sm" placeholder="Pesquisar icone... (ex: car, wrench, tools)" oninput="filterIcons(this.value)">
-                    <div class="mt-1" style="font-size:0.78rem;color:#64748b;">Clique no icone para selecionar</div>
-                </div>
-                <div class="icon-grid mt-2" id="iconGrid"></div>
-                <div id="iconPickerEmpty" class="text-center py-4 d-none" style="color:#94a3b8;">
-                    <i class="bi bi-search" style="font-size:2rem;"></i>
-                    <p class="mt-2 mb-0">Nenhum icone encontrado</p>
-                </div>
-            </div>
+{{-- Icon Picker Floating Panel --}}
+<div id="iconPickerBackdrop" onclick="closeIconPicker()"></div>
+<div id="iconPickerPanel" role="dialog" aria-label="Seletor de Icones">
+    <div class="ip-header">
+        <span class="ip-header-title">
+            <i class="bi bi-grid-3x3-gap-fill"></i> Escolher Icone Bootstrap
+        </span>
+        <button class="ip-close-btn" onclick="closeIconPicker()" title="Fechar"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="ip-search-wrap">
+        <input type="text" id="iconSearchInput" class="form-control" placeholder="&#xF52A;  Pesquisar icone... (car, wrench, tools, fuel...)" oninput="filterIcons(this.value)">
+        <div class="ip-search-hint"><i class="bi bi-hand-index me-1"></i>Clique no icone para aplicar automaticamente</div>
+    </div>
+    <div class="ip-body">
+        <div class="icon-grid" id="iconGrid"></div>
+        <div id="iconPickerEmpty" class="text-center py-4 d-none">
+            <i class="bi bi-search" style="font-size:2.2rem;"></i>
+            <p class="mt-2 mb-0 fw-semibold">Nenhum icone encontrado</p>
+            <small>Tente outro termo de busca</small>
         </div>
     </div>
 </div>
@@ -242,8 +307,24 @@ function openIconPicker() {
     });
     document.getElementById('iconSearchInput').value = '';
     filterIcons('');
-    var m = new bootstrap.Modal(document.getElementById('iconPickerModal')); m.show();
-    setTimeout(function(){ document.getElementById('iconSearchInput').focus(); }, 400);
+    var bd = document.getElementById('iconPickerBackdrop');
+    var pn = document.getElementById('iconPickerPanel');
+    bd.style.display = 'block';
+    pn.style.display = 'flex';
+    requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+            pn.classList.add('ip-open');
+            setTimeout(function(){ document.getElementById('iconSearchInput').focus(); }, 200);
+        });
+    });
+}
+function closeIconPicker() {
+    var pn = document.getElementById('iconPickerPanel');
+    pn.classList.remove('ip-open');
+    setTimeout(function(){
+        pn.style.display = 'none';
+        document.getElementById('iconPickerBackdrop').style.display = 'none';
+    }, 260);
 }
 function renderIconGrid(icons) {
     var grid = document.getElementById('iconGrid');
@@ -275,7 +356,7 @@ function selectIcon(iconClass) {
     document.getElementById('iconGrid').querySelectorAll('.icon-item').forEach(function(el){
         el.classList.toggle('selected', el.dataset.icon === iconClass);
     });
-    bootstrap.Modal.getInstance(document.getElementById('iconPickerModal')).hide();
+    closeIconPicker();
     HMToast.success('Icone selecionado: ' + iconClass);
 }
 /* ===== FIM ICON PICKER ===== */
