@@ -427,6 +427,8 @@ class PhotosManager {
 
         const imageUrl = photo.thumbnail_url || photo.image_url || '/img/placeholder.jpg';
 
+        const safeTitle = (photo.title || "").replace(/'/g, "\\'");
+        
         return `
             <div class="col-md-3 col-lg-2 mb-4" data-photo-id="${photo.id}">
                 <div class="card photo-card h-100">
@@ -444,7 +446,7 @@ class PhotosManager {
                             </div>
                         </div>
                         <div class="lightbox-trigger">
-                            <button class="btn btn-primary btn-lg" onclick="photosManager.openPhotoLightbox('${imageUrl}', '${photo.title}', ${photo.id})" title="Visualizar">
+                            <button class="btn btn-primary btn-lg" onclick="photosManager.openPhotoLightbox('${imageUrl}', '${safeTitle}', ${photo.id})" title="Visualizar">
                                 <i class="bi bi-eye"></i>
                             </button>
                         </div>

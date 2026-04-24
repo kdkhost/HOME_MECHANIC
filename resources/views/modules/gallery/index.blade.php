@@ -277,6 +277,8 @@ class GalleryManager {
             ? `<img src="${category.cover_photo.thumbnail_url}" alt="${category.name}">`
             : `<div class="placeholder"><i class="bi bi-images"></i></div>`;
 
+        const safeName = (category.name || "").replace(/'/g, "\\'");
+        
         return `
             <div class="col-md-4 col-lg-3 mb-4" data-category-id="${category.id}">
                 <div class="card category-card h-100">
@@ -284,7 +286,7 @@ class GalleryManager {
                         ${coverImage}
                         <div class="category-actions">
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-light" onclick="galleryManager.editCategory(${category.id})" title="Editar">
+                                <button class="btn btn-light" onclick="galleryManager.editCategory(${category.id}, '${safeName}')" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-light drag-handle" title="Arrastar">
@@ -300,9 +302,12 @@ class GalleryManager {
                         <h5 class="card-title mb-2">${category.name}</h5>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">Ordem: ${category.sort_order}</small>
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ route('admin.gallery.photos') }}/${category.id}" class="btn btn-outline-primary" title="Ver Fotos">
+                             <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="galleryManager.previewCategory(${category.id})" title="Pré-visualizar">
                                     <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="{{ route('admin.gallery.photos') }}/${category.id}" class="btn btn-outline-info" title="Gerenciar Fotos">
+                                    <i class="bi bi-images"></i>
                                 </a>
                                 <button class="btn btn-outline-danger" onclick="galleryManager.deleteCategory(${category.id})" title="Excluir">
                                     <i class="bi bi-trash"></i>
@@ -405,7 +410,7 @@ class GalleryManager {
         }
     }
 
-    async editCategory(id) {
+    async editCategory(id, name = null) {
         try {
             const response = await fetch(`{{ route('admin.gallery.index') }}`, {
                 headers: {
@@ -521,8 +526,63 @@ class GalleryManager {
         HMToast.success(message);
     }
 
-    showError(message) {
-        HMToast.error(message);
+    async previewCategory(id) {
+        try {
+            Swal.fire({
+                title: 'Carregando...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const response = await fetch(`{{ route('admin.gallery.photos') }}?category_id=${id}`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data.success && data.data.length > 0) {
+                const photo = data.data[0];
+                const imageUrl = photo.image_url || '/img/placeholder.jpg';
+                
+                Swal.fire({
+                    title: photo.title || 'Visualização da Categoria',
+                    html: `
+                        <div class="text-center">
+                            <img src="${imageUrl}" class="img-fluid rounded mb-3" style="max-height: 400px; border: 1px solid #ddd;">
+                            <div class="p-3 bg-light rounded text-left">
+                                <label class="font-weight-bold" style="font-size: 0.85rem;">Link Público da Imagem:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control bg-white" id="shareLinkInput" value="${imageUrl}" readonly>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" onclick="navigator.clipboard.writeText(document.getElementById('shareLinkInput').value); HMToast.success('Link copiado!');">
+                                            <i class="bi bi-clipboard"></i> Copiar
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">
+                                    Compartilhe este link com outras pessoas. Utilize o botão abaixo para gerenciar todas as fotos desta categoria.
+                                </small>
+                            </div>
+                            <div class="mt-4">
+                                <a href="{{ route('admin.gallery.photos') }}/${id}" class="btn btn-primary">
+                                    <i class="bi bi-images"></i> Ver Todas as Fotos
+                                </a>
+                                <button class="btn btn-secondary ml-2" onclick="Swal.close()">
+                                    Fechar
+                                </button>
+                            </div>
+                        </div>
+                    `,
+                    width: '700px',
+                    showConfirmButton: false,
+                    showCloseButton: true
+                });
+            } else {
+                Swal.fire('Aviso', 'Esta categoria ainda não possui fotos para visualização.', 'info');
+            }
+        } catch (error) {
+            console.error('Erro ao buscar preview:', error);
+            this.showError('Não foi possível carregar a visualização.');
+        }
     }
 }
 

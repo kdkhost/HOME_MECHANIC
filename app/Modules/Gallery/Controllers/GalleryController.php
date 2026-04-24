@@ -265,21 +265,23 @@ class GalleryController extends Controller
     public function photos(Request $request, $id = null)
     {
         try {
-            $query = GalleryPhoto::with(['category']);
+            $query = GalleryPhoto::query();
             $category = null;
 
-            // Resolver categoria - Priorizar category_id da request, depois $id da rota
+            // Resolver ID da Categoria
             $categoryId = $request->input('category_id') ?: $id;
-            
-            if ($categoryId) {
-                // Tentar encontrar a categoria primeiro
+            $category = null;
+
+            if ($categoryId && is_numeric($categoryId)) {
                 $category = GalleryCategory::find($categoryId);
                 if ($category) {
-                    $query->where('category_id', $category->id);
-                } else if ($id && !$request->has('category_id')) {
-                    // Se não é categoria e veio apenas via rota, tentar como photo_id
-                    $query->where('id', $id);
+                    $query->where('category_id', (int)$category->id);
                 }
+            }
+
+            // Se não encontrou categoria e $id foi passado, tenta como ID da foto
+            if (!$category && $id && is_numeric($id)) {
+                $query->where('id', (int)$id);
             }
 
             // Filtros Adicionais
@@ -291,9 +293,9 @@ class GalleryController extends Controller
                 $query->where('active', $request->boolean('active'));
             }
 
-            // Filtro por ID da foto específico (usado pelo editPhoto JS)
+            // Filtro específico por ID de foto (AJAX edit)
             if ($request->filled('photo_id')) {
-                $query->where('id', $request->input('photo_id'));
+                $query->where('id', (int)$request->input('photo_id'));
             }
 
             // Ordenação
@@ -308,19 +310,18 @@ class GalleryController extends Controller
 
             // Se for requisição AJAX, retornar JSON
             if ($request->wantsJson() || $request->ajax()) {
-                $perPage = min($request->input('per_page', 20), 100);
-                $photos = $query->paginate($perPage);
+                $photos = $query->get();
 
                 return response()->json([
                     'success' => true,
-                    'data' => GalleryPhotoResource::collection($photos->items()),
+                    'data' => $photos,
                     'pagination' => [
-                        'current_page' => $photos->currentPage(),
-                        'last_page' => $photos->lastPage(),
-                        'per_page' => $photos->perPage(),
-                        'total' => $photos->total(),
-                        'from' => $photos->firstItem(),
-                        'to' => $photos->lastItem()
+                        'current_page' => 1,
+                        'last_page' => 1,
+                        'per_page' => 100,
+                        'total' => $photos->count(),
+                        'from' => 1,
+                        'to' => $photos->count()
                     ]
                 ]);
             }
