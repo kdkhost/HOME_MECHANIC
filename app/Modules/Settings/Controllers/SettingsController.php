@@ -467,19 +467,24 @@ class SettingsController extends Controller
         foreach ($events as $event) {
             // Extrair comando completo (php artisan xxx)
             $fullCommand = $event->command ?? '';
-            // Remover "php artisan " do inicio para ficar so o nome
             $command = $fullCommand;
-            if (str_starts_with($command, 'php artisan ')) {
+
+            // Tentar extrair apenas o comando artisan de forma robusta (suporta caminhos absolutos e aspas)
+            if (preg_match("/artisan['\"]?\s+(.+)$/", $command, $matches)) {
+                $command = trim($matches[1], "'\" ");
+            } elseif (str_starts_with($command, 'php artisan ')) {
                 $command = substr($command, strlen('php artisan '));
             }
+
             if (empty($command)) {
                 $command = $event->description ?? 'N/A';
             }
 
             // Nome amigavel
             $name = match(true) {
-                str_starts_with($command, 'backup:run') => 'Backup Automático',
-                str_starts_with($command, 'google:sync-reviews') => 'Sync Google Reviews',
+                str_contains($command, 'backup:run') => 'Backup Automático',
+                str_contains($command, 'google:sync-reviews') => 'Sync Google Reviews',
+                str_contains($command, 'schedule:run') => 'Executar Agendados',
                 default => $command,
             };
 
@@ -507,11 +512,23 @@ class SettingsController extends Controller
      */
     public function cronRun(Request $request)
     {
-        $command = $request->input('command');
+        $command = trim($request->input('command'), "'\" ");
 
+        // Lista de comandos base permitidos (sem o prefixo php artisan)
         $allowed = ['backup:run', 'backup:run --type=all', 'backup:run --type=db', 'backup:run --type=files', 'google:sync-reviews', 'schedule:run'];
-        if (!in_array($command, $allowed)) {
-            return response()->json(['success' => false, 'message' => 'Comando não permitido.'], 403);
+
+        // Verificar se o comando (ou parte dele) esta na lista permitida
+        $isAllowed = false;
+        foreach ($allowed as $a) {
+            if ($command === $a || str_contains($command, $a)) {
+                $isAllowed = true;
+                $command = $a; // Normalizar para o comando curto
+                break;
+            }
+        }
+
+        if (!$isAllowed) {
+            return response()->json(['success' => false, 'message' => "Comando '{$command}' não permitido."], 403);
         }
 
         // Carregar rotas do console se for schedule:run ou relacionado
