@@ -445,7 +445,7 @@ function deleteService(id, name) {
     }).then(function(r) {
         if (!r.isConfirmed) return;
         $.ajax({
-            url: '{{ route("admin.services.index") }}/' + id,
+            url: '{{ url("admin/services") }}/' + id,
             method: 'DELETE',
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
             success: function(d) { if (d.success) { HMToast.success(d.message); loadServices(currentPage); } else HMToast.error(d.message); },
