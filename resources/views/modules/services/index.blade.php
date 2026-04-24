@@ -449,6 +449,7 @@ function toggleFeatured(id) {
 }
 
 function deleteService(id, name) {
+    console.log('deleteService chamado - id:', id, 'name:', name);
     Swal.fire({
         title: 'Excluir serviço?',
         html: 'Deseja excluir <strong>' + name + '</strong>?<br><small style="color:#64748b;">Esta ação não pode ser desfeita.</small>',
@@ -457,15 +458,25 @@ function deleteService(id, name) {
         confirmButtonColor: '#dc2626',
         cancelButtonColor: '#64748b',
         confirmButtonText: '<i class="fas fa-trash me-1"></i> Excluir',
-        cancelButtonText: 'Cancelar',
-    }).then(function(r) {
-        if (!r.isConfirmed) return;
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (!result.isConfirmed) {
+            console.log('Exclusão cancelada pelo usuário');
+            return;
+        }
+
+        var deleteUrl = '{{ url("admin/services") }}/' + id;
+        console.log('Enviando DELETE para:', deleteUrl);
+        
         $.ajax({
-            url: '{{ url("admin/services") }}/' + id,
+            url: deleteUrl,
             method: 'DELETE',
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
             success: function(d) { if (d.success) { HMToast.success(d.message); loadServices(currentPage); } else HMToast.error(d.message); },
-            error: function() { HMToast.error('Erro de conexão.'); }
+            error: function(xhr) { 
+                console.error('Erro ao excluir serviço:', xhr);
+                HMToast.error('Erro de conexão.'); 
+            }
         });
     });
 }
