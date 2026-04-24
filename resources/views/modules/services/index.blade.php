@@ -302,6 +302,10 @@ function openModal(id) {
         editingId = null;
         document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Novo Serviço';
         form.action = '{{ route("admin.services.store") }}';
+        // Inicializar Summernote para novo serviço
+        setTimeout(function() {
+            initSummernoteNew();
+        }, 100);
     }
     var modal = new bootstrap.Modal(document.getElementById('svcModal'));
     modal.show();
@@ -365,12 +369,40 @@ function editService(id) {
             var modal = new bootstrap.Modal(document.getElementById('svcModal'));
             modal.show();
             
-            // Reinicializar Summernote e setar conteúdo (com delay para modal estar visível)
+            // Reinicializar Summernote em todos os campos de texto (com delay para modal estar visível)
             setTimeout(function() {
-                if ($('#svcContent').length && typeof $.fn.summernote !== 'undefined') {
+                // Destruir Summernote existente antes de recriar
+                if (typeof $.fn.summernote !== 'undefined') {
+                    $('#svcDesc').summernote('destroy');
                     $('#svcContent').summernote('destroy');
-                    $('#svcContent').val(s.content || '');
-                    initSummernote();
+                    
+                    // Inicializar Summernote na Descrição Curta
+                    $('#svcDesc').summernote({
+                        height: 100,
+                        placeholder: 'Aparece nos cards e listagens...',
+                        toolbar: [
+                            ['style', ['bold', 'italic', 'underline']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['view', ['codeview']]
+                        ],
+                        lang: 'pt-BR'
+                    });
+                    $('#svcDesc').summernote('code', s.description || '');
+                    
+                    // Inicializar Summernote no Conteúdo Completo
+                    $('#svcContent').summernote({
+                        height: 200,
+                        placeholder: 'Descrição detalhada do serviço...',
+                        toolbar: [
+                            ['style', ['bold', 'italic', 'underline', 'clear']],
+                            ['font', ['strikethrough', 'superscript', 'subscript']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['insert', ['link', 'picture', 'video']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        lang: 'pt-BR'
+                    });
+                    $('#svcContent').summernote('code', s.content || '');
                 }
             }, 100);
         },
@@ -387,11 +419,26 @@ $('#svcModal').on('hidden.bs.modal', function() {
     if (pondElement && pondElement.filepond) {
         pondElement.filepond.removeFiles();
     }
+    // Destruir Summernote ao fechar para evitar conflitos
+    if (typeof $.fn.summernote !== 'undefined') {
+        $('#svcDesc').summernote('destroy');
+        $('#svcContent').summernote('destroy');
+    }
 });
 
-// ── Inicializar Summernote no campo Conteúdo ──────────────
-function initSummernote() {
-    if ($('#svcContent').length && typeof $.fn.summernote !== 'undefined') {
+// ── Inicializar Summernote no novo serviço ──────────────
+function initSummernoteNew() {
+    if (typeof $.fn.summernote !== 'undefined') {
+        $('#svcDesc').summernote({
+            height: 100,
+            placeholder: 'Aparece nos cards e listagens...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['view', ['codeview']]
+            ],
+            lang: 'pt-BR'
+        });
         $('#svcContent').summernote({
             height: 200,
             placeholder: 'Descrição detalhada do serviço...',
@@ -407,17 +454,18 @@ function initSummernote() {
     }
 }
 
-// Inicializar ao carregar a página
-$(document).ready(function() {
-    initSummernote();
-});
-
 // ── Submit ────────────────────────────────────────────────
 document.getElementById('svcForm').addEventListener('submit', function(e) {
     e.preventDefault();
     var btn = document.getElementById('btnSave');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+    // Sincronizar Summernote com textareas
+    if (typeof $.fn.summernote !== 'undefined') {
+        $('#svcDesc').summernote('triggerEvent', 'summernote.change');
+        $('#svcContent').summernote('triggerEvent', 'summernote.change');
+    }
 
     var id     = document.getElementById('svcId').value;
     var method = document.getElementById('svcMethod').value;
