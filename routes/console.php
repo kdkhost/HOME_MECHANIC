@@ -3,13 +3,15 @@
 use Illuminate\Support\Facades\Schedule;
 
 // Helper: verificar se a tarefa esta ativada no painel admin
-function cronEnabled(string $command): bool
-{
-    try {
-        $disabled = json_decode(\App\Models\Setting::get('cron_disabled', '[]'), true) ?: [];
-        return !in_array(md5($command), $disabled);
-    } catch (\Exception $e) {
-        return true; // Se nao conseguir ler, permitir execucao
+if (!function_exists('cronEnabled')) {
+    function cronEnabled(string $command): bool
+    {
+        try {
+            $disabled = json_decode(\App\Models\Setting::get('cron_disabled', '[]'), true) ?: [];
+            return !in_array(md5($command), $disabled);
+        } catch (\Exception $e) {
+            return true; // Se nao conseguir ler, permitir execucao
+        }
     }
 }
 
