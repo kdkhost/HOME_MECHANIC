@@ -453,6 +453,11 @@ class SettingsController extends Controller
      */
     public function cronList()
     {
+        // Forçar carregamento das rotas do console no contexto web (Laravel 11)
+        if (file_exists(base_path('routes/console.php'))) {
+            require_once base_path('routes/console.php');
+        }
+
         $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
         $events = $schedule->events();
 
@@ -504,9 +509,14 @@ class SettingsController extends Controller
     {
         $command = $request->input('command');
 
-        $allowed = ['backup:run', 'backup:run --type=all', 'backup:run --type=db', 'backup:run --type=files', 'google:sync-reviews'];
+        $allowed = ['backup:run', 'backup:run --type=all', 'backup:run --type=db', 'backup:run --type=files', 'google:sync-reviews', 'schedule:run'];
         if (!in_array($command, $allowed)) {
             return response()->json(['success' => false, 'message' => 'Comando não permitido.'], 403);
+        }
+
+        // Carregar rotas do console se for schedule:run ou relacionado
+        if (file_exists(base_path('routes/console.php'))) {
+            require_once base_path('routes/console.php');
         }
 
         try {
