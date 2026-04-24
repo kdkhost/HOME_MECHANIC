@@ -13,20 +13,12 @@
 .svc-img { width:100%; height:160px; object-fit:cover; border-radius:var(--hm-radius) var(--hm-radius) 0 0; }
 .svc-img-placeholder { width:100%; height:160px; background:var(--hm-primary-light); display:flex; align-items:center; justify-content:center; border-radius:var(--hm-radius) var(--hm-radius) 0 0; color:var(--hm-primary); font-size:2.5rem; }
 
-/* Botões dos cards — padronizados */
-.svc-btn {
-    flex: 1;
-    height: 34px !important;
-    padding: 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 0.82rem !important;
-    border-radius: 6px !important;
-    transition: var(--hm-transition) !important;
-}
-.svc-btn:hover { transform: translateY(-1px); }
-.svc-btn i { font-size: 0.85rem; }
+/* Botões dos cards — btn-group padronizado */
+.card-footer .btn-group .btn { border-radius: 0 !important; }
+.card-footer .btn-group .btn:first-child { border-radius: 6px 0 0 6px !important; }
+.card-footer .btn-group .btn:last-child  { border-radius: 0 6px 6px 0 !important; }
+.card-footer .btn-group .btn:only-child  { border-radius: 6px !important; }
+.card-footer .btn-group .btn { height: 34px; display: inline-flex; align-items: center; justify-content: center; }
 
 /* Upload area */
 .img-upload-area { border:2px dashed var(--hm-border); border-radius:8px; padding:1.25rem; text-align:center; cursor:pointer; transition:var(--hm-transition); background:#fafafa; min-height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem; }
@@ -170,15 +162,15 @@ function renderServices(services) {
             ? '<img src="'+s.cover_image_url+'" class="svc-img" alt="'+s.title+'">'
             : '<div class="svc-img-placeholder"><i class="bi '+(s.icon||'bi-tools')+'"></i></div>';
 
-        // Botões padronizados — todos mesma altura, ícones corretos, sem recarregar página
-        var btnEdit     = '<button class="btn btn-warning btn-sm svc-btn" onclick="editService('+s.id+')" title="Editar"><i class="fas fa-pencil-alt"></i></button>';
+        // Botões — btn-group horizontal padronizado (mesmo modelo anterior)
+        var btnEdit     = '<button class="btn btn-warning" onclick="editService('+s.id+')" title="Editar"><i class="fas fa-pencil-alt"></i></button>';
         var btnToggle   = s.active
-            ? '<button class="btn btn-secondary btn-sm svc-btn" onclick="toggleActive('+s.id+')" title="Desativar"><i class="fas fa-eye-slash"></i></button>'
-            : '<button class="btn btn-success btn-sm svc-btn" onclick="toggleActive('+s.id+')" title="Ativar"><i class="fas fa-eye"></i></button>';
+            ? '<button class="btn btn-secondary" onclick="toggleActive('+s.id+')" title="Desativar"><i class="fas fa-pause"></i></button>'
+            : '<button class="btn btn-success"   onclick="toggleActive('+s.id+')" title="Ativar"><i class="fas fa-play"></i></button>';
         var btnFeatured = s.featured
-            ? '<button class="btn btn-info btn-sm svc-btn" onclick="toggleFeatured('+s.id+')" title="Remover destaque"><i class="fas fa-star"></i></button>'
-            : '<button class="btn btn-outline-secondary btn-sm svc-btn" onclick="toggleFeatured('+s.id+')" title="Destacar"><i class="far fa-star"></i></button>';
-        var btnDelete   = '<button class="btn btn-danger btn-sm svc-btn" onclick="deleteService('+s.id+',\''+((s.title||'').replace(/\'/g,''))+'\')" title="Excluir"><i class="fas fa-trash"></i></button>';
+            ? '<button class="btn btn-warning"         onclick="toggleFeatured('+s.id+')" title="Remover destaque"><i class="fas fa-star"></i></button>'
+            : '<button class="btn btn-outline-secondary" onclick="toggleFeatured('+s.id+')" title="Destacar"><i class="far fa-star"></i></button>';
+        var btnDelete   = '<button class="btn btn-danger" onclick="deleteService('+s.id+',\''+((s.title||'').replace(/\'/g,''))+'\')" title="Excluir"><i class="fas fa-trash"></i></button>';
 
         html += '<div class="col-md-4 col-lg-3" data-id="'+s.id+'">'
             + '<div class="card svc-card h-100 d-flex flex-column">'
@@ -194,8 +186,8 @@ function renderServices(services) {
             + (s.featured ? '<span class="badge badge-warning">Destaque</span>' : '')
             + '</div>'
             + '</div>'
-            + '<div class="card-footer py-2 px-2">'
-            + '<div class="d-flex gap-1 justify-content-between">'
+            + '<div class="card-footer py-2">'
+            + '<div class="btn-group btn-group-sm w-100">'
             + btnEdit + btnToggle + btnFeatured + btnDelete
             + '</div>'
             + '</div>'
