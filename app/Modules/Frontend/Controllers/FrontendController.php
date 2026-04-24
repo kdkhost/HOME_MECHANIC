@@ -15,7 +15,7 @@ class FrontendController extends Controller
     {
         try {
             $services = \App\Modules\Services\Models\Service::active()->featured()->ordered()->take(4)->get();
-            $testimonials = \App\Modules\Testimonials\Models\Testimonial::active()->ordered()->take(3)->get();
+            $testimonials = \App\Modules\Testimonials\Models\Testimonial::active()->inRandomOrder()->take(15)->get();
             $galleryPhotos = \App\Modules\Gallery\Models\GalleryPhoto::active()->latest()->take(6)->get();
             $sponsors = \App\Modules\Sponsors\Models\Sponsor::active()->ordered()->get();
         } catch (\Exception $e) {

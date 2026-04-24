@@ -542,32 +542,34 @@
             <div class="divider-orange mx-auto"></div>
         </div>
         
-        <div class="row g-4">
-            @forelse($testimonials as $i => $t)
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">
-                        @for($k=1; $k<=5; $k++)
-                            <i class="{{ $k <= $t->rating ? 'bi bi-star-fill' : 'bi bi-star' }}"></i>
-                        @endfor
-                    </div>
-                    <p class="testimonial-text">"{{ $t->content }}"</p>
-                    <div class="testimonial-author">
-                        @if($t->photo_url)
-                            <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-                        @else
-                            <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
-                        @endif
-                        <div>
-                            <div class="testimonial-name">{{ $t->name }}</div>
-                            <div class="testimonial-car">{{ $t->role }}</div>
+        <div class="swiper testimonials-rotate" data-aos="fade-up" data-aos-delay="100">
+            <div class="swiper-wrapper">
+                @forelse($testimonials as $t)
+                <div class="swiper-slide col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            @for($k=1; $k<=5; $k++)
+                                <i class="{{ $k <= $t->rating ? 'bi bi-star-fill' : 'bi bi-star' }}"></i>
+                            @endfor
+                        </div>
+                        <p class="testimonial-text">"{{ $t->content }}"</p>
+                        <div class="testimonial-author">
+                            @if($t->photo_url)
+                                <img src="{{ $t->photo_url }}" alt="{{ $t->name }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                            @else
+                                <div class="testimonial-avatar">{{ strtoupper(substr($t->name, 0, 2)) }}</div>
+                            @endif
+                            <div>
+                                <div class="testimonial-name">{{ $t->name }}</div>
+                                <div class="testimonial-car">{{ $t->role }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+                @empty
+                <div class="col-12 text-center text-muted">Nenhum depoimento cadastrado.</div>
+                @endforelse
             </div>
-            @empty
-            <div class="col-12 text-center text-muted">Nenhum depoimento cadastrado.</div>
-            @endforelse
         </div>
     </div>
 </section>
@@ -625,4 +627,31 @@
     </div>
 </section>
 
+@endsection
+
+@section('scripts')
+<script>
+$(function() {
+    // ── Rotating Testimonials (Estático mas automático) ────────
+    new Swiper('.testimonials-rotate', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        speed: 1500, // Transição suave
+        allowTouchMove: false, // Desativa arraste manual para não parecer carrossel
+        autoplay: {
+            delay: 15000, // 15 segundos
+            disableOnInteraction: false,
+        },
+        breakpoints: {
+            768: {
+                slidesPerView: 2,
+            },
+            1200: {
+                slidesPerView: 3,
+            }
+        }
+    });
+});
+</script>
 @endsection
