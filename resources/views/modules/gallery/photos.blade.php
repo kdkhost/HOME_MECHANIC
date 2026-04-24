@@ -447,7 +447,7 @@ class PhotosManager {
                             </div>
                         </div>
                         <div class="lightbox-trigger">
-                            <button class="btn btn-primary btn-lg" onclick="photosManager.openPhotoLightbox('${imageUrl}', '${photo.title}')" title="Visualizar">
+                            <button class="btn btn-primary btn-lg" onclick="photosManager.openPhotoLightbox('${imageUrl}', '${photo.title}', ${photo.id})" title="Visualizar">
                                 <i class="bi bi-eye"></i>
                             </button>
                         </div>
@@ -572,13 +572,100 @@ class PhotosManager {
         }
     }
 
-    openPhotoLightbox(imageUrl, title) {
-        GLightbox({
-            elements: [{
-                href: imageUrl,
-                title: title
-            }]
-        }).open();
+    openPhotoLightbox(imageUrl, title, id) {
+        Swal.fire({
+            title: title || 'Visualização',
+            html: `
+                <div class="text-center mb-4">
+                    <img src="${imageUrl}" class="img-fluid rounded shadow-sm" style="max-height: 350px; object-fit: contain;">
+                </div>
+                <div class="form-group text-left">
+                    <label class="font-weight-bold" style="font-size: 0.85rem;">Link Público da Imagem:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-light" id="shareLinkInput" value="${imageUrl}" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-primary" onclick="navigator.clipboard.writeText(document.getElementById('shareLinkInput').value); HMToast.success('Link copiado!');">
+                                <i class="bi bi-clipboard"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted mt-2 d-block text-left">
+                        Compartilhe este link com outras pessoas. Caso deseje renomear o arquivo da imagem para algo mais amigável, utilize a opção abaixo.
+                    </small>
+                </div>
+                <hr>
+                <div class="text-left mt-3">
+                    <button class="btn btn-warning" onclick="photosManager.renamePhotoFile(${id}, '${title}')">
+                        <i class="bi bi-pencil-square"></i> Renomear Arquivo Físico
+                    </button>
+                    <button class="btn btn-secondary ml-2" onclick="Swal.close(); photosManager.editPhoto(${id});">
+                        <i class="bi bi-card-text"></i> Editar Detalhes
+                    </button>
+                </div>
+            `,
+            width: '700px',
+            showConfirmButton: true,
+            confirmButtonText: 'Fechar',
+            confirmButtonColor: '#6c757d',
+            showCloseButton: true
+        });
+    }
+
+    async renamePhotoFile(id, currentTitle) {
+        Swal.close();
+        
+        const { value: newName } = await Swal.fire({
+            title: 'Renomear Arquivo da Imagem',
+            input: 'text',
+            inputLabel: 'Novo nome do arquivo (sem extensão):',
+            inputValue: currentTitle,
+            showCancelButton: true,
+            confirmButtonColor: 'var(--hm-primary)',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Renomear',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'O nome do arquivo é obrigatório!';
+                }
+            }
+        });
+
+        if (newName) {
+            try {
+                Swal.fire({
+                    title: 'Processando...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                const response = await fetch(`{{ route('admin.gallery.photos.rename-file', '') }}/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ new_name: newName })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso',
+                        text: data.message
+                    });
+                    this.loadPhotos(this.currentPage);
+                } else {
+                    Swal.fire('Erro', data.message || 'Não foi possível renomear o arquivo.', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
+            }
+        }
     }
 
     openGalleryLightbox() {

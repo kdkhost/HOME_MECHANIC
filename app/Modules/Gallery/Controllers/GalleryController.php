@@ -751,4 +751,80 @@ class GalleryController extends Controller
             return back()->with('error', 'Erro ao alterar status da foto.');
         }
     }
+
+    /**
+     * Renomear fisicamente o arquivo da imagem
+     */
+    public function renameFile(GalleryPhoto $photo, Request $request)
+    {
+        try {
+            $request->validate([
+                'new_name' => 'required|string|max:255'
+            ]);
+
+            $newName = \Illuminate\Support\Str::slug($request->input('new_name'));
+            if (empty($newName)) {
+                return response()->json(['success' => false, 'message' => 'Nome inválido.'], 400);
+            }
+
+            // Achar o Upload associado
+            $upload = $photo->getMainUpload();
+            if (!$upload) {
+                return response()->json(['success' => false, 'message' => 'Upload não encontrado.'], 404);
+            }
+
+            $oldPath = public_path($upload->path);
+            if (!file_exists($oldPath)) {
+                return response()->json(['success' => false, 'message' => 'Arquivo físico não encontrado.'], 404);
+            }
+
+            $extension = pathinfo($oldPath, PATHINFO_EXTENSION);
+            // Substituir a barra invertida (do dirname no Windows) por barra normal
+            $directory = str_replace('\\', '/', dirname($upload->path));
+            
+            // Garantir nome único
+            $finalName = $newName . '.' . $extension;
+            $newPath = $directory . '/' . $finalName;
+            
+            $counter = 1;
+            while (file_exists(public_path($newPath)) && $newPath !== $upload->path) {
+                $finalName = $newName . '-' . $counter . '.' . $extension;
+                $newPath = $directory . '/' . $finalName;
+                $counter++;
+            }
+
+            if ($newPath === $upload->path) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'O arquivo já possui este nome.',
+                    'new_url' => asset($newPath)
+                ]);
+            }
+
+            // Renomear fisicamente
+            rename($oldPath, public_path($newPath));
+
+            // Atualizar banco
+            $upload->update([
+                'path' => $newPath,
+                'filename' => $finalName,
+                'url' => url($newPath),
+                'original_name' => $finalName
+            ]);
+
+            $photo->update([
+                'filename' => $newPath
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Arquivo renomeado com sucesso!',
+                'new_url' => asset($newPath)
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erro ao renomear arquivo', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Erro interno ao renomear o arquivo.'], 500);
+        }
+    }
 }

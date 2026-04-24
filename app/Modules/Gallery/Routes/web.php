@@ -20,6 +20,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::delete('/photos/{photo}', [GalleryController::class, 'destroyPhoto'])->name('photos.destroy');
         Route::post('/photos/reorder', [GalleryController::class, 'reorderPhotos'])->name('photos.reorder');
         Route::post('/photos/mass', [GalleryController::class, 'massStore'])->name('photos.mass-store');
+        Route::post('/photos/{photo}/rename-file', [GalleryController::class, 'renameFile'])->name('photos.rename-file');
         Route::patch('/photos/{photo}/toggle-active', [GalleryController::class, 'togglePhotoActive'])->name('photos.toggle-active');
     });
 });
